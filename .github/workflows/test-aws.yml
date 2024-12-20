@@ -32,5 +32,7 @@ jobs:
                   aws-region: 'us-east-1'
 
             - name: test cloudformation list
-              run: aws cloudformation list-stacks
-              run: aws sts get-caller-identity
+              run: |
+              aws sts get-caller-identity
+              aws cloudformation list-stacks
+              
