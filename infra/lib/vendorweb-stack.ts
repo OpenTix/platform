@@ -14,7 +14,7 @@ export class VendorwebStack extends cdk.Stack {
 
 		const domainName = 'vendor.' + hostedZoneName;
 
-		new DeploymentService(this, 'UserwebDeployment', {
+		new DeploymentService(this, 'VendorwebDeployment', {
 			buildPath,
 			domainName,
 			hostedZoneName,
