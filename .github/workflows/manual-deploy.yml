@@ -51,6 +51,15 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
                   aws-region: 'us-east-1'
 
+            - uses: actions/setup-node@v4
+              working-directory: ./infra
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - run: npm ci --legacy-peer-deps
+              working-directory: ./infra
+
             - if: ${{ github.event.inputs.environment == 'prod' }}
               working-directory: ./infra
               run: ./deploy-prod.sh
