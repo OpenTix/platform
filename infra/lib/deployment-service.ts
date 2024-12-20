@@ -68,20 +68,21 @@ export class DeploymentService extends Construct {
 			distributionPaths: ['/*'],
 		});
 
-		new CfnOutput(this, id + 'CloudFrontURL', {
+		new CfnOutput(this, 'CloudFrontURL', {
 			value: distribution.domainName,
 			description: 'The distribution URL',
-			exportName: 'CloudfrontURL',
+			exportName: id + 'CloudfrontURL',
 		});
 
-		new CfnOutput(this, id + 'BucketName', {
+		new CfnOutput(this, 'BucketName', {
 			value: hostingBucket.bucketName,
 			description: 'The name of the S3 bucket',
-			exportName: 'BucketName',
+			exportName: id + 'BucketName',
 		});
-		new CfnOutput(this, id + 'WebsiteURL', {
+		new CfnOutput(this, 'WebsiteURL', {
 			value: `https://${domainName}`,
 			description: 'The custom domain URL',
+			exportName: id + 'WebsiteURL',
 		});
 	}
 }
