@@ -32,6 +32,8 @@ jobs:
                   aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
                   role-to-assume: ${{secrets.AWS_PROD_ACCT_ROLE}}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  role-duration-seconds: 3000
+                  role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
             - name: test cloudformation list
