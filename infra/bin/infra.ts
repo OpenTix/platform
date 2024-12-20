@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { UserwebStack } from '../lib/userweb-stack';
+import { VendorwebStack } from '../lib/vendorweb-stack';
 
 const app = new cdk.App();
 
@@ -29,5 +30,18 @@ new UserwebStack(
 		 * want to deploy the stack to. */
 		// env: { account: '123456789012', region: 'us-east-1' },
 		/* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+	}
+);
+
+new VendorwebStack(
+	app,
+	process.env.DEPLOYENV + '-VendorwebStack',
+	'../dist/apps/vendorweb',
+	process.env.HOSTEDZONENAME,
+	{
+		env: {
+			account: process.env.CDK_DEFAULT_ACCOUNT,
+			region: process.env.CDK_DEFAULT_REGION,
+		},
 	}
 );
