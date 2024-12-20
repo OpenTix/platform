@@ -21,3 +21,10 @@ jobs:
             - name: Sts GetCallerIdentity
               run: |
                   aws sts get-caller-identity
+            - name: assume role
+              run: |
+                  aws sts assume-role --role-arn ${{secrets.AWS_PROD_ACCT_ROLE}} --role-session-name GitHub_to_AWS_via_FederatedOIDC
+
+            - name: Sts GetCallerIdentity
+              run: |
+                  aws sts get-caller-identity
