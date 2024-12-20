@@ -24,10 +24,13 @@ jobs:
             - name: Sts GetCallerIdentity
               run: |
                   aws sts get-caller-identity
-            - name: assume role
-              run: |
-                  aws sts assume-role --role-arn ${{secrets.AWS_PROD_ACCT_ROLE}} --role-session-name GitHub_to_AWS_via_FederatedOIDC
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{secrets.AWS_PROD_ACCT_ROLE}}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: 'us-east-1'
 
             - name: test cloudformation list
-              run: |
-                  aws cloudformation list-stacks
+              run: aws cloudformation list-stacks
+              run: aws sts get-caller-identity
