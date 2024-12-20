@@ -1,1 +1,2 @@
-DEPLOYENV=prod HOSTEDZONENAME=aws.opentix.co cdk deploy --account 222634384294 --region us-east-1 --require-approval never
+DEPLOYENV=prod HOSTEDZONENAME=aws.opentix.co cdk synth --account 222634384294 --region us-east-1 --require-approval never
+DEPLOYENV=prod HOSTEDZONENAME=aws.opentix.co cdk deploy --all --account 222634384294 --region us-east-1 --require-approval never
