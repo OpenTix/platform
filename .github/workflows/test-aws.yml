@@ -33,6 +33,5 @@ jobs:
 
             - name: test cloudformation list
               run: |
-              aws sts get-caller-identity
-              aws cloudformation list-stacks
-              
+                  aws sts get-caller-identity
+                  aws cloudformation list-stacks
