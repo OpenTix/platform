@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 
 const StyledUi = styled.div`
-	color: pink;
+	color: red;
 `;
 export function Ui() {
 	return (
 		<StyledUi>
-			<h1>UI Test Import!</h1>
+			<h1>Testing</h1>
 		</StyledUi>
 	);
 }
