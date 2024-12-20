@@ -73,12 +73,6 @@ jobs:
                   role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
-            - uses: actions/setup-node@v4
-              working-directory: ./infra
-              with:
-                  node-version: 20
-                  cache: 'npm'
-
             - run: npm ci --legacy-peer-deps
               working-directory: ./infra
 
