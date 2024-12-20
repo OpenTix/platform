@@ -35,4 +35,4 @@ jobs:
             # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
             - run: npx nx reset
             - run: npx nx report
-            - run: npx nx affected -t lint test build --base=$GITHUB_BASE_REF --head=$GITHUB_HEAD_REF
+            - run: npx nx affected -t lint test build --no-cloud --base=$GITHUB_BASE_REF --head=$GITHUB_HEAD_REF
