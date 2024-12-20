@@ -6,7 +6,7 @@ const StyledUi = styled.div`
 export function Ui() {
 	return (
 		<StyledUi>
-			<h1>Welcome to Ui!</h1>
+			<h1>UI Test Import!</h1>
 		</StyledUi>
 	);
 }
