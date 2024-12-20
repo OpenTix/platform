@@ -11,19 +11,22 @@ on:
                     - prod
                     - dev
                 default: 'dev'
-            branch:
-                description: 'Branch to deploy from. Most likely main.'
-                required: true
-                type: string
-                default: 'main'
+
+env:
+    AWS_DEFAULT_REGION: us-east-1
 
 jobs:
-    deploy:
+    check-branch:
+        name: branch - ${{ github.ref_name }}
         runs-on: self-hosted
         steps:
             - uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event.inputs.branch }}
+
+    deploy:
+        name: Deploy
+        runs-on: self-hosted
+        steps:
+            - uses: actions/checkout@v4
 
             - uses: actions/setup-node@v4
               with:
@@ -37,18 +40,37 @@ jobs:
             - run: npx nx report
             - run: npx nx run-many -t build --no-cloud
 
-            - uses: aws-actions/configure-aws-credentials@v4
-              if: ${{ github.event.inputs.environment == 'prod' }}
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
               with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+                  role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: 'us-east-1'
 
-            - uses: aws-actions/configure-aws-credentials@v4
+            - name: assume prod executor role credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              if: ${{ github.event.inputs.environment == 'prod' }}
+              with:
+                  aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+                  aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+                  role-to-assume: arn:aws:iam::222634384294:role/GithubAction-AssumeProdAccountRole
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  role-duration-seconds: 3000
+                  role-skip-session-tagging: true
+                  aws-region: 'us-east-1'
+
+            - name: assume dev executor role credentials
+              uses: aws-actions/configure-aws-credentials@v4
               if: ${{ github.event.inputs.environment == 'dev' }}
               with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+                  aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+                  aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+                  role-to-assume: arn:aws:iam::390403894969:role/GithubAction-AssumeDevAccountRole
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  role-duration-seconds: 3000
+                  role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
             - uses: actions/setup-node@v4
@@ -60,10 +82,22 @@ jobs:
             - run: npm ci --legacy-peer-deps
               working-directory: ./infra
 
-            - if: ${{ github.event.inputs.environment == 'prod' }}
+            - name: synth prod
+              if: ${{ github.event.inputs.environment == 'prod' }}
               working-directory: ./infra
-              run: ./deploy-prod.sh
+              run: DEPLOYENV=prod HOSTEDZONENAME=aws.opentix.co npx cdk synth --account 222634384294 --region us-east-1 --require-approval never
 
-            - if: ${{ github.event.inputs.environment == 'dev' }}
+            - name: synth dev
+              if: ${{ github.event.inputs.environment == 'dev' }}
               working-directory: ./infra
-              run: ./deploy-dev.sh
+              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
+
+            - name: deploy prod
+              if: ${{ github.event.inputs.environment == 'prod' }}
+              working-directory: ./infra
+              run: DEPLOYENV=prod HOSTEDZONENAME=aws.opentix.co npx cdk deploy --all --account 222634384294 --region us-east-1 --require-approval never
+
+            - name: deploy dev
+              if: ${{ github.event.inputs.environment == 'dev' }}
+              working-directory: ./infra
+              run: DEPLOYENV=prod HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never

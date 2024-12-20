@@ -18,7 +18,7 @@ jobs:
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                  role-to-assume: ${{secrets.AWS_PRIMARY_ACCT_ROLE}}
+                  role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: 'us-east-1'
             - name: Sts GetCallerIdentity
@@ -30,7 +30,7 @@ jobs:
                   aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
                   aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
-                  role-to-assume: ${{secrets.AWS_PROD_ACCT_ROLE}}
+                  role-to-assume: arn:aws:iam::222634384294:role/GithubAction-AssumeProdAccountRole
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   role-duration-seconds: 3000
                   role-skip-session-tagging: true
