@@ -49,6 +49,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Comment on PR
+              id: create_comment
               run: |
                   COMMENT_ID=$(gh api \
                     repos/${{ github.repository }}/issues/${{ steps.find-pr.outputs.PR_NUMBER }}/comments \
