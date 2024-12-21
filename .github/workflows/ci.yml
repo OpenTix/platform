@@ -35,7 +35,6 @@ jobs:
 
             - name: assume dev executor role credentials
               uses: aws-actions/configure-aws-credentials@v4
-              if: ${{ github.event.inputs.environment == 'dev' }}
               with:
                   aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -50,11 +49,9 @@ jobs:
               working-directory: ./infra
 
             - name: synth dev
-              if: ${{ github.event.inputs.environment == 'dev' }}
               working-directory: ./infra
               run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
 
             - name: deploy dev
-              if: ${{ github.event.inputs.environment == 'dev' }}
               working-directory: ./infra
               run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
