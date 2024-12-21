@@ -31,8 +31,6 @@ jobs:
             - name: Find associated PR
               id: find-pr
               run: |
-                  # Find the first open PR that uses this branch as head
-                  # If there isn't one, PR_NUMBER will be empty.
                   PR_NUMBER=$(gh pr list \
                     --head ${{ github.repositoryOwner }}:${{ env.BRANCH_NAME }} \
                     --json number \
@@ -40,13 +38,11 @@ jobs:
                     --jq '.[0].number'
                   )
 
-                  # Fail the job if no PR is found
                   if [ -z "$PR_NUMBER" ]; then
                     echo "No PR found for branch: ${{ env.BRANCH_NAME }}"
                     exit 1
                   fi
 
-                  # Store the PR_NUMBER as an output variable
                   echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
