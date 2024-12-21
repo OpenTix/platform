@@ -73,7 +73,7 @@ jobs:
                   gh api \
                     repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
                     -X PATCH \
-                    -F body="✅ \`${{ github.event.inputs.target }}`\ Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`!"
+                    -F body="✅ \`${{ github.event.inputs.target }}\` Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`!"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -83,6 +83,6 @@ jobs:
                   gh api \
                     repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
                     -X PATCH \
-                    -F body="❌ \`${{ github.event.inputs.target }}`\ Deployment failed for branch \`${{ env.BRANCH_NAME }}\`."
+                    -F body="❌ \`${{ github.event.inputs.target }}\` Deployment failed for branch \`${{ env.BRANCH_NAME }}\`."
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
