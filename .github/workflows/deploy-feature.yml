@@ -33,7 +33,7 @@ jobs:
               id: find-pr
               run: |
                   PR_NUMBER=$(gh pr list \
-                    --head ${{ github.repositoryOwner }}:${{ env.BRANCH_NAME }} \
+                    --head ${{ env.BRANCH_NAME }} \
                     --json number \
                     --limit 1 \
                     --jq '.[0].number'
