@@ -1,0 +1,33 @@
+name: Deploy Feature Environment
+
+on:
+    workflow_dispatch:
+        inputs:
+            target:
+                description: 'App to deploy'
+                required: true
+                type: choice
+                options:
+                    - userweb
+                    - vendorweb
+                default: 'userweb'
+
+env:
+    AWS_DEFAULT_REGION: us-east-1
+    BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: self-hosted
+        steps:
+            - name: Extract branch name
+              shell: bash
+              run: echo ${{env.BRANCH_NAME}}
+
+            - uses: actions/checkout@v4
+              with:
+                  branch: ${{env.BRANCH_NAME}}

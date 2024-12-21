@@ -17,8 +17,6 @@
 			"{workspaceRoot}/go.work"
 		]
 	},
-	"nxCloudId": "6761beb00c1d113dbe94902e",
-	"neverConnectToCloud": true,
 	"plugins": [
 		{
 			"plugin": "@nx/webpack/plugin",
