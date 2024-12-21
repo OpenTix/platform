@@ -24,10 +24,68 @@ jobs:
     deploy:
         runs-on: self-hosted
         steps:
-            - name: Extract branch name
-              shell: bash
-              run: echo ${{env.BRANCH_NAME}}
-
             - uses: actions/checkout@v4
               with:
-                  branch: ${{env.BRANCH_NAME}}
+                  ref: ${{env.BRANCH_NAME}}
+
+            - name: Find associated PR
+              id: find-pr
+              run: |
+                  # Find the first open PR that uses this branch as head
+                  # If there isn't one, PR_NUMBER will be empty.
+                  PR_NUMBER=$(gh pr list \
+                    --head ${{ github.repositoryOwner }}:${{ env.BRANCH_NAME }} \
+                    --json number \
+                    --limit 1 \
+                    --jq '.[0].number'
+                  )
+
+                  # Fail the job if no PR is found
+                  if [ -z "$PR_NUMBER" ]; then
+                    echo "No PR found for branch: ${{ env.BRANCH_NAME }}"
+                    exit 1
+                  fi
+
+                  # Store the PR_NUMBER as an output variable
+                  echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Comment on PR
+              run: |
+                  COMMENT_ID=$(gh pr comment ${{ steps.find-pr.outputs.PR_NUMBER }} \
+                    --body "Deployment to feature environment for app \`${{ github.event.inputs.target }}`\ has started for branch \`${{ env.BRANCH_NAME }}\`."\
+                    --json id --jq .id)
+
+                  echo "COMMENT_ID=$COMMENT_ID" >> $GITHUB_OUTPUT
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - run: npm ci --legacy-peer-deps
+
+            - run: npx nx run ${{ github.event.inputs.target }}:build --no-cloud
+
+            - name: Update comment with SUCCESS
+              if: success()
+              run: |
+                  gh api \
+                    repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
+                    -X PATCH \
+                    -F body="✅ \`${{ github.event.inputs.target }}`\ Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`!"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update comment with FAILURE
+              if: failure()
+              run: |
+                  gh api \
+                    repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
+                    -X PATCH \
+                    -F body="❌ \`${{ github.event.inputs.target }}`\ Deployment failed for branch \`${{ env.BRANCH_NAME }}\`."
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
