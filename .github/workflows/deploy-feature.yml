@@ -54,7 +54,7 @@ jobs:
                   COMMENT_ID=$(gh api \
                     repos/${{ github.repository }}/issues/${{ steps.find-pr.outputs.PR_NUMBER }}/comments \
                     -X POST \
-                    -f body="Deployment to feature environment for app \`${{ github.event.inputs.target }}\` has started for branch \`${{ env.BRANCH_NAME }}\`." \
+                    -f body="Deployment to feature environment for app \`${{ github.event.inputs.target }}\` has [started](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for branch \`${{ env.BRANCH_NAME }}\`." \
                     --jq '.id'
                   )
 
@@ -98,7 +98,7 @@ jobs:
                   TARGETAPP="${{ github.event.inputs.target }}"
 
                   TARGETAPP_CAPITALIZED=$(echo "${TARGETAPP^}")
-                  TARGETSTACK="pr${PRNUMBER]-${TARGETAPP_CAPITALIZED}Stack"
+                  TARGETSTACK="pr${PRNUMBER}-${TARGETAPP_CAPITALIZED}Stack"
 
                   npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
                   npx cdk deploy "$TARGETSTACK" --account 390403894969 --region us-east-1 --require-approval never
@@ -116,7 +116,7 @@ jobs:
                   gh api \
                     repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
                     -X PATCH \
-                    -F body="✅ \`${{ github.event.inputs.target }}\` Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`! [View deployment](${URL})."
+                    -F body="✅ \`${{ github.event.inputs.target }}\` deployment [succeeded](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for branch \`${{ env.BRANCH_NAME }}\`! [View deployment](${URL})."
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -126,6 +126,6 @@ jobs:
                   gh api \
                     repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
                     -X PATCH \
-                    -F body="❌ \`${{ github.event.inputs.target }}\` Deployment failed for branch \`${{ env.BRANCH_NAME }}\`."
+                    -F body="❌ \`${{ github.event.inputs.target }}\` deployment [failed](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for branch \`${{ env.BRANCH_NAME }}\`."
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
