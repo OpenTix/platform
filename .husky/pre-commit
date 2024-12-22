@@ -4,6 +4,6 @@ current_branch=$(git symbolic-ref --short HEAD)
 if [ "$current_branch" = "main" ]; then
   echo "⚠️  You are on the main branch."
   echo "Committed and pushed changes will be autodeployed"
-  echo "Ctrl+C to abort"
-  read -p "Press Enter to continue..."
+  echo "Make sure you want to do this"
+  echo "Rollback Command (keep changes): git reset --soft HEAD~1"
 fi
