@@ -18,7 +18,7 @@ export class UserwebStack extends cdk.Stack {
 				? `client.pr${process.env.PRNUMBER}.${hostedZoneName}`
 				: `client.${hostedZoneName}`;
 
-		new DeploymentService(this, 'UserwebDeployment', {
+		new DeploymentService(this, id + 'UserwebDeployment', {
 			buildPath,
 			domainName,
 			hostedZoneName,
