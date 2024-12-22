@@ -71,13 +71,52 @@ jobs:
 
             - run: npx nx run ${{ github.event.inputs.target }}:build --no-cloud
 
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: 'us-east-1'
+
+            - name: assume dev executor role credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+                  aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+                  role-to-assume: arn:aws:iam::390403894969:role/GithubAction-AssumeDevAccountRole
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  role-duration-seconds: 3600
+                  role-skip-session-tagging: true
+                  aws-region: 'us-east-1'
+
+            - name: Deploy
+              run: |
+                  PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
+                  DEPLOYENV="feature"
+                  HOSTEDZONENAME="dev.opentix.co"
+                  TARGETAPP="${{ github.event.inputs.target }}"
+
+                  TARGETAPP_CAPITALIZED=$(echo "${TARGETAPP^}")
+                  TARGETSTACK="pr${PRNUMBER]-${TARGETAPP_CAPITALIZED}Stack"
+
+                  npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
+                  npx cdk deploy "$TARGETSTACK" --account 390403894969 --region us-east-1 --require-approval never
+
             - name: Update comment with SUCCESS
               if: success()
               run: |
+                  PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
+                  if [ "${{ github.event.inputs.target }}" == "userweb" ]; then
+                    URL="https://client.pr${PRNUMBER}.dev.opentix.co"
+                  else
+                    URL="https://vendor.pr${PRNUMBER}.dev.opentix.co"
+                  fi
+
                   gh api \
                     repos/${{ github.repository }}/issues/comments/${{ steps.create_comment.outputs.COMMENT_ID }} \
                     -X PATCH \
-                    -F body="✅ \`${{ github.event.inputs.target }}\` Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`!"
+                    -F body="✅ \`${{ github.event.inputs.target }}\` Deployment succeeded for branch \`${{ env.BRANCH_NAME }}\`! [View deployment](${URL})."
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,0 +1,58 @@
+name: Delete Feature Resources
+
+on:
+    pull_request:
+        types: [closed]
+
+env:
+    AWS_DEFAULT_REGION: us-east-1
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+jobs:
+    delete:
+        runs-on: self-hosted
+        steps:
+            - name: configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: 'us-east-1'
+
+            - name: assume dev executor role credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+                  aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+                  role-to-assume: arn:aws:iam::390403894969:role/GithubAction-AssumeDevAccountRole
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  role-duration-seconds: 3600
+                  role-skip-session-tagging: true
+                  aws-region: 'us-east-1'
+
+            - name: Remove Stacks for Closed PR
+              run: |
+                  PR_NUMBER=${{ github.event.pull_request.number }}
+
+                  echo "Looking for stacks prefixed with pr${PR_NUMBER}-"
+
+                  PR_STACKS=$(aws cloudformation list-stacks \
+                    --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE ROLLBACK_COMPLETE \
+                    --query "StackSummaries[?starts_with(StackName, 'pr${PR_NUMBER}-')].StackName" \
+                    --output text
+                  )
+
+                  if [ -z "$PR_STACKS" ]; then
+                    echo "No matching stacks found for PR #${PR_NUMBER}."
+                    exit 0
+                  fi
+
+                  for STACK in $PR_STACKS; do
+                    echo "Deleting $STACK..."
+                    aws cloudformation delete-stack --stack-name "$STACK"
+                  done

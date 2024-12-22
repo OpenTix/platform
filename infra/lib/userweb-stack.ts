@@ -12,7 +12,11 @@ export class UserwebStack extends cdk.Stack {
 	) {
 		super(scope, id, props);
 
-		const domainName = 'client.' + hostedZoneName;
+		//const domainName = 'client.' + hostedZoneName;
+		const domainName =
+			process.env.DEPLOYENV === 'feature'
+				? `client.pr${process.env.PRNUMBER}.${hostedZoneName}`
+				: `client.${hostedZoneName}`;
 
 		new DeploymentService(this, 'UserwebDeployment', {
 			buildPath,
