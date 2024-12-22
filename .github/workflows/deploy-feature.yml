@@ -90,7 +90,11 @@ jobs:
                   role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
+            - run: npm ci --legacy-peer-deps
+              working-directory: ./infra
+
             - name: Deploy
+              working-directory: ./infra
               run: |
                   PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
                   DEPLOYENV="feature"
