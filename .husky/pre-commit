@@ -1,0 +1,9 @@
+
+current_branch=$(git symbolic-ref --short HEAD)
+
+if [ "$current_branch" = "main" ]; then
+  echo "⚠️  You are on the main branch."
+  echo "Committed and pushed changes will be autodeployed"
+  echo "Ctrl+C to abort"
+  read -p "Press Enter to continue..."
+fi

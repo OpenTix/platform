@@ -11,9 +11,20 @@ if (!process.env.HOSTEDZONENAME) {
 	throw new Error('HOSTEDZONENAME environment variable is required');
 }
 
+if (process.env.DEPLOYENV === 'feature') {
+	if (!process.env.PRNUMBER) {
+		throw new Error('PRNUMBER environment variable is required');
+	}
+}
+
+const PREFIX =
+	process.env.DEPLOYENV === 'feature'
+		? `pr${process.env.PRNUMBER}`
+		: process.env.DEPLOYENV;
+
 new UserwebStack(
 	app,
-	process.env.DEPLOYENV + '-UserwebStack',
+	PREFIX + '-UserwebStack',
 	'../dist/apps/userweb',
 	process.env.HOSTEDZONENAME,
 	{
@@ -35,7 +46,7 @@ new UserwebStack(
 
 new VendorwebStack(
 	app,
-	process.env.DEPLOYENV + '-VendorwebStack',
+	PREFIX + '-VendorwebStack',
 	'../dist/apps/vendorweb',
 	process.env.HOSTEDZONENAME,
 	{

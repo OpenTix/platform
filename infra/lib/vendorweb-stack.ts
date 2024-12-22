@@ -12,9 +12,12 @@ export class VendorwebStack extends cdk.Stack {
 	) {
 		super(scope, id, props);
 
-		const domainName = 'vendor.' + hostedZoneName;
+		const domainName =
+			process.env.DEPLOYENV === 'feature'
+				? `vendor.pr${process.env.PRNUMBER}.${hostedZoneName}`
+				: `vendor.${hostedZoneName}`;
 
-		new DeploymentService(this, 'VendorwebDeployment', {
+		new DeploymentService(this, id + 'VendorwebDeployment', {
 			buildPath,
 			domainName,
 			hostedZoneName,
