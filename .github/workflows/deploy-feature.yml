@@ -75,7 +75,7 @@ jobs:
 
             - run: npm ci --legacy-peer-deps
 
-            - run: npx nx run-many build --no-cloud
+            - run: npx nx run-many -t build --no-cloud
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
