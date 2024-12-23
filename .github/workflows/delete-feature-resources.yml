@@ -56,3 +56,23 @@ jobs:
                     echo "Deleting $STACK..."
                     aws cloudformation delete-stack --stack-name "$STACK"
                   done
+
+                  echo PR_STACKS=$PR_STACKS >> $GITHUB_ENV
+
+            - name: Comment on PR with deleted stack list
+              run: |
+                  if [ -z "$PR_STACKS" ]; then
+                    echo "No stacks were deleted."
+                    exit 0
+                  fi
+
+                  COMMENT_ID=$(gh api \
+                    repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+                    -X POST \
+                    -f body="Deleted feature environments: ${{ env.PR_STACKS }}" \
+                    --jq '.id'
+                  )
+
+                  echo "COMMENT_ID=$COMMENT_ID" >> $GITHUB_ENV
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
