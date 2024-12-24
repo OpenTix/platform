@@ -24,7 +24,7 @@ jobs:
             - run: npm ci --legacy-peer-deps
             - run: npx nx reset
             - run: npx nx report
-            - run: npx nx run-many -t lint test build --no-cloud
+            - run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t lint test build --no-cloud
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4

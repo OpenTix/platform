@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import NxWelcome from './nx-welcome';
-import { Ui } from '@platform/ui';
+import { VersionTag } from '@platform/ui';
 
 const StyledApp = styled.div`
 	// Your style here
@@ -10,7 +10,7 @@ export function App() {
 	return (
 		<StyledApp>
 			<NxWelcome title="userweb" />
-			<Ui />
+			<VersionTag />
 		</StyledApp>
 	);
 }
