@@ -75,7 +75,10 @@ jobs:
 
             - run: npm ci --legacy-peer-deps
 
-            - run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t build --no-cloud
+            - name: Build
+              run: |
+                  PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
+                  NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
