@@ -2,5 +2,9 @@
   "hosted-zone:account=222634384294:domainName=aws.opentix.co:region=us-east-1": {
     "Id": "/hostedzone/Z02212461V9I3ADSU22O",
     "Name": "aws.opentix.co."
+  },
+  "hosted-zone:account=390403894969:domainName=dev.opentix.co:region=us-east-1": {
+    "Id": "/hostedzone/Z10193051RIEADNGV1IJS",
+    "Name": "dev.opentix.co."
   }
 }
