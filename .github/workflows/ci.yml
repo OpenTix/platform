@@ -1,58 +1,106 @@
 name: CI
 
 on:
-    push:
-        branches:
-            - main
+		push:
+				branches:
+						- main
 
 permissions:
-    id-token: write
-    actions: read
-    contents: read
+		id-token: write
+		actions: read
+		contents: read
 
 jobs:
-    main:
-        runs-on: self-hosted
-        steps:
-            - uses: actions/checkout@v4
+		prettier:
+				runs-on: self-hosted
+				steps:
+						- uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: 'npm'
+						- uses: actions/setup-node@v4
+							with:
+									node-version: 20
+									cache: 'npm'
 
-            - run: npm ci --legacy-peer-deps
-            - run: npx nx reset
-            - run: npx nx report
-            - name: Build
-              run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t lint test build --no-cloud
+						- run: npm ci --legacy-peer-deps
+						- run: npx prettier --check .
 
-            - name: configure aws credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
-                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: 'us-east-1'
+		lint:
+				runs-on: self-hosted
+				steps:
+						- uses: actions/checkout@v4
 
-            - name: assume dev executor role credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-                  aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-                  aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
-                  role-to-assume: arn:aws:iam::390403894969:role/GithubAction-AssumeDevAccountRole
-                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  role-duration-seconds: 3600
-                  role-skip-session-tagging: true
-                  aws-region: 'us-east-1'
+						- uses: actions/setup-node@v4
+							with:
+									node-version: 20
+									cache: 'npm'
 
-            - run: npm ci --legacy-peer-deps
-              working-directory: ./infra
+						- run: npm ci --legacy-peer-deps
+						- run: npx nx reset
+						- run: npx nx report
+						- run: npx nx run-many -t lint
 
-            - name: synth dev
-              working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
 
-            - name: deploy dev
-              working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
+		test:
+				runs-on: self-hosted
+				steps:
+						- uses: actions/checkout@v4
+
+						- uses: actions/setup-node@v4
+							with:
+									node-version: 20
+									cache: 'npm'
+
+						- run: npm ci --legacy-peer-deps
+						- run: npx nx reset
+						- run: npx nx report
+						- run: npx nx run-many -t test
+
+
+		build-and-deploy:
+				runs-on: self-hosted
+				needs: [test]
+				steps:
+						- uses: actions/checkout@v4
+
+						- uses: actions/setup-node@v4
+							with:
+									node-version: 20
+									cache: 'npm'
+
+						- run: npm ci --legacy-peer-deps
+						- run: npx nx reset
+						- run: npx nx report
+						- name: Build
+							run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t build --no-cloud
+
+						- name: configure aws credentials
+							uses: aws-actions/configure-aws-credentials@v4
+							with:
+									role-to-assume: arn:aws:iam::741448950585:role/GithubAction-AssumeRoleWithAction
+									role-session-name: GitHub_to_AWS_via_FederatedOIDC
+									aws-region: 'us-east-1'
+
+						- name: assume dev executor role credentials
+							uses: aws-actions/configure-aws-credentials@v4
+							with:
+									aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+									aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+									aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+									role-to-assume: arn:aws:iam::390403894969:role/GithubAction-AssumeDevAccountRole
+									role-session-name: GitHub_to_AWS_via_FederatedOIDC
+									role-duration-seconds: 3600
+									role-skip-session-tagging: true
+									aws-region: 'us-east-1'
+
+						- run: npm ci --legacy-peer-deps
+							working-directory: ./infra
+
+						- name: synth dev
+							working-directory: ./infra
+							run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
+
+						- name: deploy dev
+							working-directory: ./infra
+							run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
+
+

@@ -1,4 +1,5 @@
 const nx = require('@nx/eslint-plugin');
+const eslintConfigPrettier = require('eslint-config-prettier');
 
 module.exports = [
 	...nx.configs['flat/base'],
@@ -30,4 +31,5 @@ module.exports = [
 		// Override or add rules here
 		rules: {},
 	},
+	eslintConfigPrettier,
 ];
