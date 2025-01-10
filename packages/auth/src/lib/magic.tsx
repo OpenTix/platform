@@ -13,8 +13,12 @@ const customNodeOptions = {
 	chainId: 420,
 };
 
+// MagicProvider component to provide the Magic instance to the rest of the app
+// MUST BE RENDERED AFTER ROUTERPROVIDER
 export const MagicProvider = ({ children }: { children: React.ReactNode }) => {
 	const navigate = useNavigate();
+
+	// Create the Magic instance using useMemo to ensure it's only created once
 	const magic = useMemo(() => {
 		return new Magic(publicKey, {
 			network: customNodeOptions,
@@ -32,6 +36,7 @@ export const MagicProvider = ({ children }: { children: React.ReactNode }) => {
 	);
 };
 
+// Custom hook to use the Magic instance
 export const useMagic = () => {
 	const context = useContext(MagicContext);
 	if (!context) {

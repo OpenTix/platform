@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Navbar matches snapshot 1`] = `
+<DocumentFragment>
+  <nav
+    class="Navbar__NavWrapper-sc-1q1j1oe-0 gXIJt"
+  >
+    <div
+      class="Navbar__NavContent-sc-1q1j1oe-1 pJrnF"
+    >
+      Snapshot Test
+    </div>
+  </nav>
+</DocumentFragment>
+`;

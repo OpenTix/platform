@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NavButton matches snapshot 1`] = `
+<DocumentFragment>
+  <button
+    class="NavButton__StyledButton-sc-1y55c1v-0 dAvjaB"
+  >
+    Snapshot Test
+  </button>
+</DocumentFragment>
+`;

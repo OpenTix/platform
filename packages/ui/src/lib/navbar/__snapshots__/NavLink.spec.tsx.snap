@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NavLink matches snapshot 1`] = `
+<DocumentFragment>
+  <a
+    class="NavLink__StyledNavLink-sc-8cdbnb-0 ekhGfy"
+    href="/"
+  >
+    Snapshot Test
+  </a>
+</DocumentFragment>
+`;

@@ -1,5 +1,5 @@
 import { Navbar, NavLink, NavButton } from '@platform/ui';
-import { useMagic } from '../auth/magic';
+import { useMagic } from '@platform/auth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Dropdown } from '@platform/ui';
@@ -12,17 +12,19 @@ export default function Navigation() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
+	// Handle user login through Magic UI component
 	const handleLogin = async () => {
 		setIsLoading(true);
 		try {
 			await magic.wallet.connectWithUI();
-			navigate(0);
+			navigate(0); // reload on login
 		} catch (error) {
 			console.error(error);
 		}
-		setIsLoading(false);
+		setIsLoading(false); // in case user clicks out of modal
 	};
 
+	// Check if user is logged in on page load
 	useEffect(() => {
 		setIsLoading(true);
 		magic.user

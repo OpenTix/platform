@@ -1,5 +1,5 @@
 {
-	"name": "@platform/helpers",
+	"name": "@platform/auth",
 	"version": "0.0.1",
 	"dependencies": {},
 	"private": true

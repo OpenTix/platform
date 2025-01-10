@@ -18,7 +18,7 @@
 		"lint-vendorweb": "npx nx run vendorweb:lint",
 		"test-vendorweb": "npx nx run vendorweb:test",
 		"build-vendorweb": "npx nx run vendorweb:build",
-		"serv-vendorweb": "npx nx run vendorweb:serve",
+		"serve-vendorweb": "npx nx run vendorweb:serve",
 		"lint-backend": "npx nx run backend:lint",
 		"test-backend": "npx nx run backend:test",
 		"build-backend": "npx nx run backend:build",
