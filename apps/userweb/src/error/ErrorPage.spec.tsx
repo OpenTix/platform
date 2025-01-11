@@ -10,15 +10,13 @@ jest.mock('react-router-dom', () => ({
 }));
 
 describe('ErrorPage', () => {
-	it('renders the error page with the error message', () => {
-		const mockError = {
+	it('renders with an unexpected error message', () => {
+		(useRouteError as jest.Mock).mockReturnValue({
 			statusText: 'Not Found',
 			message: 'Page not found',
-		};
-		(useRouteError as jest.Mock).mockReturnValue(mockError);
+		});
 
 		const { getByText } = render(<ErrorPage />);
-
 		expect(getByText('Yikes!')).toBeInTheDocument();
 		expect(
 			getByText('Sorry, an unexpected error has occurred.')
@@ -26,16 +24,40 @@ describe('ErrorPage', () => {
 		expect(getByText('Not Found')).toBeInTheDocument();
 	});
 
-	it('renders the error page with a generic error message if no statusText', () => {
-		const mockError = { message: 'Something went wrong' };
-		(useRouteError as jest.Mock).mockReturnValue(mockError);
+	it('renders a generic error if no statusText', () => {
+		(useRouteError as jest.Mock).mockReturnValue({
+			message: 'Something went wrong',
+		});
 
 		const { getByText } = render(<ErrorPage />);
-
 		expect(getByText('Yikes!')).toBeInTheDocument();
 		expect(
 			getByText('Sorry, an unexpected error has occurred.')
 		).toBeInTheDocument();
 		expect(getByText('Something went wrong')).toBeInTheDocument();
+	});
+
+	it('renders a fatal error message when fatal is true', () => {
+		(useRouteError as jest.Mock).mockReturnValue({
+			message: 'Fatal error',
+		});
+
+		const { getByText } = render(<ErrorPage fatal />);
+		expect(getByText('Yikes!')).toBeInTheDocument();
+		expect(
+			getByText('Sorry, a fatal error has occurred.')
+		).toBeInTheDocument();
+		expect(getByText('Fatal error')).toBeInTheDocument();
+	});
+
+	it('renders a 404 message when is404 is true', () => {
+		(useRouteError as jest.Mock).mockReturnValue(null);
+
+		const { getByText } = render(<ErrorPage is404 />);
+		expect(getByText('Yikes!')).toBeInTheDocument();
+		expect(
+			getByText('Sorry, an unexpected error has occurred.')
+		).toBeInTheDocument();
+		expect(getByText('Page not found')).toBeInTheDocument();
 	});
 });

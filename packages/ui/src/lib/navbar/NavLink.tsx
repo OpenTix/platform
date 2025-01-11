@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import React, { FC, AnchorHTMLAttributes } from 'react';
+import React, { FC } from 'react';
 import { Link, LinkProps } from 'react-router-dom';
 
 const StyledNavLink = styled(Link)`
