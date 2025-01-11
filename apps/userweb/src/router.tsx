@@ -10,15 +10,21 @@ const router = createBrowserRouter([
 	{
 		path: '/',
 		element: <App />,
-		ErrorBoundary: ErrorPage,
+		errorElement: <ErrorPage fatal={true} />, // this won't render the navbar
 		children: [
 			{
 				path: '/',
 				element: <Home />,
+				ErrorBoundary: ErrorPage,
 			},
 			{
 				path: '/profile',
 				element: <Profile />,
+				ErrorBoundary: ErrorPage,
+			},
+			{
+				path: '*',
+				element: <ErrorPage is404={true} />,
 			},
 		],
 	},
