@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useRouteError } from 'react-router-dom';
-import ErrorPage from './ErrorPage';
+import { ErrorPage } from './ErrorPage';
 
 // Mock the useRouteError hook
 jest.mock('react-router-dom', () => ({

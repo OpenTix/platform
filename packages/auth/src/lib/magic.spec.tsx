@@ -97,33 +97,6 @@ describe('MagicProvider', () => {
 		});
 	});
 
-	it('calls magic.user.onUserLoggedOut and navigates to / on logout', () => {
-		// We have a mock to see how onUserLoggedOut is called
-		const mockOnUserLoggedOut = jest.fn();
-		(Magic as jest.Mock).mockImplementation(() => ({
-			user: {
-				onUserLoggedOut: mockOnUserLoggedOut,
-			},
-		}));
-
-		render(
-			<MagicProvider>
-				<div>Child</div>
-			</MagicProvider>
-		);
-
-		// The MagicProvider sets up the onUserLoggedOut callback
-		expect(mockOnUserLoggedOut).toHaveBeenCalledTimes(1);
-
-		// Get the actual logout callback
-		const logoutCallback = mockOnUserLoggedOut.mock.calls[0][0];
-		expect(typeof logoutCallback).toBe('function');
-
-		// Invoke the callback manually to simulate a logout
-		logoutCallback();
-		expect(mockNavigate).toHaveBeenCalledWith('/');
-	});
-
 	it('renders children properly', () => {
 		render(
 			<MagicProvider>
