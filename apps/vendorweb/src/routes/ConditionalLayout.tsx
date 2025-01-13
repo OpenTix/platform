@@ -3,7 +3,7 @@ import { useMagic } from '@platform/auth';
 import AppLayout from './AppLayout';
 import { Outlet } from 'react-router-dom';
 
-const ConditionalLayout = () => {
+function ConditionalLayout() {
 	const magic = useMagic();
 	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -24,6 +24,6 @@ const ConditionalLayout = () => {
 	}
 
 	return isLoggedIn ? <AppLayout /> : <Outlet />;
-};
+}
 
 export default ConditionalLayout;

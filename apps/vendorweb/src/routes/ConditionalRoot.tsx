@@ -3,7 +3,7 @@ import { useMagic } from '@platform/auth';
 import Login from '../views/Login';
 import Home from '../views/Home';
 
-const ConditionalRoot = () => {
+function ConditionalRoot() {
 	const magic = useMagic();
 	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -24,6 +24,6 @@ const ConditionalRoot = () => {
 	}
 
 	return isLoggedIn ? <Home /> : <Login />;
-};
+}
 
 export default ConditionalRoot;

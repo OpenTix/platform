@@ -49,7 +49,7 @@ const Button = styled.button`
 	cursor: pointer;
 `;
 
-const Login: React.FC = () => {
+function Login() {
 	const magic = useMagic();
 	const [email, setEmail] = useState('');
 	const navigate = useNavigate();
@@ -81,6 +81,6 @@ const Login: React.FC = () => {
 			</RightSection>
 		</Container>
 	);
-};
+}
 
 export default Login;

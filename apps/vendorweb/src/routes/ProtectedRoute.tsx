@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMagic } from '@platform/auth';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	const magic = useMagic();
 	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -27,6 +27,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 	}
 
 	return children;
-};
+}
 
 export default ProtectedRoute;
