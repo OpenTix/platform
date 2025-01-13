@@ -57,6 +57,7 @@ export default function Navigation() {
 								width="2rem"
 								height="2rem"
 								viewBox="0 0 16 16"
+								aria-label="account-icon"
 							>
 								<path
 									fill="currentColor"

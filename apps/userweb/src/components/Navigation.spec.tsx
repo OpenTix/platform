@@ -23,10 +23,6 @@ jest.mock('react-spinners', () => ({
 	ClipLoader: () => <div data-testid="loader" />,
 }));
 
-jest.mock('@mui/icons-material', () => ({
-	AccountCircle: () => <div data-testid="account-circle" />,
-}));
-
 jest.mock('react-router-dom', () => ({
 	...jest.requireActual('react-router-dom'), // Keep the actual implementation of other exports
 	useNavigate: jest.fn(),
@@ -110,7 +106,7 @@ describe('Navigation component', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId('account-circle')).toBeInTheDocument();
+			expect(screen.getByLabelText('account-icon')).toBeInTheDocument();
 		});
 	});
 
@@ -138,10 +134,10 @@ describe('Navigation component', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId('account-circle')).toBeInTheDocument();
+			expect(screen.getByLabelText('account-icon')).toBeInTheDocument();
 		});
 
-		fireEvent.click(screen.getByTestId('account-circle'));
+		fireEvent.click(screen.getByLabelText('account-icon'));
 
 		const logoutItem = await screen.findByText('Logout');
 		fireEvent.click(logoutItem);
@@ -159,10 +155,10 @@ describe('Navigation component', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByTestId('account-circle')).toBeInTheDocument();
+			expect(screen.getByLabelText('account-icon')).toBeInTheDocument();
 		});
 
-		fireEvent.click(screen.getByTestId('account-circle'));
+		fireEvent.click(screen.getByLabelText('account-icon'));
 
 		const profileItem = await screen.findByText('Profile');
 		fireEvent.click(profileItem);
