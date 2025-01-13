@@ -15,7 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"@platform/helpers": ["packages/helpers/src/index.ts"],
+			"@platform/auth": ["packages/auth/src/index.ts"],
 			"@platform/ui": ["packages/ui/src/index.ts"]
 		}
 	},

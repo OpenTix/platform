@@ -18,21 +18,25 @@
 		"lint-vendorweb": "npx nx run vendorweb:lint",
 		"test-vendorweb": "npx nx run vendorweb:test",
 		"build-vendorweb": "npx nx run vendorweb:build",
-		"serv-vendorweb": "npx nx run vendorweb:serve",
+		"serve-vendorweb": "npx nx run vendorweb:serve",
 		"lint-backend": "npx nx run backend:lint",
 		"test-backend": "npx nx run backend:test",
 		"build-backend": "npx nx run backend:build",
-		"prepare": "husky || true"
+		"prepare": "husky || true",
+		"prettier": "prettier --check .",
+		"prettier-fix": "prettier --write ."
 	},
 	"private": true,
 	"dependencies": {
 		"aws-cdk-lib": "^2.173.2",
 		"axios": "^1.6.0",
 		"constructs": "^10.4.2",
+		"magic-sdk": "^28.21.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-native": "0.74.1",
-		"react-router-dom": "6.11.2",
+		"react-router-dom": "^6.28.1",
+		"react-spinners": "^0.15.0",
 		"styled-components": "5.3.6"
 	},
 	"devDependencies": {

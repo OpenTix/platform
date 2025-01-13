@@ -38,7 +38,7 @@ jobs:
             - run: npx nx reset
             - run: npx nx report
             - name: Build
-              run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t build --no-cloud
+              run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t build --configuration ${{ github.event.inputs.environment }} --no-cloud
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4

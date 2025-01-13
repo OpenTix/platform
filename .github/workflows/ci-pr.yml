@@ -53,9 +53,7 @@ jobs:
 
             - run: npm ci --legacy-peer-deps
             - uses: nrwl/nx-set-shas@v4
-            - run: npx nx reset
-            - run: npx nx report
-            - run: npx nx affected -t test
+            - run: npx jest
     build:
         runs-on: self-hosted
         steps:
