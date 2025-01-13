@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { Magic } from 'magic-sdk';
-import { useNavigate } from 'react-router-dom';
 
 const MagicContext = createContext<Magic | null>(null);
 
@@ -14,10 +13,7 @@ const customNodeOptions = {
 };
 
 // MagicProvider component to provide the Magic instance to the rest of the app
-// MUST BE RENDERED AFTER ROUTERPROVIDER
 export const MagicProvider = ({ children }: { children: React.ReactNode }) => {
-	const navigate = useNavigate();
-
 	// Create the Magic instance using useMemo to ensure it's only created once
 	const magic = useMemo(() => {
 		return new Magic(publicKey, {
@@ -25,11 +21,6 @@ export const MagicProvider = ({ children }: { children: React.ReactNode }) => {
 			useStorageCache: true,
 		});
 	}, []);
-
-	// This is only called if useStorageCache is set to true
-	magic.user.onUserLoggedOut(() => {
-		navigate('/');
-	});
 
 	return (
 		<MagicContext.Provider value={magic}>{children}</MagicContext.Provider>

@@ -5,7 +5,7 @@ export interface ErrorPageProps {
 	fatal?: boolean;
 }
 
-export default function ErrorPage(ErrorPageProps: ErrorPageProps) {
+export function ErrorPage(ErrorPageProps: ErrorPageProps) {
 	const error: any = useRouteError();
 	console.error(error);
 
