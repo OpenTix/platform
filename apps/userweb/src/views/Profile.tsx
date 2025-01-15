@@ -2,7 +2,6 @@ import { MagicUserMetadata } from 'magic-sdk';
 import { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { useMagic } from '@platform/auth';
-import { VersionTag } from '@platform/ui';
 
 export default function Profile() {
 	const magic = useMagic();
@@ -34,22 +33,19 @@ export default function Profile() {
 
 	return (
 		<>
-			<div>
-				<h1>Profile</h1>
-				<p>Welcome to your profile page!</p>
-				<BeatLoader color="#000" loading={isLoading} />
+			<h1>Profile</h1>
+			<p>Welcome to your profile page!</p>
+			<BeatLoader color="#000" loading={isLoading} />
 
-				{!isLoading &&
-					(userMetadata ? (
-						<>
-							<p>Authenticated user: {userMetadata.email}</p>
-							<p>Wallet Address: {userMetadata.publicAddress}</p>
-						</>
-					) : (
-						<p>No User is Logged in.</p>
-					))}
-			</div>
-			<VersionTag />
+			{!isLoading &&
+				(userMetadata ? (
+					<>
+						<p>Authenticated user: {userMetadata.email}</p>
+						<p>Wallet Address: {userMetadata.publicAddress}</p>
+					</>
+				) : (
+					<p>No User is Logged in.</p>
+				))}
 		</>
 	);
 }

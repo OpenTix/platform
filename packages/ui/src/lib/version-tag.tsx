@@ -1,9 +1,7 @@
 import styled from 'styled-components';
 
 const Tag = styled.div`
-	position: relative;
 	bottom: 0;
-	right: 0;
 	padding: 0.5rem;
 	font-size: 0.75rem;
 	color: #6c757d;
