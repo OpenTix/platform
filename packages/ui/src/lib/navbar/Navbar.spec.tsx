@@ -1,7 +1,9 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Navbar } from './Navbar'; // Adjust path as needed
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { Navbar } from './Navbar';
+
+// Adjust path as needed
 
 describe('Navbar', () => {
 	it('renders without crashing', () => {

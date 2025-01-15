@@ -1,7 +1,9 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { NavButton } from './NavButton'; // Adjust path as needed
+import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import { NavButton } from './NavButton';
+
+// Adjust path as needed
 
 describe('NavButton', () => {
 	it('renders with default (filled) variant', () => {
@@ -22,7 +24,7 @@ describe('NavButton', () => {
 		const handleClick = jest.fn();
 		render(<NavButton onClick={handleClick}>Click Handler Test</NavButton>);
 		const button = screen.getByRole('button', {
-			name: /click handler test/i,
+			name: /click handler test/i
 		});
 		fireEvent.click(button);
 		expect(handleClick).toHaveBeenCalledTimes(1);

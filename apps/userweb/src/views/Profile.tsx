@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useMagic } from '@platform/auth';
 import { MagicUserMetadata } from 'magic-sdk';
+import { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
+import { useMagic } from '@platform/auth';
 import { VersionTag } from '@platform/ui';
 
 export default function Profile() {

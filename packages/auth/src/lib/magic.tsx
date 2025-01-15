@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useMemo } from 'react';
 import { Magic } from 'magic-sdk';
+import React, { createContext, useContext, useMemo } from 'react';
 
 const MagicContext = createContext<Magic | null>(null);
 
@@ -9,7 +9,7 @@ if (!publicKey) {
 }
 const customNodeOptions = {
 	rpcUrl: 'https://goerli.optimism.io',
-	chainId: 420,
+	chainId: 420
 };
 
 // MagicProvider component to provide the Magic instance to the rest of the app
@@ -18,7 +18,7 @@ export const MagicProvider = ({ children }: { children: React.ReactNode }) => {
 	const magic = useMemo(() => {
 		return new Magic(publicKey, {
 			network: customNodeOptions,
-			useStorageCache: true,
+			useStorageCache: true
 		});
 	}, []);
 

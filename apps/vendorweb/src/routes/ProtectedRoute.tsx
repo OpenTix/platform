@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useMagic } from '@platform/auth';
 import { Navigate } from 'react-router-dom';
+import { useMagic } from '@platform/auth';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	const magic = useMagic();

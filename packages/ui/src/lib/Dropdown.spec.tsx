@@ -1,6 +1,6 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { Dropdown, DropdownProps } from './Dropdown';
 
 // Helper component to render the Dropdown with required props
@@ -9,8 +9,8 @@ const renderDropdown = (props: Partial<DropdownProps> = {}) => {
 		trigger: <button data-testid="trigger-button">Open Dropdown</button>,
 		items: [
 			{ label: 'Item 1', onClick: jest.fn() },
-			{ label: 'Item 2', onClick: jest.fn(), disabled: true },
-		],
+			{ label: 'Item 2', onClick: jest.fn(), disabled: true }
+		]
 	};
 
 	return render(<Dropdown {...defaultProps} {...props} />);
@@ -57,7 +57,7 @@ describe('Dropdown', () => {
 		const onClickMock = jest.fn();
 		const items = [
 			{ label: 'Item 1', onClick: onClickMock },
-			{ label: 'Item 2', disabled: true },
+			{ label: 'Item 2', disabled: true }
 		];
 
 		renderDropdown({ items });
@@ -75,7 +75,7 @@ describe('Dropdown', () => {
 		const onClickMock = jest.fn();
 		const items = [
 			{ label: 'Item 1', onClick: onClickMock },
-			{ label: 'Item 2', onClick: onClickMock, disabled: true },
+			{ label: 'Item 2', onClick: onClickMock, disabled: true }
 		];
 
 		renderDropdown({ items });

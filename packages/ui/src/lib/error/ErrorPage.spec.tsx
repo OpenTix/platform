@@ -1,19 +1,19 @@
-import React from 'react';
-import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
+import React from 'react';
 import { useRouteError } from 'react-router-dom';
 import { ErrorPage } from './ErrorPage';
 
 // Mock the useRouteError hook
 jest.mock('react-router-dom', () => ({
-	useRouteError: jest.fn(),
+	useRouteError: jest.fn()
 }));
 
 describe('ErrorPage', () => {
 	it('renders with an unexpected error message', () => {
 		(useRouteError as jest.Mock).mockReturnValue({
 			statusText: 'Not Found',
-			message: 'Page not found',
+			message: 'Page not found'
 		});
 
 		const { getByText } = render(<ErrorPage />);
@@ -26,7 +26,7 @@ describe('ErrorPage', () => {
 
 	it('renders a generic error if no statusText', () => {
 		(useRouteError as jest.Mock).mockReturnValue({
-			message: 'Something went wrong',
+			message: 'Something went wrong'
 		});
 
 		const { getByText } = render(<ErrorPage />);
@@ -39,7 +39,7 @@ describe('ErrorPage', () => {
 
 	it('renders a fatal error message when fatal is true', () => {
 		(useRouteError as jest.Mock).mockReturnValue({
-			message: 'Fatal error',
+			message: 'Fatal error'
 		});
 
 		const { getByText } = render(<ErrorPage fatal />);

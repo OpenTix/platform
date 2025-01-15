@@ -1,6 +1,6 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import VersionTag from './version-tag';
-import '@testing-library/jest-dom';
 
 describe('VersionTag', () => {
 	it('should render successfully', () => {

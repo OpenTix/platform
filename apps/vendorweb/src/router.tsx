@@ -1,11 +1,10 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import { ErrorPage } from '@platform/ui';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { useMagic } from '@platform/auth';
+import { ErrorPage } from '@platform/ui';
 import ConditionalLayout from './routes/ConditionalLayout';
 import ConditionalRoot from './routes/ConditionalRoot';
-import ExamplePage1 from './views/ExamplePage1';
 import ProtectedRoute from './routes/ProtectedRoute';
+import ExamplePage1 from './views/ExamplePage1';
 
 // This renders <App /> with child components rendered in the <Outlet /> component in the App component
 const router = createBrowserRouter([
@@ -17,7 +16,7 @@ const router = createBrowserRouter([
 			{
 				index: true,
 				element: <ConditionalRoot />,
-				ErrorBoundary: ErrorPage,
+				ErrorBoundary: ErrorPage
 			},
 			{
 				path: 'example1',
@@ -26,14 +25,14 @@ const router = createBrowserRouter([
 						<ExamplePage1 />
 					</ProtectedRoute>
 				),
-				ErrorBoundary: ErrorPage,
+				ErrorBoundary: ErrorPage
 			},
 			{
 				path: '*',
-				element: <ErrorPage is404={true} />,
-			},
-		],
-	},
+				element: <ErrorPage is404={true} />
+			}
+		]
+	}
 ]);
 
 const AppRouter = () => {

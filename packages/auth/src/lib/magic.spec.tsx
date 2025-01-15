@@ -1,11 +1,10 @@
 // magic.spec.tsx
-
-import React from 'react';
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import { Magic } from 'magic-sdk';
-import '@testing-library/jest-dom';
-import { MagicProvider, useMagic } from './magic';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MagicProvider, useMagic } from './magic';
 
 /**
  * 1) Mock environment variable
@@ -18,9 +17,9 @@ jest.mock('magic-sdk', () => {
 	return {
 		Magic: jest.fn(() => ({
 			user: {
-				onUserLoggedOut: jest.fn(),
-			},
-		})),
+				onUserLoggedOut: jest.fn()
+			}
+		}))
 	};
 });
 
@@ -28,7 +27,7 @@ jest.mock('react-router-dom', () => {
 	const actual = jest.requireActual('react-router-dom');
 	return {
 		...actual,
-		useNavigate: jest.fn(),
+		useNavigate: jest.fn()
 	};
 });
 
@@ -91,9 +90,9 @@ describe('MagicProvider', () => {
 		expect(Magic).toHaveBeenCalledWith('TEST_PUBLIC_KEY', {
 			network: {
 				rpcUrl: 'https://goerli.optimism.io',
-				chainId: 420,
+				chainId: 420
 			},
-			useStorageCache: true,
+			useStorageCache: true
 		});
 	});
 

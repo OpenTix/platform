@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useMagic } from '@platform/auth';
 import AppLayout from './AppLayout';
-import { Outlet } from 'react-router-dom';
 
 function ConditionalLayout() {
 	const magic = useMagic();

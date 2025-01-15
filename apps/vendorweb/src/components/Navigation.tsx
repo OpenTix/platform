@@ -1,5 +1,5 @@
-import { Navbar, NavLink, NavButton } from '@platform/ui';
 import { useMagic } from '@platform/auth';
+import { NavButton, NavLink, Navbar } from '@platform/ui';
 
 export default function Navigation() {
 	const magic = useMagic();

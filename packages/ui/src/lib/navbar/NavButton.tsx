@@ -1,5 +1,5 @@
-import styled, { css } from 'styled-components';
 import React, { ButtonHTMLAttributes, FC } from 'react';
+import styled, { css } from 'styled-components';
 
 const StyledButton = styled.button<NavButtonProps>`
 	margin: 0 8px 0 0;
@@ -18,14 +18,14 @@ const StyledButton = styled.button<NavButtonProps>`
 					&:hover {
 						background-color: #0056b3;
 					}
-			  `
+				`
 			: css`
 					background-color: transparent;
 					color: #007bff;
 					&:hover {
 						background-color: rgba(0, 123, 255, 0.1);
 					}
-			  `}
+				`}
 `;
 
 export interface NavButtonProps

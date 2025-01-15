@@ -1,32 +1,31 @@
+import '@testing-library/jest-dom';
 import {
+	act,
+	fireEvent,
 	render,
 	screen,
-	fireEvent,
-	waitFor,
-	act,
+	waitFor
 } from '@testing-library/react';
-import '@testing-library/jest-dom';
-
-import Navigation from './Navigation';
-import { useMagic } from '@platform/auth';
 import { useNavigate } from 'react-router-dom';
+import { useMagic } from '@platform/auth';
+import Navigation from './Navigation';
 
 jest.mock('@platform/auth', () => ({
-	useMagic: jest.fn(),
+	useMagic: jest.fn()
 }));
 
 jest.mock('react-router-dom', () => ({
-	useNavigate: jest.fn(),
+	useNavigate: jest.fn()
 }));
 
 jest.mock('react-spinners', () => ({
-	ClipLoader: () => <div data-testid="loader" />,
+	ClipLoader: () => <div data-testid="loader" />
 }));
 
 jest.mock('react-router-dom', () => ({
 	...jest.requireActual('react-router-dom'), // Keep the actual implementation of other exports
 	useNavigate: jest.fn(),
-	Link: jest.fn(({ children, ...props }) => <a {...props}>{children}</a>),
+	Link: jest.fn(({ children, ...props }) => <a {...props}>{children}</a>)
 }));
 
 jest.useFakeTimers();
@@ -46,12 +45,12 @@ describe('Navigation component', () => {
 	beforeEach(() => {
 		mockMagic = {
 			wallet: {
-				connectWithUI: jest.fn(),
+				connectWithUI: jest.fn()
 			},
 			user: {
 				isLoggedIn: jest.fn(),
-				logout: jest.fn(),
-			},
+				logout: jest.fn()
+			}
 		};
 		mockNavigate = jest.fn();
 

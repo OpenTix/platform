@@ -20,7 +20,7 @@ export class VendorwebStack extends cdk.Stack {
 		new DeploymentService(this, id + 'VendorwebDeployment', {
 			buildPath,
 			domainName,
-			hostedZoneName,
+			hostedZoneName
 		});
 	}
 }

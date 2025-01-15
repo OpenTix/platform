@@ -21,7 +21,7 @@ export class UserwebStack extends cdk.Stack {
 		new DeploymentService(this, id + 'UserwebDeployment', {
 			buildPath,
 			domainName,
-			hostedZoneName,
+			hostedZoneName
 		});
 	}
 }

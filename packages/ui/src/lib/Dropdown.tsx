@@ -1,11 +1,10 @@
 import React, {
-	useState,
-	useRef,
-	useEffect,
-	ReactNode,
 	MouseEventHandler,
+	ReactNode,
+	useEffect,
+	useRef,
+	useState
 } from 'react';
-
 import styled, { css } from 'styled-components';
 
 const DropdownContainer = styled.div`
@@ -34,20 +33,20 @@ const DropdownMenu = styled.div<{ dropUp?: boolean; alignRight?: boolean }>`
 			? css`
 					bottom: 100%;
 					margin-bottom: 4px;
-			  `
+				`
 			: css`
 					top: 100%;
-			  `}
+				`}
 
 	/* Horizontal alignment */
 	${({ alignRight }) =>
 		alignRight
 			? css`
 					right: 0;
-			  `
+				`
 			: css`
 					left: 0;
-			  `}
+				`}
 `;
 
 const DropdownItem = styled.button`
@@ -92,7 +91,7 @@ export interface DropdownProps {
 export const Dropdown: React.FC<DropdownProps> = ({
 	trigger,
 	items = [],
-	className,
+	className
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [dropUp, setDropUp] = useState(false);

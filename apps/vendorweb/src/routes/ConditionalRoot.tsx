@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useMagic } from '@platform/auth';
-import Login from '../views/Login';
 import Home from '../views/Home';
+import Login from '../views/Login';
 
 function ConditionalRoot() {
 	const magic = useMagic();

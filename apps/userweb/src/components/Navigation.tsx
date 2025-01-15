@@ -1,9 +1,9 @@
-import { Navbar, NavLink, NavButton } from '@platform/ui';
-import { useMagic } from '@platform/auth';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Dropdown } from '@platform/ui';
+import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
+import { useMagic } from '@platform/auth';
+import { NavButton, NavLink, Navbar } from '@platform/ui';
+import { Dropdown } from '@platform/ui';
 
 export default function Navigation() {
 	const magic = useMagic();
@@ -68,15 +68,15 @@ export default function Navigation() {
 						items={[
 							{
 								label: 'Profile',
-								onClick: () => navigate('/profile'),
+								onClick: () => navigate('/profile')
 							},
 							{
 								label: 'Logout',
 								onClick: async () => {
 									await magic.user.logout();
 									setIsLoggedIn(false);
-								},
-							},
+								}
+							}
 						]}
 					/>
 				) : (

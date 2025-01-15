@@ -1,15 +1,15 @@
-import { Construct } from 'constructs';
 import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
-import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
-import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
-import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import {
 	Certificate,
-	CertificateValidation,
+	CertificateValidation
 } from 'aws-cdk-lib/aws-certificatemanager';
+import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
+import { Construct } from 'constructs';
 
 interface DeploymentServiceProps {
 	buildPath: string;
@@ -26,68 +26,68 @@ export class DeploymentService extends Construct {
 		const hostingBucket = new Bucket(this, 'FrontendBucket', {
 			autoDeleteObjects: true,
 			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-			removalPolicy: RemovalPolicy.DESTROY,
+			removalPolicy: RemovalPolicy.DESTROY
 		});
 
 		const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {
-			domainName: hostedZoneName,
+			domainName: hostedZoneName
 		});
 
 		const certificate = new Certificate(this, 'SiteCertificate', {
 			domainName: domainName,
-			validation: CertificateValidation.fromDns(hostedZone),
+			validation: CertificateValidation.fromDns(hostedZone)
 		});
 
 		const distribution = new Distribution(this, 'CloudfrontDistribution', {
 			defaultBehavior: {
 				origin: S3BucketOrigin.withOriginAccessControl(hostingBucket),
-				viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+				viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
 			},
 			defaultRootObject: 'index.html',
 			errorResponses: [
 				{
 					httpStatus: 404,
 					responseHttpStatus: 200,
-					responsePagePath: '/index.html',
+					responsePagePath: '/index.html'
 				},
 				{
 					httpStatus: 403,
 					responseHttpStatus: 200,
-					responsePagePath: '/index.html',
-				},
+					responsePagePath: '/index.html'
+				}
 			],
 			domainNames: [domainName],
-			certificate: certificate,
+			certificate: certificate
 		});
 
 		new ARecord(this, 'AliasRecord', {
 			zone: hostedZone,
 			recordName: domainName,
-			target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+			target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
 		});
 
 		new BucketDeployment(this, 'BucketDeployment', {
 			sources: [Source.asset(buildPath)],
 			destinationBucket: hostingBucket,
 			distribution,
-			distributionPaths: ['/*'],
+			distributionPaths: ['/*']
 		});
 
 		new CfnOutput(this, 'CloudFrontURL', {
 			value: distribution.domainName,
 			description: 'The distribution URL',
-			exportName: id + 'CloudfrontURL',
+			exportName: id + 'CloudfrontURL'
 		});
 
 		new CfnOutput(this, 'BucketName', {
 			value: hostingBucket.bucketName,
 			description: 'The name of the S3 bucket',
-			exportName: id + 'BucketName',
+			exportName: id + 'BucketName'
 		});
 		new CfnOutput(this, 'WebsiteURL', {
 			value: `https://${domainName}`,
 			description: 'The custom domain URL',
-			exportName: id + 'WebsiteURL',
+			exportName: id + 'WebsiteURL'
 		});
 	}
 }

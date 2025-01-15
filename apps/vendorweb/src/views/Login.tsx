@@ -1,7 +1,7 @@
-import { useMagic } from '@platform/auth';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useMagic } from '@platform/auth';
 
 const Container = styled.div`
 	display: flex;

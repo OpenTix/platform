@@ -1,10 +1,9 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-import Home from './views/Home';
-import { ErrorPage } from '@platform/ui';
-import Profile from './views/Profile';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { useMagic } from '@platform/auth';
+import { ErrorPage } from '@platform/ui';
 import App from './App';
+import Home from './views/Home';
+import Profile from './views/Profile';
 
 // This renders <App /> with child components rendered in the <Outlet /> component in the App component
 const router = createBrowserRouter([
@@ -16,19 +15,19 @@ const router = createBrowserRouter([
 			{
 				path: '/',
 				element: <Home />,
-				ErrorBoundary: ErrorPage,
+				ErrorBoundary: ErrorPage
 			},
 			{
 				path: '/profile',
 				element: <Profile />,
-				ErrorBoundary: ErrorPage,
+				ErrorBoundary: ErrorPage
 			},
 			{
 				path: '*',
-				element: <ErrorPage is404={true} />,
-			},
-		],
-	},
+				element: <ErrorPage is404={true} />
+			}
+		]
+	}
 ]);
 
 const AppRouter = () => {
