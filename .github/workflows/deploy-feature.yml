@@ -10,6 +10,7 @@ on:
                 options:
                     - userweb
                     - vendorweb
+                    - backend
                 default: 'userweb'
 
 env:
@@ -121,9 +122,14 @@ jobs:
               run: |
                   PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
                   if [ "${{ github.event.inputs.target }}" == "userweb" ]; then
-                    URL="https://client.pr${PRNUMBER}.dev.opentix.co"
+                      URL="https://client.pr${PRNUMBER}.dev.opentix.co"
+                  elif [ "${{ github.event.inputs.target }}" == "vendorweb" ]; then
+                      URL="https://vendor.pr${PRNUMBER}.dev.opentix.co"
+                  elif [ "${{ github.event.inputs.target }}" == "backend" ]; then
+                      URL="https://api.pr${PRNUMBER}.dev.opentix.co"
                   else
-                    URL="https://vendor.pr${PRNUMBER}.dev.opentix.co"
+                      echo "Invalid target: ${{ github.event.inputs.target }}"
+                      exit 1
                   fi
 
                   gh api \

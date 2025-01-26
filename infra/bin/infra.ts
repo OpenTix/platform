@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import { BackendStack } from '../lib/backend-stack';
 import { UserwebStack } from '../lib/userweb-stack';
 import { VendorwebStack } from '../lib/vendorweb-stack';
 
@@ -48,6 +49,19 @@ new VendorwebStack(
 	app,
 	PREFIX + '-VendorwebStack',
 	'../dist/apps/vendorweb',
+	process.env.HOSTEDZONENAME,
+	{
+		env: {
+			account: process.env.CDK_DEFAULT_ACCOUNT,
+			region: process.env.CDK_DEFAULT_REGION
+		}
+	}
+);
+
+new BackendStack(
+	app,
+	PREFIX + '-BackendStack',
+	'../apps/backend',
 	process.env.HOSTEDZONENAME,
 	{
 		env: {
