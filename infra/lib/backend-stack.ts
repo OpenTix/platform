@@ -5,7 +5,8 @@ import {
 	Certificate,
 	CertificateValidation
 } from 'aws-cdk-lib/aws-certificatemanager';
-import { HostedZone } from 'aws-cdk-lib/aws-route53';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
 export class BackendStack extends cdk.Stack {
@@ -50,6 +51,12 @@ export class BackendStack extends cdk.Stack {
 		api.root
 			.addResource('ping')
 			.addMethod('GET', new LambdaIntegration(pingLambda));
+
+		new ARecord(this, 'AliasRecord', {
+			zone: hostedZone,
+			recordName: domainName,
+			target: RecordTarget.fromAlias(new ApiGatewayTarget(api))
+		});
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
