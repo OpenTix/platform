@@ -11,7 +11,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 
 	response := events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       "Pong",
+		Body:       "Lambda Executed",
 		Headers: map[string]string{
 			"Content-Type": "text/plain",
 		},

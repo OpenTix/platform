@@ -40,7 +40,7 @@ export class BackendStack extends cdk.Stack {
 			entry: `${basePath}/ping.go`
 		});
 
-		const api = new RestApi(this, 'ApiGateway', {
+		const api = new RestApi(this, id + 'Api', {
 			domainName: {
 				domainName: domainName,
 				certificate: certificate
@@ -49,7 +49,7 @@ export class BackendStack extends cdk.Stack {
 
 		// /ping
 		api.root
-			.addResource('ping')
+			.addResource('test')
 			.addMethod('GET', new LambdaIntegration(pingLambda));
 
 		new ARecord(this, 'AliasRecord', {
