@@ -50,7 +50,8 @@ func init() {
 
 	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
+		panic(err)
 	}
 
 	// Create Secrets Manager client
@@ -64,7 +65,8 @@ func init() {
 	if err != nil {
 		// For a list of exceptions thrown, see
 		// https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-		log.Fatal(err.Error())
+		log.Println(err.Error())
+		panic(err)
 	}
 
 	// Decrypts secret using the associated KMS key.
@@ -72,7 +74,8 @@ func init() {
 
 	c, err := client.New(magicSecretKey, magic.NewDefaultClient())
 	if err != nil {
-		log.Fatalf("Failed to create Magic client: %v", err)
+		log.Printf("Failed to create Magic client: %v\n", err)
+		panic(err)
 	}
 	magicClient = c
 
@@ -111,12 +114,12 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 
 	tk, err := token.NewToken(didToken)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
 		return DenyResponse, err
 	}
 
 	if err := tk.Validate(magicClient.ClientInfo.ClientId); err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
 		return DenyResponse, err
 	}
 
