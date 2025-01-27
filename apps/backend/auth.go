@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -39,7 +40,6 @@ import (
 // 	"usageIdentifierKey": "{api-key}"
 //   }
 
-var magicSecretKey string
 var magicClient *client.API
 
 
@@ -81,6 +81,10 @@ var magicClient *client.API
 
 // }
 
+type SecretsManagerResponse struct {
+    SecretKey string `json:"secret_key"`
+}
+
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
 	secretArn := "arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer"
 	region := "us-east-1"
@@ -107,9 +111,12 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	}
 
 	// Decrypts secret using the associated KMS key.
-	magicSecretKey = *result.SecretString
+	var stringFromSecretsManager string = *result.SecretString
 
-	log.Println(magicSecretKey)
+	var jsonSecretKey SecretsManagerResponse
+	json.Unmarshal([]byte(stringFromSecretsManager), &jsonSecretKey)
+
+	var magicSecretKey string = jsonSecretKey.SecretKey
 
 	c, err := client.New(magicSecretKey, magic.NewDefaultClient())
 	if err != nil {
