@@ -10,6 +10,7 @@ export default function Profile() {
 
 	const generateIdToken = async () => {
 		const token = await magic.user.getIdToken();
+		console.log(token);
 		alert(token);
 	};
 

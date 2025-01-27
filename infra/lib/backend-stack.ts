@@ -17,6 +17,7 @@ import {
 } from 'aws-cdk-lib/aws-iam';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export class BackendStack extends cdk.Stack {
@@ -49,13 +50,13 @@ export class BackendStack extends cdk.Stack {
 		const authRole = new Role(this, 'AuthRole', {
 			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
 		});
-		authRole.addToPolicy(
-			new PolicyStatement({
-				actions: ['secretsmanager:GetSecretValue', 'kms:Decrypt'],
-				effect: Effect.ALLOW,
-				resources: ['*']
-			})
+
+		const MagicPrivateSecret = Secret.fromSecretNameV2(
+			this,
+			'MagicPrivateSecret',
+			'MagicAuth/SecretKey'
 		);
+		MagicPrivateSecret.grantRead(authRole);
 
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
