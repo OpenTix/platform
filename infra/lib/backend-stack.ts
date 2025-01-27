@@ -9,6 +9,12 @@ import {
 	Certificate,
 	CertificateValidation
 } from 'aws-cdk-lib/aws-certificatemanager';
+import {
+	Effect,
+	PolicyStatement,
+	Role,
+	ServicePrincipal
+} from 'aws-cdk-lib/aws-iam';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
@@ -40,9 +46,21 @@ export class BackendStack extends cdk.Stack {
 			validation: CertificateValidation.fromDns(hostedZone)
 		});
 
+		const authRole = new Role(this, 'AuthRole', {
+			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+		});
+		authRole.addToPolicy(
+			new PolicyStatement({
+				actions: ['secretsmanager:GetSecretValue', 'kms:Decrypt'],
+				effect: Effect.ALLOW,
+				resources: ['*']
+			})
+		);
+
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
-				entry: `${basePath}/auth.go`
+				entry: `${basePath}/auth.go`,
+				role: authRole
 			})
 		});
 
