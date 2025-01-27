@@ -50,7 +50,7 @@ func init() {
 
 	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	// Create Secrets Manager client
@@ -111,10 +111,12 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 
 	tk, err := token.NewToken(didToken)
 	if err != nil {
+		log.Fatal(err.Error())
 		return DenyResponse, err
 	}
 
 	if err := tk.Validate(magicClient.ClientInfo.ClientId); err != nil {
+		log.Fatal(err.Error())
 		return DenyResponse, err
 	}
 
