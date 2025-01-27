@@ -82,7 +82,7 @@ var magicClient *client.API
 // }
 
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
-	secretName := "MagicAuth/SecretKey"
+	secretArn := "arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer"
 	region := "us-east-1"
 
 	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
@@ -95,7 +95,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	svc := secretsmanager.NewFromConfig(config)
 
 	input := &secretsmanager.GetSecretValueInput{
-		SecretId:     aws.String(secretName),
+		SecretId:     aws.String(secretArn),
 	}
 
 	result, err := svc.GetSecretValue(context.TODO(), input)

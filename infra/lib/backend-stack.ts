@@ -51,10 +51,10 @@ export class BackendStack extends cdk.Stack {
 			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
 		});
 
-		const MagicPrivateSecret = Secret.fromSecretNameV2(
+		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
 			this,
 			'MagicPrivateSecret',
-			'MagicAuth/SecretKey'
+			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer'
 		);
 		MagicPrivateSecret.grantRead(authRole);
 
