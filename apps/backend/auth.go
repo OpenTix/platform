@@ -109,6 +109,8 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	// Decrypts secret using the associated KMS key.
 	magicSecretKey = *result.SecretString
 
+	log.Println(magicSecretKey)
+
 	c, err := client.New(magicSecretKey, magic.NewDefaultClient())
 	if err != nil {
 		log.Printf("Failed to create Magic client: %v\n", err)
