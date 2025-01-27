@@ -51,6 +51,18 @@ export class BackendStack extends cdk.Stack {
 			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
 		});
 
+		authRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: ['*']
+			})
+		);
+
 		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
 			this,
 			'MagicPrivateSecret',
