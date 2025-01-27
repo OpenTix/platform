@@ -48,7 +48,7 @@ export class BackendStack extends cdk.Stack {
 		});
 
 		const authRole = new Role(this, 'AuthRole', {
-			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
 		});
 
 		const MagicPrivateSecret = Secret.fromSecretNameV2(
