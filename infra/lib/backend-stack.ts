@@ -1,6 +1,10 @@
 import { GoFunction } from '@aws-cdk/aws-lambda-go-alpha';
 import * as cdk from 'aws-cdk-lib';
-import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import {
+	LambdaIntegration,
+	RestApi,
+	TokenAuthorizer
+} from 'aws-cdk-lib/aws-apigateway';
 import {
 	Certificate,
 	CertificateValidation
@@ -36,6 +40,12 @@ export class BackendStack extends cdk.Stack {
 			validation: CertificateValidation.fromDns(hostedZone)
 		});
 
+		const auth = new TokenAuthorizer(this, 'Auth', {
+			handler: new GoFunction(this, 'AuthLambda', {
+				entry: `${basePath}/auth.go`
+			})
+		});
+
 		const pingLambda = new GoFunction(this, 'PingLambda', {
 			entry: `${basePath}/ping.go`
 		});
@@ -50,7 +60,9 @@ export class BackendStack extends cdk.Stack {
 		// /ping
 		api.root
 			.addResource('test')
-			.addMethod('GET', new LambdaIntegration(pingLambda));
+			.addMethod('GET', new LambdaIntegration(pingLambda), {
+				authorizer: auth
+			});
 
 		new ARecord(this, 'AliasRecord', {
 			zone: hostedZone,
