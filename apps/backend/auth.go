@@ -115,8 +115,12 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	log.Printf("Secrets Manager Response: %v\n", stringFromSecretsManager)
 
 	var jsonSecretKey SecretsManagerResponse
-	json.Unmarshal([]byte(stringFromSecretsManager), &jsonSecretKey)
+	err = json.Unmarshal([]byte(stringFromSecretsManager), &jsonSecretKey)
 	log.Printf("json unmarshall: %v\n", jsonSecretKey.SecretKey)
+	if err != nil {
+		log.Println(err.Error())
+		panic(err)
+	}
 
 	var magicSecretKey string = jsonSecretKey.SecretKey
 	log.Printf("Magic Secret Key: %v\n", magicSecretKey)
