@@ -7,6 +7,7 @@ require (
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.2 // indirect
 	github.com/aws/aws-lambda-go v1.47.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.34.0 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
@@ -25,6 +26,7 @@ require (
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.3.1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/magiclabs/magic-admin-go v1.0.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect

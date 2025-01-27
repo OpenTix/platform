@@ -2,12 +2,19 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-    "github.com/magiclabs/magic-admin-go/token"
-)
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+
+	"github.com/magiclabs/magic-admin-go"
+	"github.com/magiclabs/magic-admin-go/client"
+	"github.com/magiclabs/magic-admin-go/token"
+)
 
 // INPUT:
 //{
@@ -32,6 +39,44 @@ import (
 // 	"usageIdentifierKey": "{api-key}"
 //   }
 
+var magicSecretKey string
+var magicClient *client.API
+
+
+
+func init() {
+	secretName := "MagicAuth/SecretKey"
+	region := "us-east-1"
+
+	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create Secrets Manager client
+	svc := secretsmanager.NewFromConfig(config)
+
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+	}
+
+	result, err := svc.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		// For a list of exceptions thrown, see
+		// https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+		log.Fatal(err.Error())
+	}
+
+	// Decrypts secret using the associated KMS key.
+	magicSecretKey = *result.SecretString
+
+	c, err := client.New(magicSecretKey, magic.NewDefaultClient())
+	if err != nil {
+		log.Fatalf("Failed to create Magic client: %v", err)
+	}
+	magicClient = c
+
+}
 
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
 	var AllowResponse = events.APIGatewayCustomAuthorizerResponse{
@@ -42,7 +87,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 				{
 					Action:   []string{"execute-api:Invoke"},
 					Effect:   "Allow",
-					Resource: event.MethodArn,
+					Resource: []string{event.MethodArn},
 				},
 			},
 		},
@@ -56,7 +101,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 				{
 					Action:   []string{"execute-api:Invoke"},
 					Effect:   "Deny",
-					Resource: event.MethodArn,
+					Resource: []string{event.MethodArn},
 				},
 			},
 		},
@@ -69,7 +114,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 		return DenyResponse, err
 	}
 
-	if err := tk.Validate(); err != nil {
+	if err := tk.Validate(magicClient.ClientInfo.ClientId); err != nil {
 		return DenyResponse, err
 	}
 
