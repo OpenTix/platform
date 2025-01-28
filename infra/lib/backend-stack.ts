@@ -78,7 +78,8 @@ export class BackendStack extends cdk.Stack {
 		});
 
 		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
-			entry: `${basePath}/example.go`
+			entry: `${basePath}/example.go`,
+			role: authRole
 		});
 
 		const api = new RestApi(this, id + 'Api', {

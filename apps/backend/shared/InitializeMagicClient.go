@@ -45,7 +45,6 @@ func InitializeMagicClient() *client.API {
     }
 
     secretString := *result.SecretString
-    log.Printf("Secrets Manager Response: %v\n", secretString)
 
     // Unmarshal the secret JSON
     var jsonSecret SecretsManagerResponse
@@ -56,10 +55,9 @@ func InitializeMagicClient() *client.API {
     }
 
     magicSecretKey := jsonSecret.SecretKey
-    log.Printf("Magic Secret Key Retrieved: %v\n", magicSecretKey)
 
 	magicDefaultClient := magic.NewDefaultClient()
-	
+
     c, err := client.New(magicSecretKey, magicDefaultClient)
     if err != nil {
         log.Printf("Failed to create Magic client: %v\n", err)
