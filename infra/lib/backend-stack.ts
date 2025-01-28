@@ -77,8 +77,8 @@ export class BackendStack extends cdk.Stack {
 			})
 		});
 
-		const pingLambda = new GoFunction(this, 'PingLambda', {
-			entry: `${basePath}/ping.go`
+		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
+			entry: `${basePath}/example.go`
 		});
 
 		const api = new RestApi(this, id + 'Api', {
@@ -88,10 +88,9 @@ export class BackendStack extends cdk.Stack {
 			}
 		});
 
-		// /ping
 		api.root
-			.addResource('test')
-			.addMethod('GET', new LambdaIntegration(pingLambda), {
+			.addResource('example')
+			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
 				authorizer: auth
 			});
 
