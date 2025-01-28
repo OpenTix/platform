@@ -162,6 +162,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	}
 
 	didToken := event.AuthorizationToken
+    didToken = strings.TrimPrefix(didToken, "Bearer ")
 
     log.Printf("DIDToken: %v\n", didToken)
 
