@@ -116,7 +116,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 
 	var jsonSecretKey SecretsManagerResponse
 	err = json.Unmarshal([]byte(stringFromSecretsManager), &jsonSecretKey)
-	log.Printf("json unmarshall: %v\n", jsonSecretKey.SecretKey)
+	log.Printf("json unmarshall: %v\n", jsonSecretKey)
 	if err != nil {
 		log.Println(err.Error())
 		panic(err)
@@ -163,17 +163,20 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 
 	didToken := event.AuthorizationToken
 
+    log.Printf("DIDToken: %v\n", didToken)
+
 	tk, err := token.NewToken(didToken)
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
 		return DenyResponse, err
 	}
 
 	if err := tk.Validate(magicClient.ClientInfo.ClientId); err != nil {
-		log.Println(err.Error())
+		log.Printf("Error validating DIDToken: %v\n", err.Error())
 		return DenyResponse, err
 	}
 
+    log.Println("Token is valid")
 	return AllowResponse, nil
 }	
 
