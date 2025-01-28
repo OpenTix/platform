@@ -82,7 +82,7 @@ var magicClient *client.API
 // }
 
 type SecretsManagerResponse struct {
-    SecretKey string `json:"secret_key"`
+    SecretKey string `json:"magic_secret"`
 }
 
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
