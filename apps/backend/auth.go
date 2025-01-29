@@ -16,6 +16,7 @@ import (
 
 var magicClient *client.API
 
+// Runs on cold start, global variables are cached between invocations
 func init() {
 	magicClient = shared.InitializeMagicClient()
 }
