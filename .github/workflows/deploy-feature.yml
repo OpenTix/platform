@@ -12,6 +12,11 @@ on:
                     - vendorweb
                     - backend
                 default: 'userweb'
+            useprbackend:
+                description: 'Use deployed PR backend api. (userweb/vendorweb only)'
+                required: true
+                type: boolean
+                default: false
 
 env:
     AWS_DEFAULT_REGION: us-east-1
@@ -79,7 +84,13 @@ jobs:
             - name: Build
               run: |
                   PRNUMBER="${{ steps.find-pr.outputs.PR_NUMBER }}"
-                  NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
+                  USEPRBACKEND="${{ github.event.inputs.useprbackend }}"
+                  if [ "$USEPRBACKEND" = "true" ]; then
+                    echo "Using PR backend"
+                    NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER NX_PUBLIC_API_BASEURL=https://api.$PRNUMBER.dev.opentix.co npx nx run-many -t build --no-cloud
+                  else
+                    NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
+                  fi
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4

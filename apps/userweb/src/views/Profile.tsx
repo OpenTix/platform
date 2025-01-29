@@ -8,6 +8,11 @@ export default function Profile() {
 	const [userMetadata, setUserMetadata] = useState<MagicUserMetadata>();
 	const [isLoading, setIsLoading] = useState(false);
 
+	const generateIdToken = async () => {
+		const token = await magic.user.getIdToken();
+		console.log(token);
+	};
+
 	// Retrieve some basic user data
 	const getUserMetadata = async () => {
 		setIsLoading(true);
@@ -42,6 +47,9 @@ export default function Profile() {
 					<>
 						<p>Authenticated user: {userMetadata.email}</p>
 						<p>Wallet Address: {userMetadata.publicAddress}</p>
+						<button onClick={generateIdToken}>
+							Generate Token
+						</button>
 					</>
 				) : (
 					<p>No User is Logged in.</p>
