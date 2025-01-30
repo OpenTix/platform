@@ -7,9 +7,17 @@ const publicKey = process.env.NX_PUBLIC_MAGIC_PUBLISHABLE_KEY;
 if (!publicKey) {
 	throw new Error('Missing Magic public key');
 }
+const rpcUrl = process.env.NX_PUBLIC_RPC_URL;
+if (!rpcUrl) {
+	throw new Error('Missing RPC URL');
+}
+const chainId = process.env.NX_PUBLIC_CHAIN_ID;
+if (!chainId) {
+	throw new Error('Missing Chain ID');
+}
 const customNodeOptions = {
-	rpcUrl: 'https://goerli.optimism.io',
-	chainId: 420
+	rpcUrl: rpcUrl,
+	chainId: parseInt(chainId)
 };
 
 // MagicProvider component to provide the Magic instance to the rest of the app
