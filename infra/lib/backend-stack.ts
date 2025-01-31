@@ -9,6 +9,7 @@ import {
 	Certificate,
 	CertificateValidation
 } from 'aws-cdk-lib/aws-certificatemanager';
+import { SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
 	Effect,
 	PolicyStatement,
@@ -33,25 +34,37 @@ export class BackendStack extends cdk.Stack {
 		// Defining this way will bundle automatically during deployment.
 		// This requires docker.
 
-		const domainName =
-			process.env.DEPLOYENV === 'feature'
-				? `api.pr${process.env.PRNUMBER}.${hostedZoneName}`
-				: `api.${hostedZoneName}`;
+		const vpcId = 'vpc-0075f358f807d9b26';
+		const vpcDefaultSecurityGroupId = 'sg-074849cb87c224944';
+		const dbAddress = 'dev-db-1.c09akg0io005.us-east-1.rds.amazonaws.com';
+		const dbPort = '5432';
+		const dbSecretArn =
+			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-bba3fcd8-f30e-437e-a060-e76805adc70e-qY2qQN';
+		const magicSecretArn =
+			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer';
 
-		const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {
-			domainName: hostedZoneName
+		// DB
+		const vpc = Vpc.fromLookup(this, 'VPC', {
+			vpcId: vpcId
 		});
 
-		const certificate = new Certificate(this, 'APICertificate', {
-			domainName: domainName,
-			validation: CertificateValidation.fromDns(hostedZone)
-		});
+		const dbSecurityGroup = SecurityGroup.fromSecurityGroupId(
+			this,
+			'DBSecurityGroup',
+			vpcDefaultSecurityGroupId
+		);
+		const dbSecret = Secret.fromSecretCompleteArn(
+			this,
+			'DBSecret',
+			dbSecretArn
+		);
 
-		const authRole = new Role(this, 'AuthRole', {
+		// Authentication Lambda and role
+		const LambdaLogRole = new Role(this, 'LambdaLogRole', {
 			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
 		});
 
-		authRole.addToPolicy(
+		LambdaLogRole.addToPolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
 				actions: [
@@ -66,20 +79,49 @@ export class BackendStack extends cdk.Stack {
 		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
 			this,
 			'MagicPrivateSecret',
-			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer'
+			magicSecretArn
 		);
-		MagicPrivateSecret.grantRead(authRole);
+		MagicPrivateSecret.grantRead(LambdaLogRole);
 
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
 				entry: `${basePath}/auth.go`,
-				role: authRole
+				role: LambdaLogRole
 			})
 		});
 
+		// Lambdas
 		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
 			entry: `${basePath}/example.go`,
-			role: authRole
+			role: LambdaLogRole
+		});
+
+		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
+			entry: `${basePath}/dbtest.go`,
+			role: LambdaLogRole,
+			securityGroups: [dbSecurityGroup],
+			environment: {
+				DB_ADDRESS: dbAddress,
+				DB_PORT: dbPort,
+				DB_USER: dbSecret.secretValueFromJson('username').toString(),
+				DB_PASSWORD: dbSecret.secretValueFromJson('password').toString()
+			}
+		});
+		dbSecret.grantRead(DBTestLambda);
+
+		// API Gateway
+		const domainName =
+			process.env.DEPLOYENV === 'feature'
+				? `api.pr${process.env.PRNUMBER}.${hostedZoneName}`
+				: `api.${hostedZoneName}`;
+
+		const hostedZone = HostedZone.fromLookup(this, 'HostedZone', {
+			domainName: hostedZoneName
+		});
+
+		const certificate = new Certificate(this, 'APICertificate', {
+			domainName: domainName,
+			validation: CertificateValidation.fromDns(hostedZone)
 		});
 
 		const api = new RestApi(this, id + 'Api', {
@@ -89,17 +131,23 @@ export class BackendStack extends cdk.Stack {
 			}
 		});
 
-		api.root
-			.addResource('example')
-			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
-				authorizer: auth
-			});
-
 		new ARecord(this, 'AliasRecord', {
 			zone: hostedZone,
 			recordName: domainName,
 			target: RecordTarget.fromAlias(new ApiGatewayTarget(api))
 		});
+
+		// Add Paths to API Gateway
+		api.root
+			.addResource('example')
+			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
+				authorizer: auth
+			});
+		api.root
+			.addResource('dbtest')
+			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
+				authorizer: auth
+			});
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
