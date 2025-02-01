@@ -6,5 +6,55 @@
   "hosted-zone:account=390403894969:domainName=dev.opentix.co:region=us-east-1": {
     "Id": "/hostedzone/Z10193051RIEADNGV1IJS",
     "Name": "dev.opentix.co."
+  },
+  "vpc-provider:account=390403894969:filter.vpc-id=vpc-0075f358f807d9b26:region=us-east-1:returnAsymmetricSubnets=true": {
+    "vpcId": "vpc-0075f358f807d9b26",
+    "vpcCidrBlock": "172.31.0.0/16",
+    "ownerAccountId": "390403894969",
+    "availabilityZones": [],
+    "subnetGroups": [
+      {
+        "name": "Public",
+        "type": "Public",
+        "subnets": [
+          {
+            "subnetId": "subnet-08de99555f218e16e",
+            "cidr": "172.31.80.0/20",
+            "availabilityZone": "us-east-1a",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          },
+          {
+            "subnetId": "subnet-0b712896266de0ee6",
+            "cidr": "172.31.16.0/20",
+            "availabilityZone": "us-east-1b",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          },
+          {
+            "subnetId": "subnet-0c9e7e8ae8ffdcf27",
+            "cidr": "172.31.32.0/20",
+            "availabilityZone": "us-east-1c",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          },
+          {
+            "subnetId": "subnet-07f995aeff3996336",
+            "cidr": "172.31.0.0/20",
+            "availabilityZone": "us-east-1d",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          },
+          {
+            "subnetId": "subnet-058e9d8a13ace3a32",
+            "cidr": "172.31.48.0/20",
+            "availabilityZone": "us-east-1e",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          },
+          {
+            "subnetId": "subnet-04de16fe8a62ccb10",
+            "cidr": "172.31.64.0/20",
+            "availabilityZone": "us-east-1f",
+            "routeTableId": "rtb-09706efcb7ce81fcc"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -53,17 +53,23 @@ export class BackendStack extends cdk.Stack {
 			'DBSecurityGroup',
 			vpcDefaultSecurityGroupId
 		);
+
+		// Secrets
 		const dbSecret = Secret.fromSecretCompleteArn(
 			this,
 			'DBSecret',
 			dbSecretArn
 		);
+		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
+			this,
+			'MagicPrivateSecret',
+			magicSecretArn
+		);
 
-		// Authentication Lambda and role
+		// Roles
 		const LambdaLogRole = new Role(this, 'LambdaLogRole', {
 			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
 		});
-
 		LambdaLogRole.addToPolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
@@ -75,39 +81,40 @@ export class BackendStack extends cdk.Stack {
 				resources: ['*']
 			})
 		);
-
-		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
-			this,
-			'MagicPrivateSecret',
-			magicSecretArn
-		);
 		MagicPrivateSecret.grantRead(LambdaLogRole);
+		dbSecret.grantRead(LambdaLogRole);
 
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
 				entry: `${basePath}/auth.go`,
-				role: LambdaLogRole
+				role: LambdaLogRole,
+				environment: {
+					MAGIC_SECRET_ARN: magicSecretArn
+				}
 			})
 		});
 
 		// Lambdas
 		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
 			entry: `${basePath}/example.go`,
-			role: LambdaLogRole
+			role: LambdaLogRole,
+			environment: {
+				MAGIC_SECRET_ARN: magicSecretArn
+			}
 		});
 
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
 			role: LambdaLogRole,
+			vpc: vpc,
 			securityGroups: [dbSecurityGroup],
+			allowPublicSubnet: true,
 			environment: {
 				DB_ADDRESS: dbAddress,
 				DB_PORT: dbPort,
-				DB_USER: dbSecret.secretValueFromJson('username').toString(),
-				DB_PASSWORD: dbSecret.secretValueFromJson('password').toString()
+				DB_SECRET_ARN: dbSecretArn
 			}
 		});
-		dbSecret.grantRead(DBTestLambda);
 
 		// API Gateway
 		const domainName =
