@@ -12,6 +12,7 @@ import {
 import { SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
 	Effect,
+	ManagedPolicy,
 	PolicyStatement,
 	Role,
 	ServicePrincipal
@@ -38,6 +39,7 @@ export class BackendStack extends cdk.Stack {
 		const vpcDefaultSecurityGroupId = 'sg-074849cb87c224944';
 		const dbAddress = 'dev-db-1.c09akg0io005.us-east-1.rds.amazonaws.com';
 		const dbPort = '5432';
+		const dbInternalName = 'openticket';
 		const dbSecretArn =
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-bba3fcd8-f30e-437e-a060-e76805adc70e-qY2qQN';
 		const magicSecretArn =
@@ -82,7 +84,29 @@ export class BackendStack extends cdk.Stack {
 			})
 		);
 		MagicPrivateSecret.grantRead(LambdaLogRole);
-		dbSecret.grantRead(LambdaLogRole);
+
+		const LambdaDBAccessRole = new Role(this, 'LambdaDBAccessRole', {
+			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
+		});
+		LambdaDBAccessRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: ['*']
+			})
+		);
+
+		dbSecret.grantRead(LambdaDBAccessRole);
+		MagicPrivateSecret.grantRead(LambdaDBAccessRole);
+		LambdaDBAccessRole.addManagedPolicy(
+			ManagedPolicy.fromAwsManagedPolicyName(
+				'service-role/AWSLambdaVPCAccessExecutionRole'
+			)
+		);
 
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
@@ -105,13 +129,14 @@ export class BackendStack extends cdk.Stack {
 
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
-			role: LambdaLogRole,
+			role: LambdaDBAccessRole,
 			vpc: vpc,
 			securityGroups: [dbSecurityGroup],
 			allowPublicSubnet: true,
 			environment: {
 				DB_ADDRESS: dbAddress,
 				DB_PORT: dbPort,
+				DB_NAME: dbInternalName,
 				DB_SECRET_ARN: dbSecretArn
 			}
 		});
