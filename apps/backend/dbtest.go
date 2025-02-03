@@ -26,17 +26,9 @@ var (
 
 func init() {
 	dbAddress = os.Getenv("DB_ADDRESS")
-	log.Printf("Retrieved DB_ADDRESS: %s", dbAddress)
-
 	dbPort = os.Getenv("DB_PORT")
-	log.Printf("Retrieved DB_PORT: %s", dbPort)
-
 	dbName = os.Getenv("DB_NAME")
-	log.Printf("Retrieved DB_NAME: %s", dbName)
-
 	dbCredentials := shared.GetDBCredentials()
-	log.Printf("Retrieved DB credentials: Username=%s", dbCredentials.Username)
-
 	dbUser = dbCredentials.Username
 	dbPassword = dbCredentials.Password
 }
@@ -54,36 +46,26 @@ func TestDBConnection(ctx context.Context) error {
     u.RawQuery = q.Encode()
     connStr := u.String()
 
-    log.Printf("Built connection string: %s", connStr) // Caution: Logging sensitive data is not recommended
-
     db, err := sql.Open("postgres", connStr)
     if err != nil {
         return fmt.Errorf("error opening connection: %w", err)
     }
-    log.Printf("Database connection opened")
-    defer func() {
-        db.Close()
-        log.Printf("Database connection closed")
-    }()
+    defer db.Close()
 
     if err := db.PingContext(ctx); err != nil {
         return fmt.Errorf("error pinging database: %w", err)
     }
-    log.Printf("Database ping successful")
 
     var version string
     err = db.QueryRowContext(ctx, "SELECT version();").Scan(&version)
     if err != nil {
         return fmt.Errorf("query error: %w", err)
     }
-    log.Printf("Queried database version: %s", version)
     return nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	log.Printf("Handler invoked")
 	err := TestDBConnection(ctx)
-	log.Printf("TestDBConnection completed with error: %v", err)
 	status := "OK"
 	if err != nil {
 		status = fmt.Sprintf("Failed: %v", err)
@@ -91,14 +73,12 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	response := map[string]interface{}{
 		"DBStatus": status,
 	}
-	log.Printf("Response object built: %v", response)
 
 	responseBody, err := json.Marshal(response)
 	if err != nil {
 		log.Printf("Error marshalling response: %v", err)
 		return events.APIGatewayProxyResponse{StatusCode: 500}, nil
 	}
-	log.Printf("Response marshalled to JSON: %s", responseBody)
 
 	resp := events.APIGatewayProxyResponse{
 		StatusCode: 200,
@@ -107,11 +87,9 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 			"Content-Type": "application/json",
 		},
 	}
-	log.Printf("Returning final response: %v", resp)
 	return resp, nil
 }
 
 func main() {
-	log.Printf("Starting Lambda")
 	lambda.Start(Handler)
 }

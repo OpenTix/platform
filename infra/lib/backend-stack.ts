@@ -1,4 +1,4 @@
-import { GoFunction } from '@aws-cdk/aws-lambda-go-alpha';
+import { GoFunction, GoFunctionProps } from '@aws-cdk/aws-lambda-go-alpha';
 import * as cdk from 'aws-cdk-lib';
 import {
 	LambdaIntegration,
@@ -108,6 +108,19 @@ export class BackendStack extends cdk.Stack {
 			)
 		);
 
+		const LambdaDBAccessProps = {
+			role: LambdaDBAccessRole,
+			vpc: vpc,
+			securityGroups: [dbSecurityGroup],
+			environment: {
+				DB_ADDRESS: dbAddress,
+				DB_PORT: dbPort,
+				DB_NAME: dbInternalName,
+				DB_SECRET_ARN: dbSecretArn,
+				MAGIC_SECRET_ARN: magicSecretArn
+			}
+		};
+
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
 				entry: `${basePath}/auth.go`,
@@ -129,15 +142,7 @@ export class BackendStack extends cdk.Stack {
 
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
-			role: LambdaDBAccessRole,
-			vpc: vpc,
-			securityGroups: [dbSecurityGroup],
-			environment: {
-				DB_ADDRESS: dbAddress,
-				DB_PORT: dbPort,
-				DB_NAME: dbInternalName,
-				DB_SECRET_ARN: dbSecretArn
-			}
+			...LambdaDBAccessProps
 		});
 
 		// API Gateway
