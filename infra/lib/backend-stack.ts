@@ -133,6 +133,9 @@ export class BackendStack extends cdk.Stack {
 			vpc: vpc,
 			securityGroups: [dbSecurityGroup],
 			allowPublicSubnet: true,
+			vpcSubnets: {
+				availabilityZones: ['us-east-1f']
+			},
 			environment: {
 				DB_ADDRESS: dbAddress,
 				DB_PORT: dbPort,
