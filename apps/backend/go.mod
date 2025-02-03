@@ -40,6 +40,7 @@ require (
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.3.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiclabs/magic-admin-go v1.0.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
