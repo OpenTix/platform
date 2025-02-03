@@ -180,7 +180,7 @@ export class BackendStack extends cdk.Stack {
 				authorizer: auth
 			});
 		api.root
-			.addResource('dbtest')
+			.addResource('testdbconnection')
 			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
 				authorizer: auth
 			});
