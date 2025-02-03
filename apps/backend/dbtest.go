@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,6 +26,14 @@ var (
 )
 
 func init() {
+	googleAddress := "google.com:80"
+    conn, err := net.DialTimeout("tcp", googleAddress, 3*time.Second)
+    if err != nil {
+        log.Fatalf("error pinging google.com: %w", err)
+    }
+    log.Printf("Successfully pinged google.com")
+    conn.Close()
+
 	dbAddress = os.Getenv("DB_ADDRESS")
 	log.Printf("Retrieved DB_ADDRESS: %s", dbAddress)
 
