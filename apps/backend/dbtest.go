@@ -6,9 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
+	"net/url"
 	"os"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -26,14 +25,6 @@ var (
 )
 
 func init() {
-	googleAddress := "google.com:80"
-    conn, err := net.DialTimeout("tcp", googleAddress, 3*time.Second)
-    if err != nil {
-        log.Fatalf("error pinging google.com: %w", err)
-    }
-    log.Printf("Successfully pinged google.com")
-    conn.Close()
-
 	dbAddress = os.Getenv("DB_ADDRESS")
 	log.Printf("Retrieved DB_ADDRESS: %s", dbAddress)
 
@@ -51,32 +42,42 @@ func init() {
 }
 
 func TestDBConnection(ctx context.Context) error {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		dbUser, dbPassword, dbAddress, dbPort, dbName)
-	log.Printf("Built connection string: %s", connStr) // Caution: Logging sensitive data is not recommended
+    // Build connection string with proper URL encoding
+    u := &url.URL{
+        Scheme: "postgres",
+        User:   url.UserPassword(dbUser, dbPassword),
+        Host:   fmt.Sprintf("%s:%s", dbAddress, dbPort),
+        Path:   dbName,
+    }
+    q := u.Query()
+    q.Set("sslmode", "disable")
+    u.RawQuery = q.Encode()
+    connStr := u.String()
 
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return fmt.Errorf("error opening connection: %w", err)
-	}
-	log.Printf("Database connection opened")
-	defer func() {
-		db.Close()
-		log.Printf("Database connection closed")
-	}()
+    log.Printf("Built connection string: %s", connStr) // Caution: Logging sensitive data is not recommended
 
-	if err := db.PingContext(ctx); err != nil {
-		return fmt.Errorf("error pinging database: %w", err)
-	}
-	log.Printf("Database ping successful")
+    db, err := sql.Open("postgres", connStr)
+    if err != nil {
+        return fmt.Errorf("error opening connection: %w", err)
+    }
+    log.Printf("Database connection opened")
+    defer func() {
+        db.Close()
+        log.Printf("Database connection closed")
+    }()
 
-	var version string
-	err = db.QueryRowContext(ctx, "SELECT version();").Scan(&version)
-	if err != nil {
-		return fmt.Errorf("query error: %w", err)
-	}
-	log.Printf("Queried database version: %s", version)
-	return nil
+    if err := db.PingContext(ctx); err != nil {
+        return fmt.Errorf("error pinging database: %w", err)
+    }
+    log.Printf("Database ping successful")
+
+    var version string
+    err = db.QueryRowContext(ctx, "SELECT version();").Scan(&version)
+    if err != nil {
+        return fmt.Errorf("query error: %w", err)
+    }
+    log.Printf("Queried database version: %s", version)
+    return nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
