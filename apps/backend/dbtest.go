@@ -50,7 +50,7 @@ func TestDBConnection(ctx context.Context) error {
         Path:   dbName,
     }
     q := u.Query()
-    q.Set("sslmode", "disable")
+    q.Set("sslmode", "require")
     u.RawQuery = q.Encode()
     connStr := u.String()
 
