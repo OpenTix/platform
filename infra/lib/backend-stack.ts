@@ -35,13 +35,13 @@ export class BackendStack extends cdk.Stack {
 		// Defining this way will bundle automatically during deployment.
 		// This requires docker.
 
-		const vpcId = 'vpc-0075f358f807d9b26';
-		const vpcDefaultSecurityGroupId = 'sg-074849cb87c224944';
+		const vpcId = 'vpc-06542e3e0e22d1530';
+		const vpcDefaultSecurityGroupId = 'sg-07535f897144baa31';
 		const dbAddress = 'dev-db-1.c09akg0io005.us-east-1.rds.amazonaws.com';
 		const dbPort = '5432';
 		const dbInternalName = 'openticket';
 		const dbSecretArn =
-			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-bba3fcd8-f30e-437e-a060-e76805adc70e-qY2qQN';
+			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-7b97592e-38be-4add-9eea-f5057439df30-L9XP8Y';
 		const magicSecretArn =
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer';
 
@@ -132,10 +132,6 @@ export class BackendStack extends cdk.Stack {
 			role: LambdaDBAccessRole,
 			vpc: vpc,
 			securityGroups: [dbSecurityGroup],
-			allowPublicSubnet: true,
-			vpcSubnets: {
-				availabilityZones: ['us-east-1f']
-			},
 			environment: {
 				DB_ADDRESS: dbAddress,
 				DB_PORT: dbPort,
