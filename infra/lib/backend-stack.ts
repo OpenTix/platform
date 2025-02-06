@@ -145,6 +145,11 @@ export class BackendStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const VendorIDLambda = new GoFunction(this, 'VendorIDLambda', {
+			entry: `${basePath}/vendorid.go`,
+			...LambdaDBAccessProps
+		});
+
 		// API Gateway
 		const domainName =
 			process.env.DEPLOYENV === 'feature'
@@ -182,6 +187,11 @@ export class BackendStack extends cdk.Stack {
 		api.root
 			.addResource('testdbconnection')
 			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
+				authorizer: auth
+			});
+		api.root
+			.addResource('vendor/id')
+			.addMethod('ANY', new LambdaIntegration(VendorIDLambda), {
 				authorizer: auth
 			});
 
