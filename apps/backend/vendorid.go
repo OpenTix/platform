@@ -189,6 +189,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}, nil
 }
 
+// This updates the Name of the vendor
 func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
@@ -239,6 +240,23 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 			Body:       "Vendor doesn't exist",
 		}, nil
 	}
+
+	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{wallet, body.Name})
+	if err != nil {
+		log.Printf("Failed to update vendor: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to update vendor",
+		}, nil
+	}
+	responseBody, err := json.Marshal(vendor)
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(responseBody),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+	}, nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -246,6 +264,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		return handleGet(ctx, request)
 	} else if request.HTTPMethod == "POST" {
 		return handlePost(ctx, request)
+	} else if request.HTTPMethod == "PATCH" {
+		return handlePatch(ctx, request)
 	} else {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 405,
