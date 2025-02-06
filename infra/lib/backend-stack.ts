@@ -179,6 +179,7 @@ export class BackendStack extends cdk.Stack {
 		});
 
 		// Add Paths to API Gateway
+		// Root Paths
 		api.root
 			.addResource('example')
 			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
@@ -189,8 +190,12 @@ export class BackendStack extends cdk.Stack {
 			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
 				authorizer: auth
 			});
+
+		// /vendor Paths
+		api.root.addResource('vendor');
 		api.root
-			.addResource('vendor/id')
+			.getResource('vendor')
+			?.addResource('id')
 			.addMethod('ANY', new LambdaIntegration(VendorIDLambda), {
 				authorizer: auth
 			});
