@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-    "github.com/magiclabs/magic-admin-go/client"
+	"github.com/magiclabs/magic-admin-go/client"
 	"github.com/magiclabs/magic-admin-go/token"
 
 	"backend/shared"
@@ -22,6 +22,8 @@ func init() {
 }
 
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
+	resourceArn := strings.Split(event.MethodArn, "/")[0] + "/*"
+	
 	var AllowResponse = events.APIGatewayCustomAuthorizerResponse{
 		PrincipalID: "user",
 		PolicyDocument: events.APIGatewayCustomAuthorizerPolicy{
@@ -30,7 +32,7 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 				{
 					Action:   []string{"execute-api:Invoke"},
 					Effect:   "Allow",
-					Resource: []string{event.MethodArn},
+					Resource: []string{resourceArn},
 				},
 			},
 		},
