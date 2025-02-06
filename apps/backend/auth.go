@@ -22,8 +22,11 @@ func init() {
 }
 
 func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
+	// We have to wildcard the api resources. The cache applies to every endpoint.
+	// Using event.methodArn as the resource will only allow that resource and block
+	// all others until the cache expires.
 	resourceArn := strings.Split(event.MethodArn, "/")[0] + "/*"
-	
+
 	var AllowResponse = events.APIGatewayCustomAuthorizerResponse{
 		PrincipalID: "user",
 		PolicyDocument: events.APIGatewayCustomAuthorizerPolicy{

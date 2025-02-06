@@ -12,7 +12,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	_ "github.com/lib/pq"
 
 	"github.com/jackc/pgx/v5"
 
@@ -25,7 +24,6 @@ import (
 
 var (
 	walletRegex *regexp.Regexp
-	uuidRegex  *regexp.Regexp
 	dbAddress  string
 	dbPort     string
 	dbUser     string
@@ -34,13 +32,13 @@ var (
 	connStr    string
 	magicClient *client.API
 )
+
 type PostPatchVendorIdRequestBody struct {
 	Name string `json:"name"`
 }
 
 func init() {
 	walletRegex = regexp.MustCompile("^[0-9A-Fa-f]{40}$");
-	uuidRegex = regexp.MustCompile("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$");
 	dbAddress = os.Getenv("DB_ADDRESS")
 	dbPort = os.Getenv("DB_PORT")
 	dbName = os.Getenv("DB_NAME")
@@ -63,49 +61,57 @@ func init() {
 
 // This gets the current vendor's info based off the authorization token
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Grab and validate auth token
 	didToken := request.Headers["Authorization"]
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
 	tk, err := token.NewToken(didToken)
 	if err != nil {
 		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
+		
+		body, _ := json.Marshal(map[string]string{"message": "Token Error"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
-			Body:       "Token Error",
+			Body:       string(body),
 		}, nil 
 	}
 
+    // Grab wallet address from token
 	wallet, err := tk.GetPublicAddress()
 	wallet = strings.TrimPrefix(wallet, "0x")
 
+    // Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
 		log.Printf("Failed to connect to the database: %v", err)
+
+		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database."})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to connect to the database",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	defer conn.Close(ctx)
 
 	queries := query.New(conn)
 
+    // get vendor
 	vendor, err := queries.GetVendorByWallet(ctx, wallet)
-
 	if err != nil {
-		log.Printf("Failed to get vendor: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Vendor does not exist"})
 		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       "Failed to get vendor",
-		}, nil
+			StatusCode: 404,
+			Body:       string(body),
+		}, nil 
 	}
 
 	responseBody, err := json.Marshal(vendor)
 	if err != nil {
 		log.Printf("Failed to marshal response: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Failed to marshal response"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to marshal response",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
@@ -118,43 +124,51 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 // This takes in the auth token and the name of the vendor and creates a new vendor if it does not already exist
 func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Grab and validate request body
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
 		log.Printf("Failed to unmarshal request body: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Invalid request body",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	if body.Name == "" {
+		body, _ := json.Marshal(map[string]string{"message": "Name is required"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Name is required",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 
+    // Grab and validate auth token
 	didToken := request.Headers["Authorization"]
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
 	tk, err := token.NewToken(didToken)
 	if err != nil {
 		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
+		body, _ := json.Marshal(map[string]string{"message": "Token Error"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
-			Body:       "Token Error",
+			Body:       string(body),
 		}, nil 
 	}
 
+    // Grab wallet address from token
 	wallet, err := tk.GetPublicAddress()
 	wallet = strings.TrimPrefix(wallet, "0x")
 
+    // Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
 		log.Printf("Failed to connect to the database: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to connect to the database",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	defer conn.Close(ctx)
 
@@ -163,19 +177,22 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// ensure vendor does not already exist
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err == nil {
+		body, _ := json.Marshal(map[string]string{"message": "Vendor already exists"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 409,
-			Body:       "Vendor already exists",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 
+    // create vendor
 	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
 	if err != nil {
 		log.Printf("Failed to create vendor: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Failed to create vendor"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to create vendor",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 
 	responseBody, err := json.Marshal(vendor)
@@ -191,63 +208,75 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 
 // This updates the Name of the vendor
 func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Grab and validate request body
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
 		log.Printf("Failed to unmarshal request body: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Invalid request body",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	if body.Name == "" {
+		body, _ := json.Marshal(map[string]string{"message": "Name is required"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Name is required",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 
+    // Grab and validate auth token
 	didToken := request.Headers["Authorization"]
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
 	tk, err := token.NewToken(didToken)
 	if err != nil {
 		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
+		body, _ := json.Marshal(map[string]string{"message": "Token error"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
-			Body:       "Token Error",
+			Body:       string(body),
 		}, nil 
 	}
 
+    // Grab wallet address from token
 	wallet, err := tk.GetPublicAddress()
 	wallet = strings.TrimPrefix(wallet, "0x")
 
+    // Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
 		log.Printf("Failed to connect to the database: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to connect to the database",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	defer conn.Close(ctx)
 
 	queries := query.New(conn)
 
+    // ensure vendor exists
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err != nil {
+		body, _ := json.Marshal(map[string]string{"message": "Vendor does not exist. Use POST"})
 		return events.APIGatewayProxyResponse{
-			StatusCode: 409,
-			Body:       "Vendor doesn't exist",
-		}, nil
+			StatusCode: 404,
+			Body:       string(body),
+		}, nil 
 	}
 
+    // update vendor
 	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{wallet, body.Name})
 	if err != nil {
 		log.Printf("Failed to update vendor: %v", err)
+		body, _ := json.Marshal(map[string]string{"message": "Failed to update vendor"})
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Failed to update vendor",
-		}, nil
+			Body:       string(body),
+		}, nil 
 	}
 	responseBody, err := json.Marshal(vendor)
 	return events.APIGatewayProxyResponse{
