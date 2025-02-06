@@ -16,8 +16,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/google/uuid"
-
 	"github.com/magiclabs/magic-admin-go/client"
 	"github.com/magiclabs/magic-admin-go/token"
 
@@ -36,12 +34,7 @@ var (
 	connStr    string
 	magicClient *client.API
 )
-
-type GetVendorIdRequestBody struct {
-	Uuid string `json:"uuid"`
-	Wallet string `json:"wallet"`
-}
-type PostVendorIdRequestBody struct {
+type PostPatchVendorIdRequestBody struct {
 	Name string `json:"name"`
 }
 
@@ -68,49 +61,21 @@ func init() {
     connStr = u.String()
 }
 
+// This gets the current vendor's info based off the authorization token
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var body GetVendorIdRequestBody
-	err := json.Unmarshal([]byte(request.Body), &body)
+	didToken := request.Headers["Authorization"]
+	didToken = strings.TrimPrefix(didToken, "Bearer ")
+	tk, err := token.NewToken(didToken)
 	if err != nil {
-		log.Printf("Failed to unmarshal request body: %v", err)
+		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
 		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       "Invalid request body",
-		}, nil
+			StatusCode: 401,
+			Body:       "Token Error",
+		}, nil 
 	}
 
-	if body.Uuid == "" && body.Wallet == "" {
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       "Either uuid or wallet must be provided",
-		}, nil
-	}
-
-	uuidOk := false
-	walletOk := false
-	var parsedUuid uuid.UUID
-
-	if body.Uuid != "" && uuidRegex.MatchString(body.Uuid) {
-		uuidOk = true
-		parsedUuid, err = uuid.Parse(body.Uuid)
-		if err != nil {
-			log.Printf("Failed to parse UUID: %v", err)
-			return events.APIGatewayProxyResponse{
-				StatusCode: 400,
-				Body:       "Invalid UUID format",
-			}, nil
-		}
-	}
-	if body.Wallet != "" && walletRegex.MatchString(body.Wallet) {
-		walletOk = true
-	}
-
-	if !uuidOk && !walletOk {
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       "Invalid uuid or wallet",
-		}, nil
-	}
+	wallet, err := tk.GetPublicAddress()
+	wallet = strings.TrimPrefix(wallet, "0x")
 
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
@@ -124,13 +89,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	queries := query.New(conn)
 
-	var vendor query.AppVendor
-
-	if uuidOk {
-		vendor, err = queries.GetVendorByUuid(ctx, parsedUuid)
-	} else {
-		vendor, err = queries.GetVendorByWallet(ctx, body.Wallet)
-	}
+	vendor, err := queries.GetVendorByWallet(ctx, wallet)
 
 	if err != nil {
 		log.Printf("Failed to get vendor: %v", err)
@@ -157,8 +116,9 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}, nil
 }
 
+// This takes in the auth token and the name of the vendor and creates a new vendor if it does not already exist
 func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var body PostVendorIdRequestBody
+	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
 		log.Printf("Failed to unmarshal request body: %v", err)
@@ -200,6 +160,15 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 
 	queries := query.New(conn)
 
+	// ensure vendor does not already exist
+	_, err = queries.GetVendorByWallet(ctx, wallet)
+	if err == nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 409,
+			Body:       "Vendor already exists",
+		}, nil
+	}
+
 	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
 	if err != nil {
 		log.Printf("Failed to create vendor: %v", err)
@@ -218,6 +187,58 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 			"Content-Type": "application/json",
 		},
 	}, nil
+}
+
+func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var body PostPatchVendorIdRequestBody
+	err := json.Unmarshal([]byte(request.Body), &body)
+	if err != nil {
+		log.Printf("Failed to unmarshal request body: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       "Invalid request body",
+		}, nil
+	}
+	if body.Name == "" {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       "Name is required",
+		}, nil
+	}
+
+	didToken := request.Headers["Authorization"]
+	didToken = strings.TrimPrefix(didToken, "Bearer ")
+	tk, err := token.NewToken(didToken)
+	if err != nil {
+		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
+		return events.APIGatewayProxyResponse{
+			StatusCode: 401,
+			Body:       "Token Error",
+		}, nil 
+	}
+
+	wallet, err := tk.GetPublicAddress()
+	wallet = strings.TrimPrefix(wallet, "0x")
+
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		log.Printf("Failed to connect to the database: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to connect to the database",
+		}, nil
+	}
+	defer conn.Close(ctx)
+
+	queries := query.New(conn)
+
+	_, err = queries.GetVendorByWallet(ctx, wallet)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 409,
+			Body:       "Vendor doesn't exist",
+		}, nil
+	}
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

@@ -63,3 +63,24 @@ func (q *Queries) GetVendorByWallet(ctx context.Context, wallet string) (AppVend
 	)
 	return i, err
 }
+
+const updateVendorName = `-- name: UpdateVendorName :one
+update app.vendor set name = $2 where wallet = $1 returning pk, id, wallet, name
+`
+
+type UpdateVendorNameParams struct {
+	Wallet string
+	Name   string
+}
+
+func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNameParams) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, updateVendorName, arg.Wallet, arg.Name)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}

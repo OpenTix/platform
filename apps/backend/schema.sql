@@ -21,7 +21,7 @@ create table app.vendor (
     wallet varchar(40) not null
         constraint vendor_wallet unique
         constraint vendor_wallet_fmt
-            check((wallet)::text ~ '^[0-9A-F-a-f]{40}$'::text),
+            check((wallet)::text ~ '^[0-9A-Fa-f]{40}$'::text),
     name text not null
 );
 
