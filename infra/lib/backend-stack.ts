@@ -196,7 +196,19 @@ export class BackendStack extends cdk.Stack {
 		api.root
 			.getResource('vendor')
 			?.addResource('id')
-			.addMethod('ANY', new LambdaIntegration(VendorIDLambda), {
+			.addMethod('GET', new LambdaIntegration(VendorIDLambda), {
+				authorizer: auth
+			});
+		api.root
+			.getResource('vendor')
+			?.getResource('id')
+			?.addMethod('POST', new LambdaIntegration(VendorIDLambda), {
+				authorizer: auth
+			});
+		api.root
+			.getResource('vendor')
+			?.getResource('id')
+			?.addMethod('PATCH', new LambdaIntegration(VendorIDLambda), {
 				authorizer: auth
 			});
 
