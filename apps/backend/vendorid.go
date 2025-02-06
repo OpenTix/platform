@@ -186,12 +186,37 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	wallet, err := tk.GetPublicAddress()
+	wallet = strings.TrimPrefix(wallet, "0x")
 
-	log.Printf("Wallet: %v", wallet)
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		log.Printf("Failed to connect to the database: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to connect to the database",
+		}, nil
+	}
+	defer conn.Close(ctx)
+
+	queries := query.New(conn)
+
+	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
+	if err != nil {
+		log.Printf("Failed to create vendor: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to create vendor",
+		}, nil
+	}
+
+	responseBody, err := json.Marshal(vendor)
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       "Not implemented",
+		StatusCode: 201,
+		Body:       string(responseBody),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
 	}, nil
 }
 

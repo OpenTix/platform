@@ -12,17 +12,16 @@ import (
 )
 
 const createVendor = `-- name: CreateVendor :one
-insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning pk, id, wallet, name
+insert into app.vendor (wallet, name) values ($1, $2) returning pk, id, wallet, name
 `
 
 type CreateVendorParams struct {
-	ID     uuid.UUID
 	Wallet string
 	Name   string
 }
 
 func (q *Queries) CreateVendor(ctx context.Context, arg CreateVendorParams) (AppVendor, error) {
-	row := q.db.QueryRow(ctx, createVendor, arg.ID, arg.Wallet, arg.Name)
+	row := q.db.QueryRow(ctx, createVendor, arg.Wallet, arg.Name)
 	var i AppVendor
 	err := row.Scan(
 		&i.Pk,
