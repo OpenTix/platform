@@ -169,6 +169,15 @@ export class BackendStack extends cdk.Stack {
 			domainName: {
 				domainName: domainName,
 				certificate: certificate
+			},
+			defaultCorsPreflightOptions: {
+				allowOrigins: [
+					'https://*.opentix.co',
+					'http://localhost:4200',
+					'http://127.0.0.1:4200'
+				],
+				allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
+				allowHeaders: ['Authorization', 'Content-Type']
 			}
 		});
 
