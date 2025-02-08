@@ -172,12 +172,20 @@ export class BackendStack extends cdk.Stack {
 			},
 			defaultCorsPreflightOptions: {
 				allowOrigins: [
+					'https://opentix.co',
 					'https://*.opentix.co',
 					'http://localhost:4200',
 					'http://127.0.0.1:4200'
 				],
 				allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
-				allowHeaders: ['Authorization', 'Content-Type']
+				allowHeaders: [
+					'Content-Type',
+					'Authorization',
+					'X-Amz-Date',
+					'X-Api-Key',
+					'X-Amz-Security-Token',
+					'X-Amz-User-Agent'
+				]
 			}
 		});
 
