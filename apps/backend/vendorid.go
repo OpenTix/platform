@@ -33,13 +33,7 @@ var (
 	magicClient *client.API
 )
 
-var responseHeaders = map[string]string{
-	"Content-Type": "application/json",
-	"Access-Control-Allow-Origin": "https://opentix.co, https://*.opentix.co, http://localhost:4200, http://127.0.0.1:4200",
-	"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent",
-	"Access-Control-Allow-Credentials": "true",
-	"Access-Control-Allow-Methods": "OPTIONS,GET,PUT,POST,DELETE",
-}
+
 
 type PostPatchVendorIdRequestBody struct {
 	Name string `json:"name"`
@@ -80,7 +74,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -97,7 +91,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	defer conn.Close(ctx)
@@ -111,7 +105,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return events.APIGatewayProxyResponse{
 			StatusCode: 404,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -122,13 +116,13 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(responseBody),
-		Headers: responseHeaders,
+		Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 	}, nil
 }
 
@@ -143,7 +137,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	if body.Name == "" {
@@ -151,7 +145,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -165,7 +159,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -181,7 +175,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	defer conn.Close(ctx)
@@ -195,7 +189,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 409,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -207,7 +201,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -216,7 +210,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	return events.APIGatewayProxyResponse{
 		StatusCode: 201,
 		Body:       string(responseBody),
-		Headers: responseHeaders,
+		Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 	}, nil
 }
 
@@ -231,7 +225,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	if body.Name == "" {
@@ -239,7 +233,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -253,7 +247,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 401,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -269,7 +263,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	defer conn.Close(ctx)
@@ -283,7 +277,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 404,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 
@@ -295,14 +289,14 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil 
 	}
 	responseBody, err := json.Marshal(vendor)
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(responseBody),
-		Headers: responseHeaders,
+		Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 	}, nil
 }
 
@@ -318,7 +312,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		return events.APIGatewayProxyResponse{
 			StatusCode: 405,
 			Body:       string(body),
-			Headers: responseHeaders,
+			Headers: shared.GetResponseHeaders(request.Headers["Origin"]),
 		}, nil
 	}
 }
