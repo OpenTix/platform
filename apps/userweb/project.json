@@ -11,6 +11,11 @@
 				"dev": {},
 				"prod": {}
 			}
+		},
+		"test": {
+			"options": {
+				"passWithNoTests": true
+			}
 		}
 	}
 }

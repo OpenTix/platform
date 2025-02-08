@@ -51,7 +51,7 @@ jobs:
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx jest
+            - run: npx nx run-many -t test
 
 
     build-and-deploy:

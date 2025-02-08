@@ -13,7 +13,7 @@ import (
 
 // SecretsManagerResponse represents the structure of the secret stored in AWS Secrets Manager.
 type DBSecretsManagerResponse struct {
-    Username string `json:"username"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
@@ -24,42 +24,42 @@ type DBCredentialsResponse struct {
 
 // GetDBCredentials retrieves database credentials from AWS Secrets Manager.
 func GetDBCredentials() DBCredentialsResponse {
-    secretArn := os.Getenv("DB_SECRET_ARN")
-    region := "us-east-1"
+	secretArn := os.Getenv("DB_SECRET_ARN")
+	region := "us-east-1"
 
-    // Load AWS configuration
-    cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-    if err != nil {
-        log.Println("Error loading AWS config:", err)
-        panic(err)
-    }
+	// Load AWS configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Println("Error loading AWS config:", err)
+		panic(err)
+	}
 
-    // Create Secrets Manager client
-    svc := secretsmanager.NewFromConfig(cfg)
+	// Create Secrets Manager client
+	svc := secretsmanager.NewFromConfig(cfg)
 
-    // Retrieve the secret value
-    input := &secretsmanager.GetSecretValueInput{
-        SecretId: aws.String(secretArn),
-    }
-    result, err := svc.GetSecretValue(context.TODO(), input)
-    if err != nil {
-        log.Println("Error retrieving secret value:", err)
-        panic(err)
-    }
+	// Retrieve the secret value
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretArn),
+	}
+	result, err := svc.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		log.Println("Error retrieving secret value:", err)
+		panic(err)
+	}
 
-    secretString := *result.SecretString
+	secretString := *result.SecretString
 
-    // Unmarshal the secret JSON
-    var jsonSecret DBSecretsManagerResponse
-    err = json.Unmarshal([]byte(secretString), &jsonSecret)
-    if err != nil {
-        log.Println("Error unmarshaling secret JSON:", err)
-        panic(err)
-    }
+	// Unmarshal the secret JSON
+	var jsonSecret DBSecretsManagerResponse
+	err = json.Unmarshal([]byte(secretString), &jsonSecret)
+	if err != nil {
+		log.Println("Error unmarshaling secret JSON:", err)
+		panic(err)
+	}
 
-    response := DBCredentialsResponse{
-        Username: jsonSecret.Username,
-        Password: jsonSecret.Password,
-    }
-    return response
+	response := DBCredentialsResponse{
+		Username: jsonSecret.Username,
+		Password: jsonSecret.Password,
+	}
+	return response
 }

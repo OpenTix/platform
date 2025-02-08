@@ -34,34 +34,34 @@ func init() {
 }
 
 func TestDBConnection(ctx context.Context) error {
-    // Build connection string with proper URL encoding
-    u := &url.URL{
-        Scheme: "postgres",
-        User:   url.UserPassword(dbUser, dbPassword),
-        Host:   fmt.Sprintf("%s:%s", dbAddress, dbPort),
-        Path:   dbName,
-    }
-    q := u.Query()
-    q.Set("sslmode", "require")
-    u.RawQuery = q.Encode()
-    connStr := u.String()
+	// Build connection string with proper URL encoding
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(dbUser, dbPassword),
+		Host:   fmt.Sprintf("%s:%s", dbAddress, dbPort),
+		Path:   dbName,
+	}
+	q := u.Query()
+	q.Set("sslmode", "require")
+	u.RawQuery = q.Encode()
+	connStr := u.String()
 
-    db, err := sql.Open("postgres", connStr)
-    if err != nil {
-        return fmt.Errorf("error opening connection: %w", err)
-    }
-    defer db.Close()
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return fmt.Errorf("error opening connection: %w", err)
+	}
+	defer db.Close()
 
-    if err := db.PingContext(ctx); err != nil {
-        return fmt.Errorf("error pinging database: %w", err)
-    }
+	if err := db.PingContext(ctx); err != nil {
+		return fmt.Errorf("error pinging database: %w", err)
+	}
 
-    var version string
-    err = db.QueryRowContext(ctx, "SELECT version();").Scan(&version)
-    if err != nil {
-        return fmt.Errorf("query error: %w", err)
-    }
-    return nil
+	var version string
+	err = db.QueryRowContext(ctx, "SELECT version();").Scan(&version)
+	if err != nil {
+		return fmt.Errorf("query error: %w", err)
+	}
+	return nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

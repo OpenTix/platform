@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-    "github.com/magiclabs/magic-admin-go/client"
+	"github.com/magiclabs/magic-admin-go/client"
 	"github.com/magiclabs/magic-admin-go/token"
 
 	"backend/shared"
@@ -52,7 +52,6 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 
 	didToken := event.AuthorizationToken
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
-
 
 	tk, err := token.NewToken(didToken)
 	if err != nil {
