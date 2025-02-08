@@ -1,6 +1,8 @@
+import { Theme } from '@radix-ui/themes';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { MagicProvider } from '@platform/auth';
+import './base.css';
 import AppRouter from './router';
 
 const root = ReactDOM.createRoot(
@@ -8,8 +10,10 @@ const root = ReactDOM.createRoot(
 );
 root.render(
 	<StrictMode>
-		<MagicProvider>
-			<AppRouter />
-		</MagicProvider>
+		<Theme>
+			<MagicProvider>
+				<AppRouter />
+			</MagicProvider>
+		</Theme>
 	</StrictMode>
 );
