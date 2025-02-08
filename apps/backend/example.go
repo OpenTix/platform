@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"log"
-    "strings"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -21,7 +21,7 @@ func init() {
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	
+
 	authHeader := request.Headers["Authorization"]
 	authHeader = strings.TrimPrefix(authHeader, "Bearer ")
 
@@ -29,13 +29,12 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	if err != nil {
 		log.Fatalf("Error getting metadata from Magic: %v\n", err.Error())
 	}
-	
+
 	response := events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body: info.Email,
-		
+		Body:       info.Email,
 	}
-	
+
 	return response, nil
 }
 

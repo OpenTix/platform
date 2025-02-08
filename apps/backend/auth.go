@@ -58,7 +58,6 @@ func Handler(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest
 	didToken := event.AuthorizationToken
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
 
-
 	tk, err := token.NewToken(didToken)
 	if err != nil {
 		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
