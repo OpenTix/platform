@@ -1,14 +1,15 @@
 package shared
 
 import (
+	"log"
 	"regexp"
 )
 
 var allowedOriginPatterns = []*regexp.Regexp{
-    regexp.MustCompile(`^https://opentix\.co$`),
-    regexp.MustCompile(`^https://.+\.opentix\.co$`),
-    regexp.MustCompile(`^http://localhost:4200$`),
-    regexp.MustCompile(`^http://127\.0\.0\.1:4200$`),
+    regexp.MustCompile(`^https://opentix\.co/?$`),
+    regexp.MustCompile(`^https://.+\.opentix\.co/?$`),
+    regexp.MustCompile(`^http://localhost:4200/?$`),
+    regexp.MustCompile(`^http://127\.0\.0\.1:4200/?$`),
 }
 
 var defaultOrigin = "https://opentix.co"
@@ -20,6 +21,8 @@ func GetResponseHeaders(origin string) map[string]string {
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods":    "OPTIONS,GET,PUT,POST,PATCH",
     }
+
+	log.Printf("Origin: %s", origin)
 
     allowed := false
     for _, pattern := range allowedOriginPatterns {
