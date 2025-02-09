@@ -1,7 +1,7 @@
 import { Theme } from '@radix-ui/themes';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { MagicProvider } from '@platform/auth';
+import { MagicProvider, TokenProvider } from '@platform/auth';
 import './base.css';
 import AppRouter from './router';
 
@@ -12,7 +12,9 @@ root.render(
 	<StrictMode>
 		<Theme>
 			<MagicProvider>
-				<AppRouter />
+				<TokenProvider>
+					<AppRouter />
+				</TokenProvider>
 			</MagicProvider>
 		</Theme>
 	</StrictMode>

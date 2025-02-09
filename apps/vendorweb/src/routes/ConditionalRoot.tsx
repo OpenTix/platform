@@ -1,29 +1,183 @@
 import { useEffect, useState } from 'react';
-import { useMagic } from '@platform/auth';
-import Home from '../views/Home';
+import styled, { css } from 'styled-components';
+import { useMagic, useToken } from '@platform/auth';
 import Login from '../views/Login';
+import AppLayout from './AppLayout';
+
+const PageContainer = styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+`;
+
+const AppContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start; /* Left-align items */
+	max-width: 600px; /* Optional: limit the width of the content */
+	padding: 1rem;
+`;
+const Header = styled.h1`
+	font-size: 2rem;
+	margin-bottom: 1rem;
+`;
+const TextBlock = styled.p`
+	font-size: 1.25rem;
+	margin-bottom: 1rem;
+`;
+const Form = styled.form`
+	display: flex;
+	flex-direction: column;
+	width: 300px;
+`;
+const Input = styled.input`
+	margin-bottom: 1rem;
+	padding: 0.75rem;
+	font-size: 1rem;
+`;
+const ButtonContainer = styled.div`
+	display: flex;
+	flex-direction: row;
+`;
+type ButtonProps = {
+	variant: 'filled' | 'outline';
+};
+const Button = styled.button<ButtonProps>`
+	margin: 0 8px 0 0;
+	padding: 8px 16px;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+	border: 2px solid #007bff;
+
+	${({ variant }) =>
+		variant === 'filled'
+			? css`
+					background-color: #007bff;
+					color: #ffffff;
+					&:hover {
+						background-color: #0056b3;
+					}
+				`
+			: css`
+					background-color: transparent;
+					color: #007bff;
+					&:hover {
+						background-color: rgba(0, 123, 255, 0.1);
+					}
+				`}
+`;
 
 function ConditionalRoot() {
 	const magic = useMagic();
+	const token = useToken();
 	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+	const [isVendor, setIsVendor] = useState<boolean | null>(null);
+	const [organizationName, setOrganizationName] = useState<string>('');
+	const vendorIdEndpoint = process.env.NX_PUBLIC_API_BASEURL + '/vendor/id';
+
+	const checkIfVendorExists = async () => {
+		try {
+			const authToken = await token.getToken();
+			const response = await fetch(vendorIdEndpoint, {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${authToken}`
+				}
+			});
+			return response.status === 200;
+		} catch (error) {
+			console.error('CheckVendorExists: ' + error);
+			return false;
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		try {
+			const authToken = await token.getToken();
+			const response = await fetch(vendorIdEndpoint, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${authToken}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: organizationName })
+			});
+			if (response.status === 201) {
+				setIsVendor(true);
+			}
+		} catch (error) {
+			console.error(error);
+			alert('Failed to enroll as a vendor: ' + error);
+		}
+	};
+
+	const checkUserStatus = async () => {
+		try {
+			const loggedIn = await magic.user.isLoggedIn();
+			console.log('loggedIn', loggedIn);
+			setIsLoggedIn(loggedIn);
+			if (loggedIn) {
+				const vendorExists = await checkIfVendorExists();
+				setIsVendor(vendorExists);
+			}
+		} catch (error) {
+			console.error(error);
+			setIsLoggedIn(false);
+			setIsVendor(false);
+		}
+	};
 
 	useEffect(() => {
-		magic.user
-			.isLoggedIn()
-			.then((isLoggedIn) => {
-				setIsLoggedIn(isLoggedIn);
-			})
-			.catch((error) => {
-				console.error(error);
-				setIsLoggedIn(false);
-			});
-	}, [magic]);
+		checkUserStatus();
+	}, []);
 
-	if (isLoggedIn === null) {
+	if (isLoggedIn === null || (isLoggedIn === true && isVendor === null)) {
 		return <div>Loading...</div>;
 	}
 
-	return isLoggedIn ? <Home /> : <Login />;
+	if (!isLoggedIn) {
+		return <Login />;
+	}
+
+	if (isVendor) {
+		return <AppLayout />;
+	}
+
+	return (
+		<PageContainer>
+			<AppContainer>
+				<Header>Vendor User Interface</Header>
+				<TextBlock>
+					You are not a vendor. To become one, enter the name of your
+					organization in the input below and click enroll. Otherwise,
+					sign out.
+				</TextBlock>
+				<Form onSubmit={handleSubmit}>
+					<Input
+						type="text"
+						placeholder="Organization Name"
+						value={organizationName}
+						onChange={(e) => setOrganizationName(e.target.value)}
+					/>
+					<ButtonContainer>
+						<Button variant="filled" type="submit">
+							Enroll
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => magic.user.logout()}
+						>
+							Sign Out
+						</Button>
+					</ButtonContainer>
+				</Form>
+			</AppContainer>
+		</PageContainer>
+	);
 }
 
 export default ConditionalRoot;
