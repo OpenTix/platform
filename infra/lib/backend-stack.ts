@@ -155,7 +155,7 @@ export class BackendStack extends cdk.Stack {
 			role: LambdaLogRole
 		});
 
-		function addDynamicOptions(resource: any) {
+		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
 			resource.addMethod(
 				'OPTIONS',
 				new LambdaIntegration(OptionsLambda),
