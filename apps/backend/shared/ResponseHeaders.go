@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"log"
 	"regexp"
 )
 
@@ -21,8 +20,6 @@ func GetResponseHeaders(origin string) map[string]string {
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods":    "OPTIONS,GET,PUT,POST,PATCH",
     }
-
-	log.Printf("Origin: %s", origin)
 
     allowed := false
     for _, pattern := range allowedOriginPatterns {

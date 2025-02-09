@@ -63,6 +63,7 @@ func init() {
 
 // This gets the current vendor's info based off the authorization token
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	log.Printf("Request Headers: %v\n", request.Headers)
     // Grab and validate auth token
 	didToken := request.Headers["Authorization"]
 	didToken = strings.TrimPrefix(didToken, "Bearer ")
