@@ -87,7 +87,7 @@ jobs:
                   USEPRBACKEND="${{ github.event.inputs.useprbackend }}"
                   if [ "$USEPRBACKEND" = "true" ]; then
                     echo "Using PR backend"
-                    NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER NX_PUBLIC_API_BASEURL=https://api.$PRNUMBER.dev.opentix.co npx nx run-many -t build --no-cloud
+                    NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER NX_PUBLIC_API_BASEURL=https://api.pr$PRNUMBER.dev.opentix.co npx nx run-many -t build --no-cloud
                   else
                     NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
                   fi
