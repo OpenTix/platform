@@ -13,13 +13,18 @@ var allowedOriginPatterns = []*regexp.Regexp{
 
 var defaultOrigin = "https://opentix.co"
 
-func GetResponseHeaders(origin string) map[string]string {
-    headers := map[string]string{
+func GetResponseHeaders(headers map[string]string) map[string]string {
+    responseHeaders := map[string]string{
         "Content-Type":                    "application/json",
         "Access-Control-Allow-Headers":    "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent",
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods":    "OPTIONS,GET,PUT,POST,PATCH",
     }
+
+	origin := headers["Origin"]
+	if origin == "" {
+		origin = headers["origin"]
+	}
 
     allowed := false
     for _, pattern := range allowedOriginPatterns {
@@ -30,10 +35,10 @@ func GetResponseHeaders(origin string) map[string]string {
     }
 
     if allowed {
-        headers["Access-Control-Allow-Origin"] = origin
+        responseHeaders["Access-Control-Allow-Origin"] = origin
     } else {
-        headers["Access-Control-Allow-Origin"] = defaultOrigin
+        responseHeaders["Access-Control-Allow-Origin"] = defaultOrigin
     }
 
-    return headers
+    return responseHeaders
 }
