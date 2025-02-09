@@ -10,7 +10,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
 	<StrictMode>
-		<Theme accentColor='purple'>
+		<Theme accentColor="purple">
 			<MagicProvider>
 				<AppRouter />
 			</MagicProvider>
