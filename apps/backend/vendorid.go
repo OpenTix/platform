@@ -61,69 +61,72 @@ func init() {
     connStr = u.String()
 }
 
+func createErrorResponse(statusCode int, message string, requestHeaders map[string]string) (events.APIGatewayProxyResponse, error) {
+	body, _ := json.Marshal(map[string]string{"message": message})
+	return events.APIGatewayProxyResponse{
+		StatusCode: statusCode,
+		Body:       string(body),
+		Headers:    shared.GetResponseHeaders(requestHeaders),
+	}, nil
+}
+
+func createErrorResponseAndLogError(statusCode int, message string, requestHeaders map[string]string, err error) (events.APIGatewayProxyResponse, error) {
+	log.Printf("Error: %v:  %v\n", message, err)
+	return createErrorResponse(statusCode, message, requestHeaders)
+}
+
+func getTokenFromRequest(request events.APIGatewayProxyRequest) (*token.Token, error) {
+    didToken := request.Headers["Authorization"]
+    didToken = strings.TrimPrefix(didToken, "Bearer ")
+    return token.NewToken(didToken)
+}
+
+func getWallet(tk *token.Token) (string, error) {
+    wallet, err := tk.GetPublicAddress()
+    if err != nil {
+        return "", err
+    }
+    return strings.TrimPrefix(wallet, "0x"), nil
+}
+
 // This gets the current vendor's info based off the authorization token
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-    // Grab and validate auth token
-	didToken := request.Headers["Authorization"]
-	didToken = strings.TrimPrefix(didToken, "Bearer ")
-	tk, err := token.NewToken(didToken)
-	if err != nil {
-		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
-		
-		body, _ := json.Marshal(map[string]string{"message": "Token Error"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 401,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
+    // Grab auth token
+    tk, err := getTokenFromRequest(request)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+    }
 
     // Grab wallet address from token
-	wallet, err := tk.GetPublicAddress()
-	wallet = strings.TrimPrefix(wallet, "0x")
+    wallet, err := getWallet(tk)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+    }
 
     // Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
-	if err != nil {
-		log.Printf("Failed to connect to the database: %v", err)
+    conn, err := pgx.Connect(ctx, connStr)
+    if err != nil {
+        return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+    }
+    defer conn.Close(ctx)
 
-		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database."})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
-	defer conn.Close(ctx)
-
-	queries := query.New(conn)
+    queries := query.New(conn)
 
     // get vendor
-	vendor, err := queries.GetVendorByWallet(ctx, wallet)
-	if err != nil {
-		body, _ := json.Marshal(map[string]string{"message": "Vendor does not exist"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 404,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
+    vendor, err := queries.GetVendorByWallet(ctx, wallet)
+    if err != nil {
+        return createErrorResponse(404, "Vendor does not exist", request.Headers)
+    }
 
-	responseBody, err := json.Marshal(vendor)
-	if err != nil {
-		log.Printf("Failed to marshal response: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Failed to marshal response"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(responseBody),
-		Headers: shared.GetResponseHeaders(request.Headers),
-	}, nil
+    responseBody, err := json.Marshal(vendor)
+    if err != nil {
+        return createErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
+    }
+    return events.APIGatewayProxyResponse{
+        StatusCode: 200,
+        Body:       string(responseBody),
+        Headers:    shared.GetResponseHeaders(request.Headers),
+    }, nil
 }
 
 // This takes in the auth token and the name of the vendor and creates a new vendor if it does not already exist
@@ -132,51 +135,28 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
-		log.Printf("Failed to unmarshal request body: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(400, "Invalid request body", request.Headers)
 	}
 	if body.Name == "" {
-		body, _ := json.Marshal(map[string]string{"message": "Name is required"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(400, "Name is required", request.Headers)
 	}
 
-    // Grab and validate auth token
-	didToken := request.Headers["Authorization"]
-	didToken = strings.TrimPrefix(didToken, "Bearer ")
-	tk, err := token.NewToken(didToken)
-	if err != nil {
-		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
-		body, _ := json.Marshal(map[string]string{"message": "Token Error"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 401,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
+    // Grab auth token
+    tk, err := getTokenFromRequest(request)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+    }
 
     // Grab wallet address from token
-	wallet, err := tk.GetPublicAddress()
-	wallet = strings.TrimPrefix(wallet, "0x")
+    wallet, err := getWallet(tk)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+    }
 
     // Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		log.Printf("Failed to connect to the database: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -185,24 +165,13 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// ensure vendor does not already exist
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err == nil {
-		body, _ := json.Marshal(map[string]string{"message": "Vendor already exists"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 409,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(409, "Vendor already exists", request.Headers)
 	}
 
     // create vendor
 	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
 	if err != nil {
-		log.Printf("Failed to create vendor: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Failed to create vendor"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(vendor)
@@ -220,51 +189,28 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
-		log.Printf("Failed to unmarshal request body: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Invalid request body"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(400, "Invalid request body", request.Headers)
 	}
 	if body.Name == "" {
-		body, _ := json.Marshal(map[string]string{"message": "Name is required"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(400, "Name is required", request.Headers)
 	}
 
-    // Grab and validate auth token
-	didToken := request.Headers["Authorization"]
-	didToken = strings.TrimPrefix(didToken, "Bearer ")
-	tk, err := token.NewToken(didToken)
-	if err != nil {
-		log.Printf("Error creating token object from DIDToken: %v\n", err.Error())
-		body, _ := json.Marshal(map[string]string{"message": "Token error"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 401,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
-	}
+    // Grab auth token
+    tk, err := getTokenFromRequest(request)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+    }
 
     // Grab wallet address from token
-	wallet, err := tk.GetPublicAddress()
-	wallet = strings.TrimPrefix(wallet, "0x")
+    wallet, err := getWallet(tk)
+    if err != nil {
+        return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+    }
 
     // Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		log.Printf("Failed to connect to the database: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Failed to connect to the database"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -273,24 +219,13 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
     // ensure vendor exists
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err != nil {
-		body, _ := json.Marshal(map[string]string{"message": "Vendor does not exist. Use POST"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 404,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponse(404, "Vendor does not exist. Use POST", request.Headers)
 	}
 
     // update vendor
 	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{wallet, body.Name})
 	if err != nil {
-		log.Printf("Failed to update vendor: %v", err)
-		body, _ := json.Marshal(map[string]string{"message": "Failed to update vendor"})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       string(body),
-			Headers: shared.GetResponseHeaders(request.Headers),
-		}, nil 
+		return createErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
 	}
 	responseBody, err := json.Marshal(vendor)
 	return events.APIGatewayProxyResponse{

@@ -7,8 +7,8 @@ import (
 var allowedOriginPatterns = []*regexp.Regexp{
     regexp.MustCompile(`^https://opentix\.co/?$`),
     regexp.MustCompile(`^https://.+\.opentix\.co/?$`),
-    regexp.MustCompile(`^http://localhost:4200/?$`),
-    regexp.MustCompile(`^http://127\.0\.0\.1:4200/?$`),
+    regexp.MustCompile(`^http://localhost(:[0-9]+)?/?$`),
+    regexp.MustCompile(`^http://127\.0\.0\.1(:[0-9]+)?/?$`),
 }
 
 var defaultOrigin = "https://opentix.co"
