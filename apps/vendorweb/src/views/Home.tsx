@@ -1,34 +1,55 @@
 import {Tabs, Box, Flex, TextField, Button, Section} from '@radix-ui/themes';
 import { useState, ChangeEventHandler } from 'react';
 import VendorTable from '../components/VendorTable';
+import Modal from "../components/EventAddModal";
+
+type EventData = {
+	id: string;
+	date: number;
+	name: string;
+  };
+  
+  type VenueData = {
+	id: string;
+	date: number;
+	location: string;
+  };
 
 export default function Home() {
 
-	const [eventData, setEventData] = useState([{id:"otherstuff", date: Date.now()}]);
-	const [venueData, setVenueData] = useState([{id:"somestuff", date: Date.now()}]);
+	const [eventData, setEventData] = useState<EventData[]>([{ id: "otherstuff", date: Date.now(), name: "Sample Event" }]);
+	const [venueData, setVenueData] = useState<VenueData[]>([{ id: "somestuff", date: Date.now(), location: "Sample Venue" }]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
 	const [venueDisplay, setVenueDisplay] = useState(venueData);
-	const [activeTab, setActiveTab] = useState('events');
+	const [activeTab, setActiveTab] = useState<"events" | "venues">("events");
+
+	const [showModal, setShowModal] = useState(false);
+  	const [modalType, setModalType] = useState<"events" | "venues" | null>(null);
 
 	const addRow = () => {
-		switch (activeTab){
-			case 'events':
-				setEventData([...eventData, {id:"otherstuff", date: Date.now()}]); // TODO: call menu to make a new event
-				break;
-			case 'venues':
-				setVenueData([...venueData, {id:"somestuff", date: Date.now()}]); // TODO: call menu to make a new venue
-				break;
+		setModalType(activeTab);
+		setShowModal(true);
+	};
+
+	const handleAdd = (newItem: EventData | VenueData) => {
+		if (modalType === "events") {
+		  setEventData([...eventData, newItem as EventData]);
+		  setEventDisplay([...eventDisplay, newItem as EventData]);
+		} else if (modalType === "venues") {
+		  setVenueData([...venueData, newItem as VenueData]);
+		  setVenueDisplay([...venueDisplay, newItem as VenueData]);
 		}
+		setShowModal(false);
 	};
 
 	const filterData = (e:any) => {
-		let filterString = e.target.value;
-		setEventDisplay(eventData.filter((evnt) => evnt.id == filterString || evnt.date == filterString));
-		setVenueDisplay(venueData.filter((venue) => venue.id == filterString || venue.date == filterString));
+		let filterString = e.target.value.toLowerCase();
+		setEventDisplay(eventData.filter((evnt) => evnt.id.toLowerCase().includes(filterString) || evnt.name.toLowerCase().includes(filterString)));
+		setVenueDisplay(venueData.filter((venue) => venue.id.includes(filterString) || venue.location.toLowerCase().includes(filterString)));
 	};
 
 	const updateTab = (e:string) => {
-		setActiveTab(e);
+		setActiveTab(e as "events" | "venues");
 	};
 
 	return (
@@ -55,6 +76,9 @@ export default function Home() {
 				</Tabs.Content>
 			</Box>
 		</Tabs.Root>
+		{showModal && modalType && (
+        <Modal type={modalType} onSubmit={handleAdd} onClose={() => setShowModal(false)} />
+      )}
 	</Box>
 	);
 }

@@ -8,23 +8,33 @@ interface tableRowArray{
 interface tableRowData{
     id:string;
     date?:number;
+    name?:string;
+    location?:string
 };
 
 export default function VendorTable({rowData}:tableRowArray){
 
+    const firstColumnLabel = rowData.some(row => row.name !== undefined) ? "Name" : "Location";
+
     const tableHeader = (
         <Table.Row>
             <Table.ColumnHeaderCell>
-                <Text>id</Text>
+                <Text>{firstColumnLabel}</Text>
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
-                <Text>date</Text>
+                <Text>Event ID</Text>
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+                <Text>Date Published</Text>
             </Table.ColumnHeaderCell>
         </Table.Row>
     );
 
     const tableRows = rowData.map((row, idx) =>
         <Table.Row key={idx}>
+            <Table.Cell>
+                {row.name || row.location}
+            </Table.Cell>
             <Table.Cell>
                 {row.id}
             </Table.Cell>
