@@ -150,6 +150,35 @@ export class BackendStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const OptionsLambda = new GoFunction(this, 'OptionsLambda', {
+			entry: `${basePath}/options.go`,
+			role: LambdaLogRole
+		});
+
+		function addDynamicOptions(resource: any) {
+			resource.addMethod(
+				'OPTIONS',
+				new LambdaIntegration(OptionsLambda),
+				{
+					methodResponses: [
+						{
+							statusCode: '200',
+							responseParameters: {
+								'method.response.header.Access-Control-Allow-Origin':
+									true,
+								'method.response.header.Access-Control-Allow-Methods':
+									true,
+								'method.response.header.Access-Control-Allow-Headers':
+									true,
+								'method.response.header.Access-Control-Allow-Credentials':
+									true
+							}
+						}
+					]
+				}
+			);
+		}
+
 		// API Gateway
 		const domainName =
 			process.env.DEPLOYENV === 'feature'
@@ -169,23 +198,6 @@ export class BackendStack extends cdk.Stack {
 			domainName: {
 				domainName: domainName,
 				certificate: certificate
-			},
-			defaultCorsPreflightOptions: {
-				allowOrigins: [
-					'https://opentix.co',
-					'https://*.opentix.co',
-					'http://localhost:4200',
-					'http://127.0.0.1:4200'
-				],
-				allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
-				allowHeaders: [
-					'Content-Type',
-					'Authorization',
-					'X-Amz-Date',
-					'X-Api-Key',
-					'X-Amz-Security-Token',
-					'X-Amz-User-Agent'
-				]
 			}
 		});
 
@@ -197,25 +209,28 @@ export class BackendStack extends cdk.Stack {
 
 		// Add Paths to API Gateway
 		// Root Paths
-		api.root
-			.addResource('example')
-			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
-				authorizer: auth
-			});
-		api.root
-			.addResource('testdbconnection')
-			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
-				authorizer: auth
-			});
+		const exampleResource = api.root.addResource('example');
+		exampleResource.addMethod('GET', new LambdaIntegration(ExampleLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(exampleResource);
 
-		// /vendor Paths
-		api.root.addResource('vendor');
-		api.root
-			.getResource('vendor')
-			?.addResource('id')
-			.addMethod('ANY', new LambdaIntegration(VendorIDLambda), {
+		const testDbResource = api.root.addResource('testdbconnection');
+		testDbResource.addMethod('GET', new LambdaIntegration(DBTestLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(testDbResource);
+
+		const vendorResource = api.root.addResource('vendor');
+		const vendorIdResource = vendorResource.addResource('id');
+		vendorIdResource.addMethod(
+			'ANY',
+			new LambdaIntegration(VendorIDLambda),
+			{
 				authorizer: auth
-			});
+			}
+		);
+		addDynamicOptions(vendorIdResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
