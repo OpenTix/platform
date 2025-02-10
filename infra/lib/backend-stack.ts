@@ -145,6 +145,40 @@ export class BackendStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const VendorIDLambda = new GoFunction(this, 'VendorIDLambda', {
+			entry: `${basePath}/vendorid.go`,
+			...LambdaDBAccessProps
+		});
+
+		const OptionsLambda = new GoFunction(this, 'OptionsLambda', {
+			entry: `${basePath}/options.go`,
+			role: LambdaLogRole
+		});
+
+		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
+			resource.addMethod(
+				'OPTIONS',
+				new LambdaIntegration(OptionsLambda),
+				{
+					methodResponses: [
+						{
+							statusCode: '200',
+							responseParameters: {
+								'method.response.header.Access-Control-Allow-Origin':
+									true,
+								'method.response.header.Access-Control-Allow-Methods':
+									true,
+								'method.response.header.Access-Control-Allow-Headers':
+									true,
+								'method.response.header.Access-Control-Allow-Credentials':
+									true
+							}
+						}
+					]
+				}
+			);
+		}
+
 		// API Gateway
 		const domainName =
 			process.env.DEPLOYENV === 'feature'
@@ -174,16 +208,29 @@ export class BackendStack extends cdk.Stack {
 		});
 
 		// Add Paths to API Gateway
-		api.root
-			.addResource('example')
-			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
+		// Root Paths
+		const exampleResource = api.root.addResource('example');
+		exampleResource.addMethod('GET', new LambdaIntegration(ExampleLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(exampleResource);
+
+		const testDbResource = api.root.addResource('testdbconnection');
+		testDbResource.addMethod('GET', new LambdaIntegration(DBTestLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(testDbResource);
+
+		const vendorResource = api.root.addResource('vendor');
+		const vendorIdResource = vendorResource.addResource('id');
+		vendorIdResource.addMethod(
+			'ANY',
+			new LambdaIntegration(VendorIDLambda),
+			{
 				authorizer: auth
-			});
-		api.root
-			.addResource('testdbconnection')
-			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
-				authorizer: auth
-			});
+			}
+		);
+		addDynamicOptions(vendorIdResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url

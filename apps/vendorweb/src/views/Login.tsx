@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMagic } from '@platform/auth';
+import { useMagic, useToken } from '@platform/auth';
 import { VersionTag } from '@platform/ui';
 
 const Container = styled.div`
@@ -66,13 +66,16 @@ const Button = styled.button`
 
 function Login() {
 	const magic = useMagic();
+	const token = useToken();
 	const [email, setEmail] = useState('');
 	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			await magic.auth.loginWithMagicLink({ email });
+			const newToken = await magic.auth.loginWithMagicLink({ email });
+			//eslint-disable-next-line
+			token.storeToken(newToken!);
 			navigate(0);
 		} catch (error) {
 			console.error(error);
