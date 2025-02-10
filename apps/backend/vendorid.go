@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -16,7 +15,6 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/magiclabs/magic-admin-go/client"
-	"github.com/magiclabs/magic-admin-go/token"
 
 	"backend/query"
 	"backend/shared"
@@ -59,52 +57,24 @@ func init() {
 	connStr = u.String()
 }
 
-func createErrorResponse(statusCode int, message string, requestHeaders map[string]string) (events.APIGatewayProxyResponse, error) {
-	body, _ := json.Marshal(map[string]string{"message": message})
-	return events.APIGatewayProxyResponse{
-		StatusCode: statusCode,
-		Body:       string(body),
-		Headers:    shared.GetResponseHeaders(requestHeaders),
-	}, nil
-}
-
-func createErrorResponseAndLogError(statusCode int, message string, requestHeaders map[string]string, err error) (events.APIGatewayProxyResponse, error) {
-	log.Printf("Error: %v:  %v\n", message, err)
-	return createErrorResponse(statusCode, message, requestHeaders)
-}
-
-func getTokenFromRequest(request events.APIGatewayProxyRequest) (*token.Token, error) {
-	didToken := request.Headers["Authorization"]
-	didToken = strings.TrimPrefix(didToken, "Bearer ")
-	return token.NewToken(didToken)
-}
-
-func getWallet(tk *token.Token) (string, error) {
-	wallet, err := tk.GetPublicAddress()
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimPrefix(wallet, "0x"), nil
-}
-
 // This gets the current vendor's info based off the authorization token
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Grab auth token
-	tk, err := getTokenFromRequest(request)
+	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := getWallet(tk)
+	wallet, err := shared.GetWalletFromToken(tk)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -113,12 +83,12 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// get vendor
 	vendor, err := queries.GetVendorByWallet(ctx, wallet)
 	if err != nil {
-		return createErrorResponse(404, "Vendor does not exist", request.Headers)
+		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
 
 	responseBody, err := json.Marshal(vendor)
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
 	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
@@ -133,28 +103,28 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
-		return createErrorResponse(400, "Invalid request body", request.Headers)
+		return shared.CreateErrorResponse(400, "Invalid request body", request.Headers)
 	}
 	if body.Name == "" {
-		return createErrorResponse(400, "Name is required", request.Headers)
+		return shared.CreateErrorResponse(400, "Name is required", request.Headers)
 	}
 
 	// Grab auth token
-	tk, err := getTokenFromRequest(request)
+	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := getWallet(tk)
+	wallet, err := shared.GetWalletFromToken(tk)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -163,13 +133,13 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// ensure vendor does not already exist
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err == nil {
-		return createErrorResponse(409, "Vendor already exists", request.Headers)
+		return shared.CreateErrorResponse(409, "Vendor already exists", request.Headers)
 	}
 
 	// create vendor
 	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(vendor)
@@ -187,28 +157,28 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	var body PostPatchVendorIdRequestBody
 	err := json.Unmarshal([]byte(request.Body), &body)
 	if err != nil {
-		return createErrorResponse(400, "Invalid request body", request.Headers)
+		return shared.CreateErrorResponse(400, "Invalid request body", request.Headers)
 	}
 	if body.Name == "" {
-		return createErrorResponse(400, "Name is required", request.Headers)
+		return shared.CreateErrorResponse(400, "Name is required", request.Headers)
 	}
 
 	// Grab auth token
-	tk, err := getTokenFromRequest(request)
+	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := getWallet(tk)
+	wallet, err := shared.GetWalletFromToken(tk)
 	if err != nil {
-		return createErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -217,13 +187,13 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	// ensure vendor exists
 	_, err = queries.GetVendorByWallet(ctx, wallet)
 	if err != nil {
-		return createErrorResponse(404, "Vendor does not exist. Use POST", request.Headers)
+		return shared.CreateErrorResponse(404, "Vendor does not exist. Use POST", request.Headers)
 	}
 
 	// update vendor
 	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{wallet, body.Name})
 	if err != nil {
-		return createErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
 	}
 	responseBody, err := json.Marshal(vendor)
 	return events.APIGatewayProxyResponse{
