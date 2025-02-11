@@ -1,9 +1,9 @@
+// import { VenueData } from '../../../../packages/types/src/VenueData';
+import { VenueData, EventData } from '@platform/types';
 import { Tabs, Box, Flex, TextField, Button } from '@radix-ui/themes';
 import { useState } from 'react';
 import Modal from '../components/EventAddModal';
 import VendorTable from '../components/VendorTable';
-// import { VenueData } from '../../../../packages/types/src/VenueData';
-import { VenueData, EventData } from '@opentix/types';
 
 // type EventData = {
 // 	id: string;
