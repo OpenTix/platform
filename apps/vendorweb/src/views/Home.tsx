@@ -2,18 +2,20 @@ import { Tabs, Box, Flex, TextField, Button } from '@radix-ui/themes';
 import { useState } from 'react';
 import Modal from '../components/EventAddModal';
 import VendorTable from '../components/VendorTable';
+// import { VenueData } from '../../../../packages/types/src/VenueData';
+import { VenueData, EventData } from '@opentix/types';
 
-type EventData = {
-	id: string;
-	date: number;
-	name: string;
-};
+// type EventData = {
+// 	id: string;
+// 	date: number;
+// 	name: string;
+// };
 
-type VenueData = {
-	id: string;
-	date: number;
-	location: string;
-};
+// type VenueData = {
+// 	id: string;
+// 	date: number;
+// 	location: string;
+// };
 
 export default function Home() {
 	const [eventData, setEventData] = useState<EventData[]>([
@@ -70,7 +72,7 @@ export default function Home() {
 	};
 
 	return (
-		<Box minWidth="1200px">
+		<Box>
 			<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
 				<Flex justify="between">
 					<Tabs.List size="2">
