@@ -52,6 +52,7 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 					placeholder="ID"
 					value={formData.id}
 					onChange={handleChange}
+					style={{ marginBottom: '4px' }}
 				/>
 				{type === 'events' ? (
 					<TextField.Root
@@ -59,6 +60,7 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 						placeholder="Event Name"
 						value={formData.name}
 						onChange={handleChange}
+						style={{ marginBottom: '4px' }}
 					/>
 				) : (
 					<TextField.Root
@@ -66,9 +68,12 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 						placeholder="Venue Location"
 						value={formData.location}
 						onChange={handleChange}
+						style={{ marginBottom: '4px' }}
 					/>
 				)}
-				<Button onClick={handleSubmit}>Add</Button>
+				<Button onClick={handleSubmit} style={{ marginRight: '4px' }}>
+					Add
+				</Button>
 				<Button onClick={onClose} variant="soft">
 					Cancel
 				</Button>

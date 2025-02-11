@@ -84,6 +84,7 @@ export default function Home() {
 							placeholder="search"
 							size="3"
 							onChangeCapture={filterData}
+							style={{ marginRight: '4px' }}
 						></TextField.Root>
 
 						<Button onClick={addRow} size="3">

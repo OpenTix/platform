@@ -8,7 +8,7 @@ export default function Navigation() {
 		<Navbar>
 			<div>
 				<NavLink to="/">Home</NavLink>
-				<NavLink to="/example1">Example Page 1</NavLink>
+				{/* <NavLink to="/example1">Example Page 1</NavLink> */}
 			</div>
 			<div>
 				<NavButton
