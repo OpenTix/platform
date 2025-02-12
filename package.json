@@ -22,6 +22,7 @@
 		"lint-backend": "npx nx run backend:lint",
 		"test-backend": "npx nx run backend:test",
 		"build-backend": "npx nx run backend:build",
+		"all": "npx nx run-many -t lint test build",
 		"prepare": "husky || true",
 		"prettier": "prettier --check .",
 		"prettier-fix": "prettier --write ."
