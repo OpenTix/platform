@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MoonLoader } from 'react-spinners';
 import styled, { css } from 'styled-components';
 import { useMagic, useToken } from '@platform/auth';
 import Login from '../views/Login';
@@ -9,7 +10,6 @@ const PageContainer = styled.div`
 	justify-content: center;
 	align-items: center;
 `;
-
 const AppContainer = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -18,6 +18,9 @@ const AppContainer = styled.div`
 	max-width: 600px; /* Optional: limit the width of the content */
 	padding: 1rem;
 `;
+const AppContainerCentered = styled(AppContainer)`
+	align-items: center;
+`;
 const Header = styled.h1`
 	font-size: 2rem;
 	margin-bottom: 1rem;
@@ -25,6 +28,15 @@ const Header = styled.h1`
 const TextBlock = styled.p`
 	font-size: 1.25rem;
 	margin-bottom: 1rem;
+`;
+const TextBlockFadeIn = styled(TextBlock)`
+	opacity: 0;
+	animation: fadeIn 1s forwards;
+	@keyframes fadeIn {
+		to {
+			opacity: 1;
+		}
+	}
 `;
 const Form = styled.form`
 	display: flex;
@@ -76,6 +88,8 @@ function ConditionalRoot() {
 	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 	const [isVendor, setIsVendor] = useState<boolean | null>(null);
 	const [organizationName, setOrganizationName] = useState<string>('');
+	const [isLoadingText2Readable, setIsLoadingText2Readable] =
+		useState<boolean>(false);
 	const vendorIdEndpoint = process.env.NX_PUBLIC_API_BASEURL + '/vendor/id';
 
 	const checkIfVendorExists = async () => {
@@ -133,10 +147,25 @@ function ConditionalRoot() {
 
 	useEffect(() => {
 		checkUserStatus();
+
+		const timer = setTimeout(() => {
+			setIsLoadingText2Readable(true);
+		}, 5000);
+		return () => clearTimeout(timer);
 	}, []);
 
 	if (isLoggedIn === null || (isLoggedIn === true && isVendor === null)) {
-		return <div>Loading...</div>;
+		return (
+			<PageContainer>
+				<AppContainerCentered>
+					<MoonLoader color="#ff8200" />
+					<TextBlock>Loading...</TextBlock>
+					{isLoadingText2Readable && (
+						<TextBlockFadeIn>... a lot of things.</TextBlockFadeIn>
+					)}
+				</AppContainerCentered>
+			</PageContainer>
+		);
 	}
 
 	if (!isLoggedIn) {
