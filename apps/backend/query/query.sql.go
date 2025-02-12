@@ -34,24 +34,36 @@ func (q *Queries) CreateVendor(ctx context.Context, arg CreateVendorParams) (App
 
 const getEventsPaginated = `-- name: GetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
-where event.venue = (
-    select distinct pk from app.venue where (
-        null is null or '37922' = zip
-    )
+where exists (
+    select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
+    where ($2 is null or $2 = venue.zip)
 )
-and (null is null or event.name = null)
-and (null is null or event.type = null)
-and (null is null or event.basecost <= null)
+and ($3 is null or event.name = $3)
+and ($4 is null or event.type = $4)
+and ($5 is null or event.basecost <= $5)
+and ($6 is null or event.event_datetime >= $6)
 limit 5
-offset((1 - 1) * 5)
+offset (($1 - 1) * 5)
 `
 
-// select * from app.event
-// where (select zip from app.venue where ($2 is null or $2 = zip)) and ($3 is null or name = $3) and ($4 is null or type = $4) and ($5 is null or basecost <= $5)
-// limit 5
-// offset(($1 - 1) * 5);
-func (q *Queries) GetEventsPaginated(ctx context.Context) ([]AppEvent, error) {
-	rows, err := q.db.Query(ctx, getEventsPaginated)
+type GetEventsPaginatedParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Column5 interface{}
+	Column6 interface{}
+}
+
+func (q *Queries) GetEventsPaginated(ctx context.Context, arg GetEventsPaginatedParams) ([]AppEvent, error) {
+	rows, err := q.db.Query(ctx, getEventsPaginated,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+	)
 	if err != nil {
 		return nil, err
 	}
