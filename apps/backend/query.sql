@@ -15,10 +15,10 @@ update app.vendor set name = $2 where wallet = $1 returning *;
 select * from app.venue venue
 where venue.vendor = (
     select pk from app.vendor vendor
-    where vendor.wallet = $1
+    where vendor.wallet = $2
 )
 limit 5
-offset (($2 - 1) * 5);
+offset (($1 - 1) * 5);
 
 -- name: GetEventsPaginated :many
 select * from app.event event

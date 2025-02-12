@@ -132,19 +132,19 @@ const getVenuesPaginated = `-- name: GetVenuesPaginated :many
 select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
 where venue.vendor = (
     select pk from app.vendor vendor
-    where vendor.wallet = $1
+    where vendor.wallet = $2
 )
 limit 5
-offset (($2 - 1) * 5)
+offset (($1 - 1) * 5)
 `
 
 type GetVenuesPaginatedParams struct {
+	Column1 interface{}
 	Wallet  string
-	Column2 interface{}
 }
 
 func (q *Queries) GetVenuesPaginated(ctx context.Context, arg GetVenuesPaginatedParams) ([]AppVenue, error) {
-	rows, err := q.db.Query(ctx, getVenuesPaginated, arg.Wallet, arg.Column2)
+	rows, err := q.db.Query(ctx, getVenuesPaginated, arg.Column1, arg.Wallet)
 	if err != nil {
 		return nil, err
 	}
