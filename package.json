@@ -31,8 +31,6 @@
 	"dependencies": {
 		"@radix-ui/themes": "^3.2.0",
 		"aws-cdk-lib": "^2.173.2",
-		"axios": "^1.6.0",
-		"constructs": "^10.4.2",
 		"magic-sdk": "^28.21.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
