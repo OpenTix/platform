@@ -32,6 +32,58 @@ func (q *Queries) CreateVendor(ctx context.Context, arg CreateVendorParams) (App
 	return i, err
 }
 
+const getEventsPaginated = `-- name: GetEventsPaginated :many
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.venue = (
+    select distinct pk from app.venue where (
+        null is null or '37922' = zip
+    )
+)
+and (null is null or event.name = null)
+and (null is null or event.type = null)
+and (null is null or event.basecost <= null)
+limit 5
+offset((1 - 1) * 5)
+`
+
+// select * from app.event
+// where (select zip from app.venue where ($2 is null or $2 = zip)) and ($3 is null or name = $3) and ($4 is null or type = $4) and ($5 is null or basecost <= $5)
+// limit 5
+// offset(($1 - 1) * 5);
+func (q *Queries) GetEventsPaginated(ctx context.Context) ([]AppEvent, error) {
+	rows, err := q.db.Query(ctx, getEventsPaginated)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppEvent
+	for rows.Next() {
+		var i AppEvent
+		if err := rows.Scan(
+			&i.Pk,
+			&i.ID,
+			&i.Vendor,
+			&i.Venue,
+			&i.Name,
+			&i.Type,
+			&i.EventDatetime,
+			&i.Description,
+			&i.Disclaimer,
+			&i.Basecost,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVendorByUuid = `-- name: GetVendorByUuid :one
 select pk, id, wallet, name from app.vendor where id = $1 limit 1
 `
@@ -62,6 +114,56 @@ func (q *Queries) GetVendorByWallet(ctx context.Context, wallet string) (AppVend
 		&i.Name,
 	)
 	return i, err
+}
+
+const getVenuesPaginated = `-- name: GetVenuesPaginated :many
+select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
+where venue.vendor = (
+    select pk from app.vendor vendor
+    where vendor.wallet = $1
+)
+limit 5
+offset (($2 - 1) * 5)
+`
+
+type GetVenuesPaginatedParams struct {
+	Wallet  string
+	Column2 interface{}
+}
+
+func (q *Queries) GetVenuesPaginated(ctx context.Context, arg GetVenuesPaginatedParams) ([]AppVenue, error) {
+	rows, err := q.db.Query(ctx, getVenuesPaginated, arg.Wallet, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppVenue
+	for rows.Next() {
+		var i AppVenue
+		if err := rows.Scan(
+			&i.Pk,
+			&i.ID,
+			&i.Vendor,
+			&i.Name,
+			&i.Streetaddr,
+			&i.Zip,
+			&i.City,
+			&i.StateCode,
+			&i.StateName,
+			&i.CountryCode,
+			&i.CountryName,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateVendorName = `-- name: UpdateVendorName :one
