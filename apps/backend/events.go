@@ -5,7 +5,7 @@ import (
 	"backend/shared"
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -40,10 +40,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	// Get events for current page
 	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{1, nil, nil, nil, nil, nil})
+	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
+	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
-	fmt.Println("%v", dbResponse)
 
 	responseBody, err := json.Marshal(dbResponse)
 	if err != nil {
