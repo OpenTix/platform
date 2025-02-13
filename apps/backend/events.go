@@ -39,7 +39,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 
 	// Get events for current page
-	dbResponse, err := queries.GetEventsPaginated(ctx, GetEventsPaginatedParams{1, nil, nil, nil, nil, nil})
+	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{1, nil, nil, nil, nil, nil})
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
