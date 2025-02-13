@@ -160,6 +160,11 @@ export class BackendStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+        const VenuesLambda = new GoFunction(this, 'VenuesLambda', {
+			entry: `${basePath}/venues.go`,
+			...LambdaDBAccessProps
+		});
+
 		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
 			resource.addMethod(
 				'OPTIONS',
@@ -242,6 +247,12 @@ export class BackendStack extends cdk.Stack {
             authorizer: auth
         });
         addDynamicOptions(eventsResource);
+
+        const venuesResource = api.root.addResource('events');
+        venuesResource.addMethod('GET', new LambdaIntegration(VenuesLambda), {
+            authorizer: auth
+        });
+        addDynamicOptions(venuesResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
