@@ -24,10 +24,10 @@ func init() {
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Grab auth token
-	tk, err := shared.GetTokenFromRequest(request)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
-	}
+	// tk, err := shared.GetTokenFromRequest(request)
+	// if err != nil {
+	// 	return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+	// }
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
