@@ -20,18 +20,35 @@ where venue.vendor = (
 limit 5
 offset (($1::int - 1) * 5);
 
+-- name: CreateVenue :one
+insert into app.venue (
+    name,
+    streetaddr,
+    zip,
+    city,
+    state_code,
+    state_name,
+    country_code,
+    country_name,
+    num_unique,
+    num_ga,
+    vendor
+) values (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) returning *;
+
 -- name: GetEventsPaginated :many
-select * from app.event event
-where exists (
-    select * from app.venue venue
-    where (case when $2 then venue.zip = $2 else true end)
-)
-and (case when $3 then event.name = $3 else true end)
-and (case when $4 then event.type = $4 else true end)
-and (case when $5 then event.basecost <= $5 else true end)
-and (case when $6 then event.event_datetime >= $6 else true end)
-limit 5
-offset (($1::int - 1) * 5);
+-- select * from app.event event
+-- where exists (
+--     select * from app.venue venue
+--     where (case when $2 then venue.zip = $2 else true end)
+-- )
+-- and (case when $3 then event.name = $3 else true end)
+-- and (case when $4 then event.type = $4 else true end)
+-- and (case when $5 then event.basecost <= $5 else true end)
+-- and (case when $6 then event.event_datetime >= $6 else true end)
+-- limit 5
+-- offset (($1::int - 1) * 5);
 -- select * from app.event event
 -- where exists (
 --     select * from app.venue venue
@@ -43,14 +60,14 @@ offset (($1::int - 1) * 5);
 -- and (sqlc.narg('datetime') is null or event.event_datetime >= sqlc.narg('datetime'))
 -- limit 5
 -- offset (($1::int - 1) * 5);
--- select * from app.event event
--- where exists (
---     select * from app.venue venue
---     where ($2 is null or venue.zip = $2)
--- )
--- and ($3 is null or event.name = $3)
--- and ($4 is null or event.type = $4)
--- and ($5 is null or event.basecost <= $5)
--- and ($6 is null or event.event_datetime >= $6)
--- limit 5
--- offset (($1::int - 1) * 5);
+select * from app.event event
+where exists (
+    select * from app.venue venue
+    where ($2 is null or venue.zip = $2)
+)
+and ($3 is null or event.name = $3)
+and ($4 is null or event.type = $4)
+and ($5 is null or event.basecost <= $5)
+and ($6 is null or event.event_datetime >= $6)
+limit 5
+offset (($1::int - 1) * 5);
