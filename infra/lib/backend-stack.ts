@@ -252,6 +252,9 @@ export class BackendStack extends cdk.Stack {
         venuesResource.addMethod('GET', new LambdaIntegration(VenuesLambda), {
             authorizer: auth
         });
+        venuesResource.addMethod('POST', new LambdaIntegration(VenuesLambda), {
+            authorizer: auth
+        });
         addDynamicOptions(venuesResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
