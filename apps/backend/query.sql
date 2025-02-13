@@ -24,11 +24,33 @@ offset (($1::int - 1) * 5);
 select * from app.event event
 where exists (
     select * from app.venue venue
-    where ($2 is null or venue.zip = $2)
+    where (case when $2 then venue.zip = $2 else true end)
 )
-and ($3 is null or event.name = $3)
-and ($4 is null or event.type = $4)
-and ($5 is null or event.basecost <= $5)
-and ($6 is null or event.event_datetime >= $6)
+and (case when $3 then event.name = $3 else true end)
+and (case when $4 then event.type = $4 else true end)
+and (case when $5 then event.basecost <= $5 else true end)
+and (case when $6 then event.event_datetime >= $6 else true end)
 limit 5
 offset (($1::int - 1) * 5);
+-- select * from app.event event
+-- where exists (
+--     select * from app.venue venue
+--     where (sqlc.narg('zip') is null or venue.zip = sqlc.narg('zip'))
+-- )
+-- and (sqlc.narg('name') is null or event.name = sqlc.narg('name'))
+-- and (sqlc.narg('type') is null or event.type = sqlc.narg('type'))
+-- and (sqlc.narg('basecost') is null or event.basecost <= sqlc.narg('basecost'))
+-- and (sqlc.narg('datetime') is null or event.event_datetime >= sqlc.narg('datetime'))
+-- limit 5
+-- offset (($1::int - 1) * 5);
+-- select * from app.event event
+-- where exists (
+--     select * from app.venue venue
+--     where ($2 is null or venue.zip = $2)
+-- )
+-- and ($3 is null or event.name = $3)
+-- and ($4 is null or event.type = $4)
+-- and ($5 is null or event.basecost <= $5)
+-- and ($6 is null or event.event_datetime >= $6)
+-- limit 5
+-- offset (($1::int - 1) * 5);
