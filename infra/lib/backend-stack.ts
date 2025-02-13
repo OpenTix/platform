@@ -248,7 +248,7 @@ export class BackendStack extends cdk.Stack {
         });
         addDynamicOptions(eventsResource);
 
-        const venuesResource = api.root.addResource('events');
+        const venuesResource = api.root.addResource('venues');
         venuesResource.addMethod('GET', new LambdaIntegration(VenuesLambda), {
             authorizer: auth
         });
