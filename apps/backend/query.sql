@@ -18,7 +18,7 @@ where venue.vendor = (
     where vendor.wallet = $2
 )
 limit 5
-offset (($1 - 1) * 5);
+offset (($1 :: int - 1) * 5);
 
 -- name: GetEventsPaginated :many
 select * from app.event event
@@ -31,4 +31,4 @@ and ($4 is null or event.type = $4)
 and ($5 is null or event.basecost <= $5)
 and ($6 is null or event.event_datetime >= $6)
 limit 5
-offset (($1 - 1) * 5);
+offset (($1 :: int - 1) * 5);

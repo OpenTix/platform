@@ -43,11 +43,11 @@ and ($4 is null or event.type = $4)
 and ($5 is null or event.basecost <= $5)
 and ($6 is null or event.event_datetime >= $6)
 limit 5
-offset (($1 - 1) * 5)
+offset (($1 :: int - 1) * 5)
 `
 
 type GetEventsPaginatedParams struct {
-	Column1 interface{}
+	Column1 int32
 	Column2 interface{}
 	Column3 interface{}
 	Column4 interface{}
@@ -135,11 +135,11 @@ where venue.vendor = (
     where vendor.wallet = $2
 )
 limit 5
-offset (($1 - 1) * 5)
+offset (($1 :: int - 1) * 5)
 `
 
 type GetVenuesPaginatedParams struct {
-	Column1 interface{}
+	Column1 int32
 	Wallet  string
 }
 
