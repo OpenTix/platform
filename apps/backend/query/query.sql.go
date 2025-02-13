@@ -36,14 +36,14 @@ const getEventsPaginated = `-- name: GetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
 where exists (
     select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
-    where ($2 is null or $2 = venue.zip)
+    where ($2 is null or venue.zip = $2)
 )
 and ($3 is null or event.name = $3)
 and ($4 is null or event.type = $4)
 and ($5 is null or event.basecost <= $5)
 and ($6 is null or event.event_datetime >= $6)
 limit 5
-offset (($1 :: int - 1) * 5)
+offset (($1::int - 1) * 5)
 `
 
 type GetEventsPaginatedParams struct {
