@@ -62,9 +62,68 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}, nil
 }
 
+func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Grab auth token
+	tk, err := shared.GetTokenFromRequest(request)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+	}
+
+	// Grab wallet address from token
+	wallet, err := shared.GetWalletFromToken(tk)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+	}
+
+	// Connect to the database
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+	}
+	defer conn.Close(ctx)
+	queries := query.New(conn)
+
+	resp, err := queries.GetVendorByWallet(ctx, wallet)
+	if err != nil {
+		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
+	}
+	vendor := resp.Pk
+
+	// Get events for current page
+	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams{
+		Name:        "Yo momma",
+		Streetaddr:  "534 Boyds Creek Hwy",
+		Zip:         "37865",
+		City:        "CITY",
+		StateCode:   "TN-US",
+		StateName:   "Tennessee",
+		CountryCode: "US",
+		CountryName: "United States of America",
+		NumUnique:   1,
+		NumGa:       10000000,
+		Vendor:      vendor,
+	})
+	log.Printf("err = %v\nresponse = %v\n", err, dbResp)
+	if err != nil {
+		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
+	}
+
+	responseBody, err := json.Marshal(dbResp)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
+	}
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(responseBody),
+		Headers:    shared.GetResponseHeaders(request.Headers),
+	}, nil
+}
+
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if request.HTTPMethod == "GET" {
 		return handleGet(ctx, request)
+	} else if request.HTTPMethod == "POST" {
+		return handlePost(ctx, request)
 	} else {
 		body, _ := json.Marshal(map[string]string{"message": "Method Not Allowed."})
 		return events.APIGatewayProxyResponse{
