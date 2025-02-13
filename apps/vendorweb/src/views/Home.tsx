@@ -5,24 +5,26 @@ import { useState } from 'react';
 import Modal from '../components/EventAddModal';
 import VendorTable from '../components/VendorTable';
 
-// type EventData = {
-// 	id: string;
-// 	date: number;
-// 	name: string;
-// };
-
-// type VenueData = {
-// 	id: string;
-// 	date: number;
-// 	location: string;
-// };
-
 export default function Home() {
 	const [eventData, setEventData] = useState<EventData[]>([
 		{ id: 'otherstuff', date: Date.now(), name: 'Sample Event' }
 	]);
 	const [venueData, setVenueData] = useState<VenueData[]>([
-		{ id: 'somestuff', date: Date.now(), location: 'Sample Venue' }
+		{
+			id: 'somestuff',
+			date: Date.now(),
+			location: 'Sample Venue',
+			name: 'Sample Name',
+			streetAddr: '123 sample st',
+			zip: 123456,
+			city: 'some city',
+			stateCode: 'aa',
+			stateName: 'state',
+			countryCode: 'usa',
+			countryName: 'country',
+			numUnique: 10,
+			numGa: 10
+		} as VenueData
 	]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
 	const [venueDisplay, setVenueDisplay] = useState(venueData);
@@ -72,7 +74,7 @@ export default function Home() {
 	};
 
 	return (
-		<Box>
+		<Box style={{ marginTop: '8px' }}>
 			<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
 				<Flex justify="between">
 					<Tabs.List size="2">
@@ -84,10 +86,14 @@ export default function Home() {
 							placeholder="search"
 							size="3"
 							onChangeCapture={filterData}
-							style={{ marginRight: '4px' }}
+							style={{ marginRight: '8px' }}
 						></TextField.Root>
 
-						<Button onClick={addRow} size="3">
+						<Button
+							onClick={addRow}
+							size="3"
+							style={{ marginRight: '4px' }}
+						>
 							{' '}
 							+{' '}
 						</Button>
