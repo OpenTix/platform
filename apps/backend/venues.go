@@ -29,9 +29,10 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
-	_, err = queries.GetVendorByWallet(ctx, wallet)
-	if err == nil {
-		return shared.CreateErrorResponse(409, "Vendor already exists", request.Headers)
+	// Grab wallet address from token
+	wallet, err := shared.GetWalletFromToken(tk)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
 	// Connect to the database
@@ -40,7 +41,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
-
 	queries := query.New(conn)
 
 	// Get events for current page
@@ -48,7 +48,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {
-		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
+		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
