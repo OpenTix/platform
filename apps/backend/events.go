@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -17,6 +18,15 @@ var (
 	connStr     string
 	magicClient *client.API
 )
+
+type eventGetQueryParams struct {
+	PageNum int32     `json:"page"`
+	ZipCode string    `json:"zip"`
+	Name    string    `json:"name"`
+	Type    string    `json:"type"`
+	Cost    float64   `json:"basecost"`
+	Time    time.Time `json:"event_datetime"`
+}
 
 func init() {
 	connStr, magicClient = shared.InitLambda()
@@ -36,10 +46,31 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 	defer conn.Close(ctx)
 
-	queries := query.New(conn)
+	var params eventGetQueryParams = eventGetQueryParams{
+		PageNum: 1,
+		ZipCode: "",
+		Name:    "",
+		Type:    "",
+		Cost:    0.0,
+		Time:    time.Time{},
+	}
+	tmp, _ := json.Marshal(request.QueryStringParameters)
+	err = json.Unmarshal(tmp, &params)
+	if err != nil {
+		log.Printf("err = %v\n", err)
+		// return shared.CreateErrorResponse(404, "Could not get Query Params", request.Headers)
+	}
 
 	// Get events for current page
-	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{1, nil, nil, nil, nil, nil})
+	queries := query.New(conn)
+	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
+		Column1: params.PageNum,
+		Column2: params.ZipCode,
+		Column3: params.Name,
+		Column4: params.Type,
+		Column5: params.Cost,
+		Column6: params.Time.Format(time.RFC3339),
+	})
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {

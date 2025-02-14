@@ -47,7 +47,17 @@ insert into app.venue (
     vendor
 ) values (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) returning pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo
+) returning (
+    name,
+    streetaddr,
+    zip,
+    city,
+    state_code,
+    country_code,
+    country_name,
+    num_unique,
+    num_ga
+)
 `
 
 type CreateVenueParams struct {
@@ -64,7 +74,7 @@ type CreateVenueParams struct {
 	Vendor      int32
 }
 
-func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (AppVenue, error) {
+func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (interface{}, error) {
 	row := q.db.QueryRow(ctx, createVenue,
 		arg.Name,
 		arg.Streetaddr,
@@ -78,46 +88,31 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (AppVe
 		arg.NumGa,
 		arg.Vendor,
 	)
-	var i AppVenue
-	err := row.Scan(
-		&i.Pk,
-		&i.ID,
-		&i.Vendor,
-		&i.Name,
-		&i.Streetaddr,
-		&i.Zip,
-		&i.City,
-		&i.StateCode,
-		&i.StateName,
-		&i.CountryCode,
-		&i.CountryName,
-		&i.NumUnique,
-		&i.NumGa,
-		&i.Photo,
-	)
-	return i, err
+	var column_1 interface{}
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const getEventsPaginated = `-- name: GetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
 where exists (
     select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
-    where ($2 is null or venue.zip = $2)
+    where ($2::text = '' or venue.zip = $2::text)
 )
-and ($3 is null or event.name = $3)
-and ($4 is null or event.type = $4)
-and ($5 is null or event.basecost <= $5)
-and ($6 is null or event.event_datetime >= $6)
+and ($3::text = '' or event.name = $3::text)
+and ($4::text = '' or event.type = $4::text)
+and ($5::double precision = 0.0 or event.basecost <= $5::double precision)
+and (event.event_datetime >= $6::datetime)
 limit 5
 offset (($1::int - 1) * 5)
 `
 
 type GetEventsPaginatedParams struct {
 	Column1 int32
-	Column2 interface{}
-	Column3 interface{}
-	Column4 interface{}
-	Column5 interface{}
+	Column2 string
+	Column3 string
+	Column4 string
+	Column5 float64
 	Column6 interface{}
 }
 

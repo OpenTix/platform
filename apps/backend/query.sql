@@ -35,7 +35,17 @@ insert into app.venue (
     vendor
 ) values (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) returning *;
+) returning (
+    name,
+    streetaddr,
+    zip,
+    city,
+    state_code,
+    country_code,
+    country_name,
+    num_unique,
+    num_ga
+);
 
 -- name: GetEventsPaginated :many
 -- select * from app.event event
@@ -63,11 +73,11 @@ insert into app.venue (
 select * from app.event event
 where exists (
     select * from app.venue venue
-    where ($2 is null or venue.zip = $2)
+    where ($2::text = '' or venue.zip = $2::text)
 )
-and ($3 is null or event.name = $3)
-and ($4 is null or event.type = $4)
-and ($5 is null or event.basecost <= $5)
-and ($6 is null or event.event_datetime >= $6)
+and ($3::text = '' or event.name = $3::text)
+and ($4::text = '' or event.type = $4::text)
+and ($5::double precision = 0.0 or event.basecost <= $5::double precision)
+and (event.event_datetime >= $6::datetime)
 limit 5
 offset (($1::int - 1) * 5);
