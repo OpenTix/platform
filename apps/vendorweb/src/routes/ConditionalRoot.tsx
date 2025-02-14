@@ -1,7 +1,8 @@
+import { getAuthToken, useIsLoggedIn } from '@dynamic-labs/sdk-react-core';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useEffect, useState } from 'react';
 import { MoonLoader } from 'react-spinners';
 import styled, { css } from 'styled-components';
-import { useMagic, useToken } from '@platform/auth';
 import Login from '../views/Login';
 import AppLayout from './AppLayout';
 
@@ -83,9 +84,8 @@ const Button = styled.button<ButtonProps>`
 `;
 
 function ConditionalRoot() {
-	const magic = useMagic();
-	const token = useToken();
-	const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+	const isLoggedIn = useIsLoggedIn();
+	const { handleLogOut } = useDynamicContext();
 	const [isVendor, setIsVendor] = useState<boolean | null>(null);
 	const [organizationName, setOrganizationName] = useState<string>('');
 	const [isLoadingText2Readable, setIsLoadingText2Readable] =
@@ -94,7 +94,7 @@ function ConditionalRoot() {
 
 	const checkIfVendorExists = async () => {
 		try {
-			const authToken = await token.getToken();
+			const authToken = getAuthToken();
 			const response = await fetch(vendorIdEndpoint, {
 				method: 'GET',
 				headers: {
@@ -111,7 +111,7 @@ function ConditionalRoot() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			const authToken = await token.getToken();
+			const authToken = getAuthToken();
 			const response = await fetch(vendorIdEndpoint, {
 				method: 'POST',
 				headers: {
@@ -129,32 +129,19 @@ function ConditionalRoot() {
 		}
 	};
 
-	const checkUserStatus = async () => {
-		try {
-			const loggedIn = await magic.user.isLoggedIn();
-			console.log('loggedIn', loggedIn);
-			setIsLoggedIn(loggedIn);
-			if (loggedIn) {
-				const vendorExists = await checkIfVendorExists();
-				setIsVendor(vendorExists);
-			}
-		} catch (error) {
-			console.error(error);
-			setIsLoggedIn(false);
-			setIsVendor(false);
-		}
-	};
-
 	useEffect(() => {
-		checkUserStatus();
-
+		if (isLoggedIn) {
+			checkIfVendorExists().then((result) => {
+				setIsVendor(result);
+			});
+		}
 		const timer = setTimeout(() => {
 			setIsLoadingText2Readable(true);
 		}, 5000);
 		return () => clearTimeout(timer);
-	}, []);
+	}, [isLoggedIn]);
 
-	if (isLoggedIn === null || (isLoggedIn === true && isVendor === null)) {
+	if (isLoggedIn && isVendor === null) {
 		return (
 			<PageContainer>
 				<AppContainerCentered>
@@ -198,7 +185,7 @@ function ConditionalRoot() {
 						</Button>
 						<Button
 							variant="outline"
-							onClick={() => magic.user.logout()}
+							onClick={() => handleLogOut()}
 						>
 							Sign Out
 						</Button>

@@ -6,9 +6,17 @@ exports[`Navbar matches snapshot 1`] = `
     class="Navbar__NavWrapper-sc-1q1j1oe-0 gXIJt"
   >
     <div
-      class="Navbar__NavContent-sc-1q1j1oe-1 pJrnF"
+      class="rt-Container rt-r-size-4"
     >
-      Snapshot Test
+      <div
+        class="rt-ContainerInner"
+      >
+        <div
+          class="Navbar__NavContent-sc-1q1j1oe-1 jOdONA"
+        >
+          Snapshot Test
+        </div>
+      </div>
     </div>
   </nav>
 </DocumentFragment>

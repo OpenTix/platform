@@ -32,6 +32,28 @@ func (q *Queries) CreateVendor(ctx context.Context, arg CreateVendorParams) (App
 	return i, err
 }
 
+const createVendorWithUUID = `-- name: CreateVendorWithUUID :one
+insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning pk, id, wallet, name
+`
+
+type CreateVendorWithUUIDParams struct {
+	ID     uuid.UUID
+	Wallet string
+	Name   string
+}
+
+func (q *Queries) CreateVendorWithUUID(ctx context.Context, arg CreateVendorWithUUIDParams) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, createVendorWithUUID, arg.ID, arg.Wallet, arg.Name)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}
+
 const getVendorByUuid = `-- name: GetVendorByUuid :one
 select pk, id, wallet, name from app.vendor where id = $1 limit 1
 `

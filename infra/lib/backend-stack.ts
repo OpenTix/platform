@@ -44,6 +44,8 @@ export class BackendStack extends cdk.Stack {
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-7b97592e-38be-4add-9eea-f5057439df30-L9XP8Y';
 		const magicSecretArn =
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer';
+		const jwksURL =
+			'https://app.dynamic.xyz/api/v0/sdk/e332e4a7-4ed1-41ed-8ae9-7d7c462bf453/.well-known/jwks';
 
 		// DB
 		const vpc = Vpc.fromLookup(this, 'VPC', {
@@ -126,20 +128,12 @@ export class BackendStack extends cdk.Stack {
 				entry: `${basePath}/auth.go`,
 				role: LambdaLogRole,
 				environment: {
-					MAGIC_SECRET_ARN: magicSecretArn
+					JWKS_URL: jwksURL
 				}
 			})
 		});
 
 		// Lambdas
-		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
-			entry: `${basePath}/example.go`,
-			role: LambdaLogRole,
-			environment: {
-				MAGIC_SECRET_ARN: magicSecretArn
-			}
-		});
-
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
 			...LambdaDBAccessProps
@@ -209,12 +203,6 @@ export class BackendStack extends cdk.Stack {
 
 		// Add Paths to API Gateway
 		// Root Paths
-		const exampleResource = api.root.addResource('example');
-		exampleResource.addMethod('GET', new LambdaIntegration(ExampleLambda), {
-			authorizer: auth
-		});
-		addDynamicOptions(exampleResource);
-
 		const testDbResource = api.root.addResource('testdbconnection');
 		testDbResource.addMethod('GET', new LambdaIntegration(DBTestLambda), {
 			authorizer: auth

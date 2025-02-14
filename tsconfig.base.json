@@ -15,7 +15,6 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"@platform/auth": ["packages/auth/src/index.ts"],
 			"@platform/ui": ["packages/ui/src/index.ts"]
 		}
 	},

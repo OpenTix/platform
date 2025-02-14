@@ -1,3 +1,4 @@
+import { Container } from '@radix-ui/themes';
 import React, { FC } from 'react';
 import styled from 'styled-components';
 
@@ -8,7 +9,6 @@ const NavWrapper = styled.nav`
 `;
 
 const NavContent = styled.div`
-	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0 16px;
 	display: flex;
@@ -24,7 +24,9 @@ export interface NavbarProps {
 export const Navbar: FC<NavbarProps> = ({ children }) => {
 	return (
 		<NavWrapper>
-			<NavContent>{children}</NavContent>
+			<Container size={'4'}>
+				<NavContent>{children}</NavContent>
+			</Container>
 		</NavWrapper>
 	);
 };
