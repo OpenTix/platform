@@ -70,13 +70,16 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	var cost float64
 
 	if params.Time == "" {
-		tstamp.Scan(time.Time{}.Format(time.RFC3339))
+		tstamp.Scan(time.Time{})
 	} else {
 		t, err := time.Parse(time_layout, params.Time)
 		if err != nil {
-			tstamp.Scan(time.Time{}.Format(time.RFC3339))
+			tstamp.Scan(time.Time{})
 		} else {
-			tstamp.Scan(t.Format(time.RFC3339))
+			err = tstamp.Scan(t.Format(time.RFC3339))
+			if err != nil || !tstamp.Valid {
+				tstamp.Scan(time.Time{})
+			}
 		}
 
 	}
@@ -90,14 +93,14 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 	if params.Cost == "" {
-		cost = 0.0
+		cost = 10000000000.0
 	} else {
 		cost, err = strconv.ParseFloat(params.Cost, 64)
 		if err != nil {
-			cost = 0.0
+			cost = 10000000000.0
 		}
 	}
-	tstamp.Scan(time.Time{}.Format(time.RFC3339))
+	tstamp.Scan(time.Time{})
 
 	// Get events for current page
 	queries := query.New(conn)
@@ -114,7 +117,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Column2: "",
 		Column3: "",
 		Column4: "",
-		Column5: 0.0,
+		Column5: 10000000000.0,
 		Column6: tstamp,
 	})
 
