@@ -1,59 +1,30 @@
-import { MagicUserMetadata } from 'magic-sdk';
-import { useEffect, useState } from 'react';
-import { BeatLoader } from 'react-spinners';
-import { useMagic } from '@platform/auth';
+import { useDynamicContext, useIsLoggedIn } from '@dynamic-labs/sdk-react-core';
 
 export default function Profile() {
-	const magic = useMagic();
-	const [userMetadata, setUserMetadata] = useState<MagicUserMetadata>();
-	const [isLoading, setIsLoading] = useState(false);
-
-	const generateIdToken = async () => {
-		const token = await magic.user.getIdToken();
-		console.log(token);
-	};
-
-	// Retrieve some basic user data
-	const getUserMetadata = async () => {
-		setIsLoading(true);
-		magic.user
-			.isLoggedIn()
-			.then(async (isLoggedIn) => {
-				if (isLoggedIn) {
-					const metadata = await magic.user.getInfo();
-					setUserMetadata(metadata);
-				}
-			})
-			.then(() => setIsLoading(false))
-			.catch((error) => {
-				console.error(error);
-				setIsLoading(false);
-			});
-	};
-
-	// Call on initial render
-	useEffect(() => {
-		getUserMetadata();
-	}, []);
+	const isLoggedIn = useIsLoggedIn();
+	const { primaryWallet } = useDynamicContext();
 
 	return (
 		<>
 			<h1>Profile</h1>
-			<p>Welcome to your profile page!</p>
-			<BeatLoader color="#000" loading={isLoading} />
+			{isLoggedIn ? (
+				<>
+					<p>Welcome to your profile page!</p>
 
-			{!isLoading &&
-				(userMetadata ? (
-					<>
-						<p>Authenticated user: {userMetadata.email}</p>
-						<p>Wallet Address: {userMetadata.publicAddress}</p>
-						<button onClick={generateIdToken}>
-							Generate Token
-						</button>
-					</>
-				) : (
-					<p>No User is Logged in.</p>
-				))}
+					{primaryWallet ? (
+						<>
+							<p>{primaryWallet.id}</p>
+							<p>{primaryWallet.key}</p>
+							<p>{primaryWallet.address}</p>
+							<p>{primaryWallet.chain}</p>
+						</>
+					) : (
+						<p>Trouble Loading Primary Wallet.</p>
+					)}
+				</>
+			) : (
+				<p>You are not logged in.</p>
+			)}
 		</>
 	);
 }

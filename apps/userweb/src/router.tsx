@@ -1,5 +1,4 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { useMagic } from '@platform/auth';
 import { ErrorPage } from '@platform/ui';
 import App from './App';
 import Home from './views/Home';
@@ -31,11 +30,6 @@ const router = createBrowserRouter([
 ]);
 
 const AppRouter = () => {
-	const magic = useMagic();
-	magic.user.onUserLoggedOut(() => {
-		router.navigate('/');
-	});
-
 	return <RouterProvider router={router} />;
 };
 

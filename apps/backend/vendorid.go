@@ -11,10 +11,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5"
-
-	"github.com/magiclabs/magic-admin-go/client"
 
 	"backend/query"
 	"backend/shared"
@@ -28,7 +27,6 @@ var (
 	dbPassword  string
 	dbName      string
 	connStr     string
-	magicClient *client.API
 )
 
 type PostPatchVendorIdRequestBody struct {
@@ -43,7 +41,6 @@ func init() {
 	dbCredentials := shared.GetDBCredentials()
 	dbUser = dbCredentials.Username
 	dbPassword = dbCredentials.Password
-	magicClient = shared.InitializeMagicClient()
 
 	u := &url.URL{
 		Scheme: "postgres",
@@ -62,11 +59,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := shared.GetWalletFromToken(tk)
+	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -81,7 +78,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 
 	// get vendor
-	vendor, err := queries.GetVendorByWallet(ctx, wallet)
+	vendor, err := queries.GetVendorByWallet(ctx, userinfo.Wallet)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
@@ -112,11 +109,11 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := shared.GetWalletFromToken(tk)
+	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -131,13 +128,17 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	queries := query.New(conn)
 
 	// ensure vendor does not already exist
-	_, err = queries.GetVendorByWallet(ctx, wallet)
+	_, err = queries.GetVendorByWallet(ctx, userinfo.Wallet)
 	if err == nil {
 		return shared.CreateErrorResponse(409, "Vendor already exists", request.Headers)
 	}
 
 	// create vendor
-	vendor, err := queries.CreateVendor(ctx, query.CreateVendorParams{wallet, body.Name})
+	u, err := uuid.Parse(userinfo.UUID)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to parse UUID", request.Headers, err)
+	}
+	vendor, err := queries.CreateVendorWithUUID(ctx, query.CreateVendorWithUUIDParams{u, userinfo.Wallet, body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
 	}
@@ -166,11 +167,11 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
-	wallet, err := shared.GetWalletFromToken(tk)
+	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -185,13 +186,13 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	queries := query.New(conn)
 
 	// ensure vendor exists
-	_, err = queries.GetVendorByWallet(ctx, wallet)
+	_, err = queries.GetVendorByWallet(ctx, userinfo.Wallet)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist. Use POST", request.Headers)
 	}
 
 	// update vendor
-	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{wallet, body.Name})
+	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{userinfo.Wallet, body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
 	}

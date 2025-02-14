@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+	DynamicEmbeddedAuthFlow,
+	DynamicEmbeddedWidget,
+	DynamicWidget
+} from '@dynamic-labs/sdk-react-core';
 import styled from 'styled-components';
-import { useMagic, useToken } from '@platform/auth';
 import { VersionTag } from '@platform/ui';
 
 const Container = styled.div`
@@ -65,40 +67,12 @@ const Button = styled.button`
 `;
 
 function Login() {
-	const magic = useMagic();
-	const token = useToken();
-	const [email, setEmail] = useState('');
-	const navigate = useNavigate();
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		try {
-			const newToken = await magic.auth.loginWithMagicLink({ email });
-			//eslint-disable-next-line
-			token.storeToken(newToken!);
-			navigate(0);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	return (
 		<Container>
 			<LeftSection>Vendorweb Login</LeftSection>
 
 			<RightSection>
-				<RightContent>
-					<Form onSubmit={handleSubmit}>
-						<Input
-							type="email"
-							placeholder="Email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
-						<Button type="submit">Login</Button>
-					</Form>
-				</RightContent>
+				<DynamicEmbeddedAuthFlow background="with-border" />
 
 				<RightFooter>
 					<VersionTag />

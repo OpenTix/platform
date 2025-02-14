@@ -1,5 +1,4 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { useMagic } from '@platform/auth';
 import { ErrorPage } from '@platform/ui';
 import ConditionalRoot from './routes/ConditionalRoot';
 import ExamplePage1 from './views/ExamplePage1';
@@ -31,11 +30,6 @@ const router = createBrowserRouter([
 ]);
 
 const AppRouter = () => {
-	const magic = useMagic();
-	magic.user.onUserLoggedOut(() => {
-		router.navigate(0);
-	});
-
 	return <RouterProvider router={router} />;
 };
 

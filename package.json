@@ -20,15 +20,17 @@
 	},
 	"private": true,
 	"dependencies": {
+		"@dynamic-labs/ethereum": "^4.6.1",
+		"@dynamic-labs/sdk-react-core": "^4.6.1",
 		"@radix-ui/themes": "^3.2.0",
 		"aws-cdk-lib": "^2.173.2",
-		"magic-sdk": "^28.21.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-native": "0.74.1",
 		"react-router-dom": "^6.28.1",
 		"react-spinners": "^0.15.0",
-		"styled-components": "5.3.6"
+		"styled-components": "5.3.6",
+		"viem": "^2.23.2"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.5",
