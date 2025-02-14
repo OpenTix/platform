@@ -97,20 +97,29 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 			cost = 0.0
 		}
 	}
+	tstamp.Scan(time.Time{}.Format(time.RFC3339))
 
 	// Get events for current page
 	queries := query.New(conn)
+	// dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
+	// 	Column1: page,
+	// 	Column2: params.ZipCode,
+	// 	Column3: params.Name,
+	// 	Column4: params.Type,
+	// 	Column5: cost,
+	// 	Column6: tstamp,
+	// })
 	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
-		Column1: page,
-		Column2: params.ZipCode,
-		Column3: params.Name,
-		Column4: params.Type,
-		Column5: cost,
+		Column1: 1,
+		Column2: "",
+		Column3: "",
+		Column4: "",
+		Column5: 0.0,
 		Column6: tstamp,
 	})
 
+	log.Printf("page = %d\nzip = %s\nname = %s\ntype = %s\ncost = %f\ntime = %v", page, params.ZipCode, params.Name, params.Type, cost, tstamp)
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
-	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "This is fuck up lol", request.Headers)
 	}
