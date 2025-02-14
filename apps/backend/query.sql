@@ -78,6 +78,6 @@ where exists (
 and ($3::text = '' or event.name = $3::text)
 and ($4::text = '' or event.type = $4::text)
 and ($5::double precision = 0.0 or event.basecost <= $5::double precision)
-and (event.event_datetime >= $6::datetime)
+and (event.event_datetime >= $6::timestamp)
 limit 5
 offset (($1::int - 1) * 5);

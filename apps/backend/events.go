@@ -6,11 +6,13 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/magiclabs/magic-admin-go/client"
 )
 
@@ -19,13 +21,15 @@ var (
 	magicClient *client.API
 )
 
+var time_layout string = "2006-01-03 15:04:05"
+
 type eventGetQueryParams struct {
-	PageNum int32     `json:"page"`
-	ZipCode string    `json:"zip"`
-	Name    string    `json:"name"`
-	Type    string    `json:"type"`
-	Cost    float64   `json:"basecost"`
-	Time    time.Time `json:"event_datetime"`
+	PageNum string `json:"page"`
+	ZipCode string `json:"zip"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Cost    string `json:"basecost"`
+	Time    string `json:"event_datetime"`
 }
 
 func init() {
@@ -47,12 +51,12 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	defer conn.Close(ctx)
 
 	var params eventGetQueryParams = eventGetQueryParams{
-		PageNum: 1,
+		PageNum: "",
 		ZipCode: "",
 		Name:    "",
 		Type:    "",
-		Cost:    0.0,
-		Time:    time.Time{},
+		Cost:    "",
+		Time:    "",
 	}
 	tmp, _ := json.Marshal(request.QueryStringParameters)
 	err = json.Unmarshal(tmp, &params)
@@ -61,20 +65,54 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		// return shared.CreateErrorResponse(404, "Could not get Query Params", request.Headers)
 	}
 
+	var tstamp pgtype.Timestamp
+	var page int32
+	var cost float64
+
+	if params.Time == "" {
+		tstamp.Scan(time.Time{}.Format(time.RFC3339))
+	} else {
+		t, err := time.Parse(time_layout, params.Time)
+		if err != nil {
+			tstamp.Scan(time.Time{}.Format(time.RFC3339))
+		} else {
+			tstamp.Scan(t.Format(time.RFC3339))
+		}
+
+	}
+	if params.PageNum == "" {
+		page = 1
+	} else {
+		p, err := strconv.ParseInt(params.PageNum, 10, 32)
+		page = int32(p)
+		if err != nil {
+			page = 1
+		}
+	}
+	if params.Cost == "" {
+		cost = 0.0
+	} else {
+		cost, err = strconv.ParseFloat(params.Cost, 64)
+		if err != nil {
+			cost = 0.0
+		}
+	}
+
 	// Get events for current page
 	queries := query.New(conn)
 	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
-		Column1: params.PageNum,
+		Column1: page,
 		Column2: params.ZipCode,
 		Column3: params.Name,
 		Column4: params.Type,
-		Column5: params.Cost,
-		Column6: params.Time.Format(time.RFC3339),
+		Column5: cost,
+		Column6: tstamp,
 	})
+
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {
-		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
+		return shared.CreateErrorResponse(404, "This is fuck up lol", request.Headers)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
