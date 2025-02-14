@@ -8,10 +8,16 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+// WARNING: This does not verify the token, it only parses it. Ensure the token has
+// been validated prior if you want to trust the claims.
 func GetTokenFromRequest(request events.APIGatewayProxyRequest) (*jwt.Token, error) {
 	tk := request.Headers["Authorization"]
 	tk = strings.TrimPrefix(tk, "Bearer ")
-	return jwt.Parse(tk, nil)
+	token, _, err := new(jwt.Parser).ParseUnverified(tk, jwt.MapClaims{})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 type GetWalletAndUUIDFromTokenResponse struct {

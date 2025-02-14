@@ -59,7 +59,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
@@ -109,7 +109,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
@@ -167,7 +167,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object", request.Headers, err)
 	}
 
 	// Grab wallet address from token
