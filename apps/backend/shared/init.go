@@ -4,19 +4,16 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-
-	"github.com/magiclabs/magic-admin-go/client"
 )
 
-func InitLambda() (string, *client.API) {
+func InitLambda() string {
 	var (
-		dbAddress   string
-		dbPort      string
-		dbUser      string
-		dbPassword  string
-		dbName      string
-		connStr     string
-		magicClient *client.API
+		dbAddress  string
+		dbPort     string
+		dbUser     string
+		dbPassword string
+		dbName     string
+		connStr    string
 	)
 
 	dbAddress = os.Getenv("DB_ADDRESS")
@@ -25,7 +22,6 @@ func InitLambda() (string, *client.API) {
 	dbCredentials := GetDBCredentials()
 	dbUser = dbCredentials.Username
 	dbPassword = dbCredentials.Password
-	magicClient = InitializeMagicClient()
 
 	u := &url.URL{
 		Scheme: "postgres",
@@ -38,5 +34,5 @@ func InitLambda() (string, *client.API) {
 	u.RawQuery = q.Encode()
 	connStr = u.String()
 
-	return connStr, magicClient
+	return connStr
 }

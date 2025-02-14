@@ -8,6 +8,9 @@ select * from app.vendor where wallet = $1 limit 1;
 -- name: CreateVendor :one
 insert into app.vendor (wallet, name) values ($1, $2) returning *;
 
+-- name: CreateVendorWithUUID :one
+insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning *;
+
 -- name: UpdateVendorName :one
 update app.vendor set name = $2 where wallet = $1 returning *;
 
@@ -48,28 +51,6 @@ insert into app.venue (
 );
 
 -- name: GetEventsPaginated :many
--- select * from app.event event
--- where exists (
---     select * from app.venue venue
---     where (case when $2 then venue.zip = $2 else true end)
--- )
--- and (case when $3 then event.name = $3 else true end)
--- and (case when $4 then event.type = $4 else true end)
--- and (case when $5 then event.basecost <= $5 else true end)
--- and (case when $6 then event.event_datetime >= $6 else true end)
--- limit 5
--- offset (($1::int - 1) * 5);
--- select * from app.event event
--- where exists (
---     select * from app.venue venue
---     where (sqlc.narg('zip') is null or venue.zip = sqlc.narg('zip'))
--- )
--- and (sqlc.narg('name') is null or event.name = sqlc.narg('name'))
--- and (sqlc.narg('type') is null or event.type = sqlc.narg('type'))
--- and (sqlc.narg('basecost') is null or event.basecost <= sqlc.narg('basecost'))
--- and (sqlc.narg('datetime') is null or event.event_datetime >= sqlc.narg('datetime'))
--- limit 5
--- offset (($1::int - 1) * 5);
 select * from app.event event
 where exists (
     select * from app.venue venue

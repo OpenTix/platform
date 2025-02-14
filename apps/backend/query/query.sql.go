@@ -33,6 +33,28 @@ func (q *Queries) CreateVendor(ctx context.Context, arg CreateVendorParams) (App
 	return i, err
 }
 
+const createVendorWithUUID = `-- name: CreateVendorWithUUID :one
+insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning pk, id, wallet, name
+`
+
+type CreateVendorWithUUIDParams struct {
+	ID     uuid.UUID
+	Wallet string
+	Name   string
+}
+
+func (q *Queries) CreateVendorWithUUID(ctx context.Context, arg CreateVendorWithUUIDParams) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, createVendorWithUUID, arg.ID, arg.Wallet, arg.Name)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}
+
 const createVenue = `-- name: CreateVenue :one
 insert into app.venue (
     name,
@@ -117,32 +139,6 @@ type GetEventsPaginatedParams struct {
 	Column6 pgtype.Timestamp
 }
 
-// select * from app.event event
-// where exists (
-//
-//	select * from app.venue venue
-//	where (case when $2 then venue.zip = $2 else true end)
-//
-// )
-// and (case when $3 then event.name = $3 else true end)
-// and (case when $4 then event.type = $4 else true end)
-// and (case when $5 then event.basecost <= $5 else true end)
-// and (case when $6 then event.event_datetime >= $6 else true end)
-// limit 5
-// offset (($1::int - 1) * 5);
-// select * from app.event event
-// where exists (
-//
-//	select * from app.venue venue
-//	where (sqlc.narg('zip') is null or venue.zip = sqlc.narg('zip'))
-//
-// )
-// and (sqlc.narg('name') is null or event.name = sqlc.narg('name'))
-// and (sqlc.narg('type') is null or event.type = sqlc.narg('type'))
-// and (sqlc.narg('basecost') is null or event.basecost <= sqlc.narg('basecost'))
-// and (sqlc.narg('datetime') is null or event.event_datetime >= sqlc.narg('datetime'))
-// limit 5
-// offset (($1::int - 1) * 5);
 func (q *Queries) GetEventsPaginated(ctx context.Context, arg GetEventsPaginatedParams) ([]AppEvent, error) {
 	rows, err := q.db.Query(ctx, getEventsPaginated,
 		arg.Column1,

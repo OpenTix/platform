@@ -10,13 +10,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
-	"github.com/magiclabs/magic-admin-go/client"
 )
 
-var (
-	connStr     string
-	magicClient *client.API
-)
+var connStr string
 
 type VenueBodyParams struct {
 	Name        string `json:"name"`
@@ -33,7 +29,7 @@ type VenueBodyParams struct {
 }
 
 func init() {
-	connStr, magicClient = shared.InitLambda()
+	connStr = shared.InitLambda()
 }
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -44,7 +40,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Grab wallet address from token
-	wallet, err := shared.GetWalletFromToken(tk)
+	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -58,7 +54,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 
 	// Get events for current page
-	dbResponse, err := queries.GetVenuesPaginated(ctx, query.GetVenuesPaginatedParams{1, wallet})
+	dbResponse, err := queries.GetVenuesPaginated(ctx, query.GetVenuesPaginatedParams{1, userinfo.Wallet})
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
@@ -83,7 +79,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Grab wallet address from token
-	wallet, err := shared.GetWalletFromToken(tk)
+	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -96,7 +92,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	defer conn.Close(ctx)
 	queries := query.New(conn)
 
-	resp, err := queries.GetVendorByWallet(ctx, wallet)
+	resp, err := queries.GetVendorByWallet(ctx, userinfo.Wallet)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}

@@ -13,13 +13,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/magiclabs/magic-admin-go/client"
 )
 
-var (
-	connStr     string
-	magicClient *client.API
-)
+var connStr string
 
 const time_layout string = "2006-01-02T15:04:05.999999999"
 
@@ -33,16 +29,10 @@ type eventGetQueryParams struct {
 }
 
 func init() {
-	connStr, magicClient = shared.InitLambda()
+	connStr = shared.InitLambda()
 }
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Grab auth token
-	// tk, err := shared.GetTokenFromRequest(request)
-	// if err != nil {
-	// 	return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
-	// }
-
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
@@ -106,14 +96,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	// Get events for current page
 	queries := query.New(conn)
-	// dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
-	// 	Column1: page,
-	// 	Column2: params.ZipCode,
-	// 	Column3: params.Name,
-	// 	Column4: params.Type,
-	// 	Column5: cost,
-	// 	Column6: tstamp,
-	// })
 	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
 		Column1: page,
 		Column2: params.ZipCode,
