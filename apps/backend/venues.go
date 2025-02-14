@@ -18,6 +18,20 @@ var (
 	magicClient *client.API
 )
 
+type VenueBodyParams struct {
+	Name        string `json:"name"`
+	Streetaddr  string `json:"street_address"`
+	Zip         string `json:"zip"`
+	City        string `json:"city"`
+	StateCode   string `json:"state_code"`
+	StateName   string `json:"state_name"`
+	CountryCode string `json:"country_code"`
+	CountryName string `json:"country_name"`
+	NumUnique   int32  `json:"num_unique"`
+	NumGa       int32  `json:"num_general"`
+	Vendor      int32
+}
+
 func init() {
 	connStr, magicClient = shared.InitLambda()
 }
@@ -46,7 +60,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Get events for current page
 	dbResponse, err := queries.GetVenuesPaginated(ctx, query.GetVenuesPaginatedParams{1, wallet})
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
-	log.Printf("headers = %v\n", request.Headers)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
 	}
@@ -89,20 +102,17 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 	vendor := resp.Pk
 
+	var params VenueBodyParams = VenueBodyParams{
+		Vendor: vendor,
+	}
+	err = json.Unmarshal([]byte(request.Body), &params)
+	if err != nil {
+		log.Print("err = %v\nparams = %v\n", err, params)
+		return shared.CreateErrorResponse(500, "Failed to unmarshal body params", request.Headers)
+	}
+
 	// Get events for current page
-	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams{
-		Name:        "Yo momma",
-		Streetaddr:  "534 Boyds Creek Hwy",
-		Zip:         "37865",
-		City:        "CITY",
-		StateCode:   "TN-US",
-		StateName:   "Tennessee",
-		CountryCode: "US",
-		CountryName: "United States of America",
-		NumUnique:   1,
-		NumGa:       10000000,
-		Vendor:      vendor,
-	})
+	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams(params))
 	log.Printf("err = %v\nresponse = %v\n", err, dbResp)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)

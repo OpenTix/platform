@@ -21,7 +21,7 @@ var (
 	magicClient *client.API
 )
 
-var time_layout string = "2006-01-03 15:04:05"
+const time_layout string = "2006-01-02T15:04:05.999999999"
 
 type eventGetQueryParams struct {
 	PageNum string `json:"page"`
@@ -58,7 +58,9 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Cost:    "",
 		Time:    "",
 	}
+
 	tmp, _ := json.Marshal(request.QueryStringParameters)
+	log.Printf("tmp = %v\nquerystringparams = %v\n", tmp, request.QueryStringParameters)
 	err = json.Unmarshal(tmp, &params)
 	if err != nil {
 		log.Printf("err = %v\n", err)
@@ -113,11 +115,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// 	Column6: tstamp,
 	// })
 	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
-		Column1: 1,
-		Column2: "",
-		Column3: "",
-		Column4: "",
-		Column5: 10000000000.0,
+		Column1: page,
+		Column2: params.ZipCode,
+		Column3: params.Name,
+		Column4: params.Type,
+		Column5: cost,
 		Column6: tstamp,
 	})
 
