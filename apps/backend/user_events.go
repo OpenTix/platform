@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,7 +18,7 @@ import (
 
 var connStr string
 
-const time_layout string = "2006-01-02T15:04:05.999999999"
+const time_layout string = "2006-01-02T15:04:05.999Z"
 
 type eventGetQueryParams struct {
 	PageNum string `json:"page"`
@@ -57,17 +58,14 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	if params.Time == "" {
 		tstamp.Scan(time.Time{})
 	} else {
-		t, err := time.Parse(time_layout, params.Time)
-		if err != nil {
+		tmp := strings.Trim(params.Time, "\x0d\x0a")
+		t, err := time.Parse(time_layout, tmp)
+		tstamp.Scan(t)
+		if err != nil || !tstamp.Valid {
 			tstamp.Scan(time.Time{})
-		} else {
-			err = tstamp.Scan(t.Format(time.RFC3339))
-			if err != nil || !tstamp.Valid {
-				tstamp.Scan(time.Time{})
-			}
 		}
-
 	}
+
 	if params.PageNum == "" {
 		page = 1
 	} else {
@@ -85,7 +83,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 			cost = 10000000000.0
 		}
 	}
-	// tstamp.Scan(time.Time{})
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
