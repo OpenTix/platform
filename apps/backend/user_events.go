@@ -33,13 +33,6 @@ func init() {
 }
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-	}
-	defer conn.Close(ctx)
-
 	var params eventGetQueryParams = eventGetQueryParams{
 		PageNum: "",
 		ZipCode: "",
@@ -51,10 +44,10 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	tmp, _ := json.Marshal(request.QueryStringParameters)
 	log.Printf("tmp = %v\nquerystringparams = %v\n", tmp, request.QueryStringParameters)
-	err = json.Unmarshal(tmp, &params)
+	err := json.Unmarshal(tmp, &params)
 	if err != nil {
 		log.Printf("err = %v\n", err)
-		// return shared.CreateErrorResponse(404, "Could not get Query Params", request.Headers)
+		return shared.CreateErrorResponse(404, "Could not get Query Params", request.Headers)
 	}
 
 	var tstamp pgtype.Timestamp
@@ -92,7 +85,14 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 			cost = 10000000000.0
 		}
 	}
-	tstamp.Scan(time.Time{})
+	// tstamp.Scan(time.Time{})
+
+	// Connect to the database
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+	}
+	defer conn.Close(ctx)
 
 	// Get events for current page
 	queries := query.New(conn)

@@ -51,7 +51,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		p, err := strconv.ParseInt(tmp, 10, 32)
 		venue = int32(p)
 		if err != nil {
-			venue = 1
+			venue = -1
 		}
 	}
 
@@ -66,7 +66,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 	dbResponse, err := queries.VendorGetEventsPaginated(ctx, query.VendorGetEventsPaginatedParams{
 		Column1: page,
-		Column2: vendorinfo.Wallet,
+		Wallet:  vendorinfo.Wallet,
 		Column3: venue,
 	})
 
