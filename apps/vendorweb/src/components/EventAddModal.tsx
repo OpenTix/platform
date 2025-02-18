@@ -27,6 +27,22 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 	};
 
 	const handleSubmit = () => {
+		if(type === 'events') {
+			if(formData.name === '') {
+				alert("Please fill out all fields");
+				return;
+			}
+		}
+		else {
+			if (formData.location === '' || formData.name === '' ||
+				formData.streetAddr === '' || formData.zip === '' ||
+				formData.countryCode === '' || formData.numUnique === '' ||
+				formData.numGa === '') {
+					alert("Please fill out all fields");
+					return;
+			}
+			// Implement else if later to check ZIP is valid
+		}
 		const newItem = {
 			id: formData.id || Math.random().toString(36).substring(7),
 			date: Date.now(),
@@ -42,7 +58,9 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 						countryCode: formData.countryCode,
 						numUnique: formData.numUnique,
 						numGa: formData.numGa
-					})
+					}
+					
+				)
 		};
 		onSubmit(newItem);
 	};
@@ -110,6 +128,9 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 								width: '60%',
 								marginLeft: '20%'
 							}}
+							type="number"
+							min="11111"
+							max="99999"
 						/>
 						<TextField.Root
 							name="city"
@@ -154,6 +175,7 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 								width: '60%',
 								marginLeft: '20%'
 							}}
+							type="number"
 						/>
 						<TextField.Root
 							name="numGa"
@@ -165,6 +187,7 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 								width: '60%',
 								marginLeft: '20%'
 							}}
+							type="number"
 						/>
 					</>
 				)}
