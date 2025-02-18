@@ -116,21 +116,74 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (inter
 	return column_1, err
 }
 
-const getEventsPaginated = `-- name: GetEventsPaginated :many
+const getVendorByUuid = `-- name: GetVendorByUuid :one
+select pk, id, wallet, name from app.vendor where id = $1 limit 1
+`
+
+func (q *Queries) GetVendorByUuid(ctx context.Context, id uuid.UUID) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, getVendorByUuid, id)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}
+
+const getVendorByWallet = `-- name: GetVendorByWallet :one
+select pk, id, wallet, name from app.vendor where wallet = $1 limit 1
+`
+
+func (q *Queries) GetVendorByWallet(ctx context.Context, wallet string) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, getVendorByWallet, wallet)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}
+
+const updateVendorName = `-- name: UpdateVendorName :one
+update app.vendor set name = $2 where wallet = $1 returning pk, id, wallet, name
+`
+
+type UpdateVendorNameParams struct {
+	Wallet string
+	Name   string
+}
+
+func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNameParams) (AppVendor, error) {
+	row := q.db.QueryRow(ctx, updateVendorName, arg.Wallet, arg.Name)
+	var i AppVendor
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Wallet,
+		&i.Name,
+	)
+	return i, err
+}
+
+const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
-where exists (
-    select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
-    where ($2::text = '' or venue.zip = $2::text)
+where event.venue in (
+    select pk from app.venue venue
+    where (2::text = '' or venue.zip = $2::text)
 )
 and ($3::text = '' or event.name = $3::text)
 and ($4::text = '' or event.type = $4::text)
-and ($5::double precision = 0.0 or event.basecost <= $5::double precision)
+and (event.basecost <= $5::double precision)
 and (event.event_datetime >= $6::timestamp)
 limit 5
 offset (($1::int - 1) * 5)
 `
 
-type GetEventsPaginatedParams struct {
+type UserGetEventsPaginatedParams struct {
 	Column1 int32
 	Column2 string
 	Column3 string
@@ -139,8 +192,8 @@ type GetEventsPaginatedParams struct {
 	Column6 pgtype.Timestamp
 }
 
-func (q *Queries) GetEventsPaginated(ctx context.Context, arg GetEventsPaginatedParams) ([]AppEvent, error) {
-	rows, err := q.db.Query(ctx, getEventsPaginated,
+func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]AppEvent, error) {
+	rows, err := q.db.Query(ctx, userGetEventsPaginated,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -180,39 +233,58 @@ func (q *Queries) GetEventsPaginated(ctx context.Context, arg GetEventsPaginated
 	return items, nil
 }
 
-const getVendorByUuid = `-- name: GetVendorByUuid :one
-select pk, id, wallet, name from app.vendor where id = $1 limit 1
+const vendorGetEventsPaginated = `-- name: VendorGetEventsPaginated :many
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.vendor = (
+    select pk from app.vendor vendor
+    where vendor.wallet = $2::varchar(40)
+)
+and ($3::int = -1 or $3::int = event.venue)
+limit 5
+offset (($1::int - 1) * 5)
 `
 
-func (q *Queries) GetVendorByUuid(ctx context.Context, id uuid.UUID) (AppVendor, error) {
-	row := q.db.QueryRow(ctx, getVendorByUuid, id)
-	var i AppVendor
-	err := row.Scan(
-		&i.Pk,
-		&i.ID,
-		&i.Wallet,
-		&i.Name,
-	)
-	return i, err
+type VendorGetEventsPaginatedParams struct {
+	Column1 int32
+	Column2 string
+	Column3 int32
 }
 
-const getVendorByWallet = `-- name: GetVendorByWallet :one
-select pk, id, wallet, name from app.vendor where wallet = $1 limit 1
-`
-
-func (q *Queries) GetVendorByWallet(ctx context.Context, wallet string) (AppVendor, error) {
-	row := q.db.QueryRow(ctx, getVendorByWallet, wallet)
-	var i AppVendor
-	err := row.Scan(
-		&i.Pk,
-		&i.ID,
-		&i.Wallet,
-		&i.Name,
-	)
-	return i, err
+func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEventsPaginatedParams) ([]AppEvent, error) {
+	rows, err := q.db.Query(ctx, vendorGetEventsPaginated, arg.Column1, arg.Column2, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppEvent
+	for rows.Next() {
+		var i AppEvent
+		if err := rows.Scan(
+			&i.Pk,
+			&i.ID,
+			&i.Vendor,
+			&i.Venue,
+			&i.Name,
+			&i.Type,
+			&i.EventDatetime,
+			&i.Description,
+			&i.Disclaimer,
+			&i.Basecost,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const getVenuesPaginated = `-- name: GetVenuesPaginated :many
+const vendorGetVenuesPaginated = `-- name: VendorGetVenuesPaginated :many
 select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
 where venue.vendor = (
     select pk from app.vendor vendor
@@ -222,13 +294,13 @@ limit 5
 offset (($1::int - 1) * 5)
 `
 
-type GetVenuesPaginatedParams struct {
+type VendorGetVenuesPaginatedParams struct {
 	Column1 int32
 	Wallet  string
 }
 
-func (q *Queries) GetVenuesPaginated(ctx context.Context, arg GetVenuesPaginatedParams) ([]AppVenue, error) {
-	rows, err := q.db.Query(ctx, getVenuesPaginated, arg.Column1, arg.Wallet)
+func (q *Queries) VendorGetVenuesPaginated(ctx context.Context, arg VendorGetVenuesPaginatedParams) ([]AppVenue, error) {
+	rows, err := q.db.Query(ctx, vendorGetVenuesPaginated, arg.Column1, arg.Wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -260,25 +332,4 @@ func (q *Queries) GetVenuesPaginated(ctx context.Context, arg GetVenuesPaginated
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateVendorName = `-- name: UpdateVendorName :one
-update app.vendor set name = $2 where wallet = $1 returning pk, id, wallet, name
-`
-
-type UpdateVendorNameParams struct {
-	Wallet string
-	Name   string
-}
-
-func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNameParams) (AppVendor, error) {
-	row := q.db.QueryRow(ctx, updateVendorName, arg.Wallet, arg.Name)
-	var i AppVendor
-	err := row.Scan(
-		&i.Pk,
-		&i.ID,
-		&i.Wallet,
-		&i.Name,
-	)
-	return i, err
 }

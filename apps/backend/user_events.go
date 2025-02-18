@@ -96,7 +96,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	// Get events for current page
 	queries := query.New(conn)
-	dbResponse, err := queries.GetEventsPaginated(ctx, query.GetEventsPaginatedParams{
+	dbResponse, err := queries.UserGetEventsPaginated(ctx, query.UserGetEventsPaginatedParams{
 		Column1: page,
 		Column2: params.ZipCode,
 		Column3: params.Name,

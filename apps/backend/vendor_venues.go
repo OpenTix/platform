@@ -54,7 +54,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 
 	// Get events for current page
-	dbResponse, err := queries.GetVenuesPaginated(ctx, query.GetVenuesPaginatedParams{1, userinfo.Wallet})
+	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{1, userinfo.Wallet})
 	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
