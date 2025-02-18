@@ -171,9 +171,9 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
-where event.venue in (
-    select pk from app.venue venue
-    where (2::text = '' or venue.zip = $2::text)
+where exists (
+    select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
+    where ($2::text = '' or venue.zip = $2::text)
 )
 and ($3::text = '' or event.name = $3::text)
 and ($4::text = '' or event.type = $4::text)
@@ -192,19 +192,6 @@ type UserGetEventsPaginatedParams struct {
 	Column6 pgtype.Timestamp
 }
 
-// select * from app.event event
-// where exists (
-//
-//	select * from app.venue venue
-//	where ($2::text = '' or venue.zip = $2::text)
-//
-// )
-// and ($3::text = ” or event.name = $3::text)
-// and ($4::text = ” or event.type = $4::text)
-// and (event.basecost <= $5::double precision)
-// and (event.event_datetime >= $6::timestamp)
-// limit 5
-// offset (($1::int - 1) * 5);
 func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]AppEvent, error) {
 	rows, err := q.db.Query(ctx, userGetEventsPaginated,
 		arg.Column1,
@@ -252,7 +239,6 @@ where event.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
-and ($3::int = -1 or $3::int = event.venue)
 limit 5
 offset (($1::int - 1) * 5)
 `
@@ -260,11 +246,11 @@ offset (($1::int - 1) * 5)
 type VendorGetEventsPaginatedParams struct {
 	Column1 int32
 	Wallet  string
-	Column3 int32
 }
 
+// and ($3::int = -1 or $3::int = event.venue)
 func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEventsPaginatedParams) ([]AppEvent, error) {
-	rows, err := q.db.Query(ctx, vendorGetEventsPaginated, arg.Column1, arg.Wallet, arg.Column3)
+	rows, err := q.db.Query(ctx, vendorGetEventsPaginated, arg.Column1, arg.Wallet)
 	if err != nil {
 		return nil, err
 	}
