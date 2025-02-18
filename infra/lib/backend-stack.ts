@@ -149,15 +149,20 @@ export class BackendStack extends cdk.Stack {
 			role: LambdaLogRole
 		});
 
-        const EventsLambda = new GoFunction(this, 'EventsLambda', {
-			entry: `${basePath}/events.go`,
+        const UserEventsLambda = new GoFunction(this, 'UserEventsLambda', {
+			entry: `${basePath}/user_events.go`,
 			...LambdaDBAccessProps
 		});
 
-        const VenuesLambda = new GoFunction(this, 'VenuesLambda', {
-			entry: `${basePath}/venues.go`,
+        const VendorVenuesLambda = new GoFunction(this, 'VendorVenuesLambda', {
+			entry: `${basePath}/vendor_venues.go`,
 			...LambdaDBAccessProps
 		});
+        
+        const VendorEventsLambda = new GoFunction(this, 'VendorEventsLambda', {
+            entry: `${basePath}/vendor_events.go`,
+            ...LambdaDBAccessProps
+        });
 
 		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
 			resource.addMethod(
@@ -230,20 +235,29 @@ export class BackendStack extends cdk.Stack {
 		);
 		addDynamicOptions(vendorIdResource);
 
-        const eventsResource = api.root.addResource('events');
-        eventsResource.addMethod('GET', new LambdaIntegration(EventsLambda), {
-            authorizer: auth
-        });
-        addDynamicOptions(eventsResource);
+        
 
-        const venuesResource = api.root.addResource('venues');
-        venuesResource.addMethod('GET', new LambdaIntegration(VenuesLambda), {
+        const vendorVenuesResource = vendorResource.addResource('venues');
+        vendorVenuesResource.addMethod('GET', new LambdaIntegration(VendorVenuesLambda), {
             authorizer: auth
         });
-        venuesResource.addMethod('POST', new LambdaIntegration(VenuesLambda), {
+        vendorVenuesResource.addMethod('POST', new LambdaIntegration(VendorVenuesLambda), {
             authorizer: auth
         });
-        addDynamicOptions(venuesResource);
+        addDynamicOptions(vendorVenuesResource);
+
+        const vendorEventsResource = vendorResource.addResource('events');
+        vendorEventsResource.addMethod('GET', new LambdaIntegration(VendorEventsLambda), {
+            authorizer: auth
+        });
+        addDynamicOptions(vendorEventsResource);
+
+        const userResource = api.root.addResource('user');
+        const userEventsResource = userResource.addResource('events');
+        userEventsResource.addMethod('GET', new LambdaIntegration(UserEventsLambda), {
+            authorizer: auth
+        });
+        addDynamicOptions(userEventsResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
