@@ -22,7 +22,12 @@ export default function Navigation() {
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
 		if (bal) {
-			setBalance(Number(bal));
+			await fetch('https://api.coinbase.com/v2/prices/POL-USD/buy')
+				.then((response) => response.json())
+				.then((data) => {
+					const rate = data.data.amount;
+					setBalance(Number(bal) * rate);
+				});
 		} else {
 			setBalance(null);
 		}

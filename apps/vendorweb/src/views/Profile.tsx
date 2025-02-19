@@ -17,6 +17,7 @@ import {
 	Flex,
 	Heading,
 	Separator,
+	Skeleton,
 	Text,
 	TextField
 } from '@radix-ui/themes';
@@ -36,10 +37,15 @@ const RightColumn = styled.div`
 	flex-direction: column;
 	align-items: center;
 `;
-const Balance = styled.div`
+const USDBalance = styled.div`
 	color: green;
 	font-size: 1.5em;
 	font-weight: bold;
+`;
+const TokenBalance = styled.div`
+	color: black;
+	font-size: 1.5em;
+	font-weight: light;
 `;
 const CalloutIconPointer = styled(Callout.Icon)`
 	cursor: pointer;
@@ -65,6 +71,9 @@ export default function Profile() {
 	const [balance, setBalance] = useState<number | null | undefined>(
 		undefined
 	);
+	const [usdBalance, setUsdBalance] = useState<number | null | undefined>(
+		undefined
+	);
 	const [isWeb2User, setIsWeb2User] = useState<boolean>(false);
 	const [vendorName, setVendorName] = useState<string>('');
 	const [newVendorName, setNewVendorName] = useState<string>('');
@@ -73,6 +82,16 @@ export default function Profile() {
 		const bal = await primaryWallet?.getBalance();
 		if (bal) {
 			setBalance(Number(bal));
+			await fetch('https://api.coinbase.com/v2/prices/POL-USD/buy')
+				.then((response) => response.json())
+				.then((data) => {
+					const rate = data.data.amount;
+					setUsdBalance(Number(bal) * rate);
+				})
+				.catch((error) => {
+					console.error(error);
+					setUsdBalance(null);
+				});
 		} else {
 			setBalance(null);
 		}
@@ -245,7 +264,28 @@ export default function Profile() {
 							<Card>
 								<Flex gap="3" direction={'column'}>
 									<Heading size="5">Balance</Heading>
-									<Balance>${balance?.toFixed(2)}</Balance>
+									<Flex gap="3">
+										{usdBalance === undefined ? (
+											<Skeleton>
+												<USDBalance>$0.00</USDBalance>
+											</Skeleton>
+										) : (
+											<USDBalance>
+												${usdBalance?.toFixed(2)}
+											</USDBalance>
+										)}
+										{balance === undefined ? (
+											<Skeleton>
+												<TokenBalance>
+													0.0000 POL
+												</TokenBalance>
+											</Skeleton>
+										) : (
+											<TokenBalance>
+												{balance?.toFixed(4)} POL
+											</TokenBalance>
+										)}
+									</Flex>
 								</Flex>
 							</Card>
 							<Card>
