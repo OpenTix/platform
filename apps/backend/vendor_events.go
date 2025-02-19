@@ -176,6 +176,15 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 	vendor := resp.Pk
 
+	dbVendor, err := queries.CheckVenueVendorStatus(ctx, vendor)
+	if err != nil {
+		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
+	}
+
+	if dbVendor != vendor {
+		return shared.CreateErrorResponse(401, "You are not authorized to create an event for that venue", request.Headers)
+	}
+
 	// Get events for current page
 	dbResponse, err := queries.CreateEvent(ctx, query.CreateEventParams{
 		Vendor:        vendor,

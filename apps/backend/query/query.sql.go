@@ -12,6 +12,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkVenueVendorStatus = `-- name: CheckVenueVendorStatus :one
+select vendor from app.venue
+where pk = $1::int
+`
+
+func (q *Queries) CheckVenueVendorStatus(ctx context.Context, dollar_1 int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkVenueVendorStatus, dollar_1)
+	var vendor int32
+	err := row.Scan(&vendor)
+	return vendor, err
+}
+
 const createEvent = `-- name: CreateEvent :one
 insert into app.event (
     vendor,

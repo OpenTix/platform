@@ -1,4 +1,3 @@
-
 -- name: GetVendorByUuid :one
 select * from app.vendor where id = $1 limit 1;
 
@@ -13,6 +12,10 @@ insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning *;
 
 -- name: UpdateVendorName :one
 update app.vendor set name = $2 where wallet = $1 returning *;
+
+-- name: CheckVenueVendorStatus :one
+select vendor from app.venue
+where pk = $1::int;
 
 -- name: VendorGetVenuesPaginated :many
 select * from app.venue venue
