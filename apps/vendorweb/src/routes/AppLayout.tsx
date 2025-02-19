@@ -1,3 +1,4 @@
+import { Container } from '@radix-ui/themes';
 import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 import { VersionTag } from '@platform/ui';
@@ -27,7 +28,9 @@ export default function AppLayout() {
 		<PageContainer>
 			<ContentContainer>
 				<Navigation />
-				<Outlet />
+				<Container size={'4'}>
+					<Outlet />
+				</Container>
 			</ContentContainer>
 
 			<FooterContainer>

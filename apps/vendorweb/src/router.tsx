@@ -1,8 +1,8 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorPage } from '@platform/ui';
 import ConditionalRoot from './routes/ConditionalRoot';
-import ExamplePage1 from './views/ExamplePage1';
 import Home from './views/Home';
+import Profile from './views/Profile';
 
 // All child routes are protected by the login and id check in ConditionalRoot
 const router = createBrowserRouter([
@@ -17,8 +17,8 @@ const router = createBrowserRouter([
 				ErrorBoundary: ErrorPage
 			},
 			{
-				path: 'example1',
-				element: <ExamplePage1 />,
+				path: 'profile',
+				element: <Profile />,
 				ErrorBoundary: ErrorPage
 			},
 			{
