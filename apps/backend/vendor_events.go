@@ -23,7 +23,7 @@ const time_layout string = "2006-01-02T15:04:05.999Z"
 
 type CreateEventPostBody struct {
 	Vendor      int32
-	Venue       int32
+	Venue       int32   `json:"venue"`
 	Name        string  `json:"name"`
 	Type        string  `json:"type"`
 	Time        string  `json:"event_datetime"`
