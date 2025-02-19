@@ -6,5 +6,5 @@
 	"tabWidth": 4,
 	"trailingComma": "none",
 	"importOrder": ["^@platform/auth(.*)$", "^@platform/ui(.*)$", "^[./]"],
-	"endOfLine": "crlf"
+	"endOfLine": "lf"
 }

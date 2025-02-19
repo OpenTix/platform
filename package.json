@@ -18,6 +18,10 @@
 		"prettier-fix": "prettier --write .",
 		"jest": "DOTENV_CONFIG_PATH=.env.build npx jest --setupFiles=dotenv/config"
 	},
+	"lint-staged": {
+		"*": "prettier --ignore-unknown --write",
+		"*.{js,jsx,ts,tsx}": "eslint --fix"
+	},
 	"private": true,
 	"dependencies": {
 		"@dynamic-labs/ethereum": "^4.6.1",
@@ -84,6 +88,7 @@
 		"jest-environment-jsdom": "^29.7.0",
 		"jest-environment-node": "^29.7.0",
 		"jest-react-native": "18.0.0",
+		"lint-staged": "^15.4.3",
 		"nx": "20.2.2",
 		"prettier": "^3.4.2",
 		"react-is": "^19.0.0",
