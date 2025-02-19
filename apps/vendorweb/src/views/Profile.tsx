@@ -55,8 +55,9 @@ const ActionsText = styled(Text)`
 `;
 
 export default function Profile() {
-	const { primaryWallet, handleLogOut } = useDynamicContext();
-	const { userHasEmbeddedWallet } = useEmbeddedWallet();
+	const { primaryWallet, handleLogOut, handleUnlinkWallet } =
+		useDynamicContext();
+	const { userHasEmbeddedWallet, revealWalletKey } = useEmbeddedWallet();
 	const { open } = useSendBalance();
 	const { initExportProcess } = useEmbeddedReveal();
 	const { openFundingOptions } = useOpenFundingOptions();
@@ -66,6 +67,7 @@ export default function Profile() {
 	);
 	const [isWeb2User, setIsWeb2User] = useState<boolean>(false);
 	const [vendorName, setVendorName] = useState<string>('');
+	const [newVendorName, setNewVendorName] = useState<string>('');
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -105,8 +107,40 @@ export default function Profile() {
 		e: React.FormEvent<HTMLFormElement>
 	) => {
 		e.preventDefault();
-		console.log(e);
-		console.log(e.target);
+		if (newVendorName === vendorName) {
+			alert('Name is the same as current name');
+			return;
+		}
+		if (newVendorName === '') {
+			alert('Name cannot be empty');
+			return;
+		}
+		const tk = getAuthToken();
+		await fetch(BASEURL + '/vendor/id', {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${tk}`
+			},
+			body: JSON.stringify({ name: newVendorName })
+		}).then((res) => {
+			if (res.ok && res.status === 200) {
+				setVendorName(newVendorName);
+				alert('Name updated successfully');
+			} else {
+				alert('Failed to update name');
+			}
+		});
+	};
+
+	const handleUnlinkWalletAndLogout = async () => {
+		const id = primaryWallet?.id;
+		if (!id) {
+			alert('Error unlinking wallet');
+			return;
+		}
+		await handleUnlinkWallet(id);
+		await handleLogOut();
 	};
 
 	useEffect(() => {
@@ -188,6 +222,17 @@ export default function Profile() {
 												Metamask.
 											</Text>
 										</li>
+										<li>
+											<Flex align="center" gap="2">
+												<Text>
+													Buy directly using a credit
+													card or PayPal.
+												</Text>
+												<Badge color="yellow">
+													Coming Soon
+												</Badge>
+											</Flex>
+										</li>
 									</ul>
 								</Flex>
 							</Card>
@@ -240,7 +285,18 @@ export default function Profile() {
 														>
 															Name
 														</Text>
-														<TextField.Root placeholder="Organization Name" />
+														<TextField.Root
+															value={
+																newVendorName
+															}
+															placeholder="Organization Name"
+															onChange={(e) =>
+																setNewVendorName(
+																	e.target
+																		.value
+																)
+															}
+														/>
 													</label>
 												</Flex>
 
@@ -277,9 +333,106 @@ export default function Profile() {
 									</ActionsText>
 									{isWeb2User && (
 										<>
-											<ActionsText color="red">
-												Unlink Account
-											</ActionsText>
+											<Dialog.Root>
+												<Dialog.Trigger>
+													<ActionsText color="red">
+														Unlink Account
+													</ActionsText>
+												</Dialog.Trigger>
+
+												<Dialog.Content maxWidth="450px">
+													<Dialog.Title>
+														Unlink Account
+													</Dialog.Title>
+													<Dialog.Description
+														size="2"
+														mb="4"
+													>
+														Make sure you have
+														backed up your private
+														key and recovery phrase
+														before unlinking. After
+														unlinking, you will not
+														be able to access your
+														wallet through this
+														site. If you sign in
+														again, a new wallet will
+														be created for you. You
+														are responsible for
+														safeguarding this
+														information
+													</Dialog.Description>
+
+													<Flex
+														direction="column"
+														gap="3"
+													>
+														<Button
+															variant="soft"
+															color="gray"
+															onClick={() => {
+																revealWalletKey(
+																	{
+																		type: 'recoveryPhrase',
+																		htmlContainerId:
+																			'recovery-phrase-modal'
+																	}
+																);
+															}}
+														>
+															View Recovery Phrase
+														</Button>
+														<div id="recovery-phrase-modal"></div>
+													</Flex>
+													<Flex
+														direction="column"
+														gap="3"
+													>
+														<Button
+															variant="soft"
+															color="gray"
+															onClick={() => {
+																revealWalletKey(
+																	{
+																		type: 'privateKey',
+																		htmlContainerId:
+																			'private-key-modal'
+																	}
+																);
+															}}
+														>
+															View Private Key
+														</Button>
+														<div id="private-key-modal"></div>
+													</Flex>
+
+													<Flex
+														gap="3"
+														mt="4"
+														justify="end"
+													>
+														<Dialog.Close>
+															<Button
+																variant="soft"
+																color="gray"
+															>
+																Cancel
+															</Button>
+														</Dialog.Close>
+														<Dialog.Close>
+															<Button
+																color="red"
+																onClick={
+																	handleUnlinkWalletAndLogout
+																}
+															>
+																Unlink Wallet
+																and Logout
+															</Button>
+														</Dialog.Close>
+													</Flex>
+												</Dialog.Content>
+											</Dialog.Root>
 											<ActionsText
 												color="red"
 												onClick={() =>
