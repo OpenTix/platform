@@ -24,7 +24,7 @@ const dynamicSettings: DynamicContextProps['settings'] = {
 };
 root.render(
 	<StrictMode>
-		<Theme>
+		<Theme accentColor="purple">
 			<DynamicContextProvider settings={dynamicSettings}>
 				<AppRouter />
 			</DynamicContextProvider>

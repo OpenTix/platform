@@ -1,8 +1,10 @@
 @import '@radix-ui/themes/styles.css';
 
-html, body, #root {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
+html,
+body,
+#root {
+	margin: 0;
+	padding: 0;
+	width: 100vw;
+	height: 100vh;
 }
