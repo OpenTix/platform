@@ -1,0 +1,15 @@
+
+-- name: GetVendorByUuid :one
+select * from app.vendor where id = $1 limit 1;
+
+-- name: GetVendorByWallet :one
+select * from app.vendor where wallet = $1 limit 1;
+
+-- name: CreateVendor :one
+insert into app.vendor (wallet, name) values ($1, $2) returning *;
+
+-- name: CreateVendorWithUUID :one
+insert into app.vendor (id, wallet, name) values ($1, $2, $3) returning *;
+
+-- name: UpdateVendorName :one
+update app.vendor set name = $2 where wallet = $1 returning *;

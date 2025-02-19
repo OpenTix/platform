@@ -44,6 +44,8 @@ export class BackendStack extends cdk.Stack {
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-7b97592e-38be-4add-9eea-f5057439df30-L9XP8Y';
 		const magicSecretArn =
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer';
+		const jwksURL =
+			'https://app.dynamic.xyz/api/v0/sdk/e332e4a7-4ed1-41ed-8ae9-7d7c462bf453/.well-known/jwks';
 
 		// DB
 		const vpc = Vpc.fromLookup(this, 'VPC', {
@@ -126,24 +128,50 @@ export class BackendStack extends cdk.Stack {
 				entry: `${basePath}/auth.go`,
 				role: LambdaLogRole,
 				environment: {
-					MAGIC_SECRET_ARN: magicSecretArn
+					JWKS_URL: jwksURL
 				}
 			})
 		});
 
 		// Lambdas
-		const ExampleLambda = new GoFunction(this, 'ExampleLambda', {
-			entry: `${basePath}/example.go`,
-			role: LambdaLogRole,
-			environment: {
-				MAGIC_SECRET_ARN: magicSecretArn
-			}
-		});
-
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
 			...LambdaDBAccessProps
 		});
+
+		const VendorIDLambda = new GoFunction(this, 'VendorIDLambda', {
+			entry: `${basePath}/vendorid.go`,
+			...LambdaDBAccessProps
+		});
+
+		const OptionsLambda = new GoFunction(this, 'OptionsLambda', {
+			entry: `${basePath}/options.go`,
+			role: LambdaLogRole
+		});
+
+		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
+			resource.addMethod(
+				'OPTIONS',
+				new LambdaIntegration(OptionsLambda),
+				{
+					methodResponses: [
+						{
+							statusCode: '200',
+							responseParameters: {
+								'method.response.header.Access-Control-Allow-Origin':
+									true,
+								'method.response.header.Access-Control-Allow-Methods':
+									true,
+								'method.response.header.Access-Control-Allow-Headers':
+									true,
+								'method.response.header.Access-Control-Allow-Credentials':
+									true
+							}
+						}
+					]
+				}
+			);
+		}
 
 		// API Gateway
 		const domainName =
@@ -174,16 +202,23 @@ export class BackendStack extends cdk.Stack {
 		});
 
 		// Add Paths to API Gateway
-		api.root
-			.addResource('example')
-			.addMethod('GET', new LambdaIntegration(ExampleLambda), {
+		// Root Paths
+		const testDbResource = api.root.addResource('testdbconnection');
+		testDbResource.addMethod('GET', new LambdaIntegration(DBTestLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(testDbResource);
+
+		const vendorResource = api.root.addResource('vendor');
+		const vendorIdResource = vendorResource.addResource('id');
+		vendorIdResource.addMethod(
+			'ANY',
+			new LambdaIntegration(VendorIDLambda),
+			{
 				authorizer: auth
-			});
-		api.root
-			.addResource('testdbconnection')
-			.addMethod('GET', new LambdaIntegration(DBTestLambda), {
-				authorizer: auth
-			});
+			}
+		);
+		addDynamicOptions(vendorIdResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url

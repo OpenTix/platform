@@ -27,19 +27,23 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 	};
 
 	const handleSubmit = () => {
-		if(type === 'events') {
-			if(formData.name === '') {
-				alert("Please fill out all fields");
+		if (type === 'events') {
+			if (formData.name === '') {
+				alert('Please fill out all fields');
 				return;
 			}
-		}
-		else {
-			if (formData.location === '' || formData.name === '' ||
-				formData.streetAddr === '' || formData.zip === '' ||
-				formData.countryCode === '' || formData.numUnique === '' ||
-				formData.numGa === '') {
-					alert("Please fill out all fields");
-					return;
+		} else {
+			if (
+				formData.location === '' ||
+				formData.name === '' ||
+				formData.streetAddr === '' ||
+				formData.zip === '' ||
+				formData.countryCode === '' ||
+				formData.numUnique === '' ||
+				formData.numGa === ''
+			) {
+				alert('Please fill out all fields');
+				return;
 			}
 			// Implement else if later to check ZIP is valid
 		}
@@ -58,9 +62,7 @@ export default function Modal({ type, onSubmit, onClose }: ModalProps) {
 						countryCode: formData.countryCode,
 						numUnique: formData.numUnique,
 						numGa: formData.numGa
-					}
-					
-				)
+					})
 		};
 		onSubmit(newItem);
 	};

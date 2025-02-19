@@ -24,15 +24,15 @@ const FooterContainer = styled.footer`
 // it also gives a place to render all providers after the routerprovider
 export default function AppLayout() {
 	return (
-			<PageContainer>
-				<ContentContainer>
-					<Navigation />
-					<Outlet />
-				</ContentContainer>
+		<PageContainer>
+			<ContentContainer>
+				<Navigation />
+				<Outlet />
+			</ContentContainer>
 
-				<FooterContainer>
-					<VersionTag />
-				</FooterContainer>
-			</PageContainer>
+			<FooterContainer>
+				<VersionTag />
+			</FooterContainer>
+		</PageContainer>
 	);
 }

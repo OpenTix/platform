@@ -1,30 +1,24 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { useMagic } from '@platform/auth';
 import { ErrorPage } from '@platform/ui';
-import ConditionalLayout from './routes/ConditionalLayout';
 import ConditionalRoot from './routes/ConditionalRoot';
-import ProtectedRoute from './routes/ProtectedRoute';
 import ExamplePage1 from './views/ExamplePage1';
+import Home from './views/Home';
 
-// This renders <App /> with child components rendered in the <Outlet /> component in the App component
+// All child routes are protected by the login and id check in ConditionalRoot
 const router = createBrowserRouter([
 	{
 		path: '/',
-		element: <ConditionalLayout />,
+		element: <ConditionalRoot />,
 		errorElement: <ErrorPage fatal={true} />, // this won't render the navbar
 		children: [
 			{
 				index: true,
-				element: <ConditionalRoot />,
+				element: <Home />,
 				ErrorBoundary: ErrorPage
 			},
 			{
 				path: 'example1',
-				element: (
-					<ProtectedRoute>
-						<ExamplePage1 />
-					</ProtectedRoute>
-				),
+				element: <ExamplePage1 />,
 				ErrorBoundary: ErrorPage
 			},
 			{
@@ -36,11 +30,6 @@ const router = createBrowserRouter([
 ]);
 
 const AppRouter = () => {
-	const magic = useMagic();
-	magic.user.onUserLoggedOut(() => {
-		router.navigate(0);
-	});
-
 	return <RouterProvider router={router} />;
 };
 

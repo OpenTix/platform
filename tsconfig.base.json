@@ -16,7 +16,6 @@
 		"baseUrl": ".",
 		"paths": {
 			"@platform/types": ["packages/types/src/index.ts"],
-			"@platform/auth": ["packages/auth/src/index.ts"],
 			"@platform/ui": ["packages/ui/src/index.ts"]
 		}
 	},

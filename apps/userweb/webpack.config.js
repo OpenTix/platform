@@ -14,6 +14,7 @@ module.exports = {
 			htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
 		}
 	},
+	ignoreWarnings: [/Failed to parse source map/],
 	plugins: [
 		new NxAppWebpackPlugin({
 			tsConfig: './tsconfig.app.json',
