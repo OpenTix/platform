@@ -3,10 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
-	"net/url"
-	"os"
 	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -21,11 +18,6 @@ import (
 
 var (
 	walletRegex *regexp.Regexp
-	dbAddress   string
-	dbPort      string
-	dbUser      string
-	dbPassword  string
-	dbName      string
 	connStr     string
 )
 
@@ -35,23 +27,7 @@ type PostPatchVendorIdRequestBody struct {
 
 func init() {
 	walletRegex = regexp.MustCompile("^[0-9A-Fa-f]{40}$")
-	dbAddress = os.Getenv("DB_ADDRESS")
-	dbPort = os.Getenv("DB_PORT")
-	dbName = os.Getenv("DB_NAME")
-	dbCredentials := shared.GetDBCredentials()
-	dbUser = dbCredentials.Username
-	dbPassword = dbCredentials.Password
-
-	u := &url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(dbUser, dbPassword),
-		Host:   fmt.Sprintf("%s:%s", dbAddress, dbPort),
-		Path:   dbName,
-	}
-	q := u.Query()
-	q.Set("sslmode", "require")
-	u.RawQuery = q.Encode()
-	connStr = u.String()
+	connStr = shared.InitLambda()
 }
 
 // This gets the current vendor's info based off the authorization token
