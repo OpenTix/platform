@@ -1,8 +1,120 @@
+// import { VenueData } from '../../../../packages/types/src/VenueData';
+import { VenueData, EventData } from '@platform/types';
+import { Tabs, Box, Flex, TextField, Button } from '@radix-ui/themes';
+import { useState } from 'react';
+import Modal from '../components/EventAddModal';
+import VendorTable from '../components/VendorTable';
+
 export default function Home() {
+	const [eventData, setEventData] = useState<EventData[]>([
+		{ id: 'otherstuff', date: Date.now(), name: 'Sample Event' }
+	]);
+	const [venueData, setVenueData] = useState<VenueData[]>([
+		{
+			id: 'somestuff',
+			date: Date.now(),
+			location: 'Sample Venue',
+			name: 'Sample Name',
+			streetAddr: '123 sample st',
+			zip: 123456,
+			city: 'some city',
+			stateCode: 'aa',
+			stateName: 'state',
+			countryCode: 'usa',
+			countryName: 'country',
+			numUnique: 10,
+			numGa: 10
+		} as VenueData
+	]);
+	const [eventDisplay, setEventDisplay] = useState(eventData);
+	const [venueDisplay, setVenueDisplay] = useState(venueData);
+	const [activeTab, setActiveTab] = useState<'events' | 'venues'>('events');
+
+	const [showModal, setShowModal] = useState(false);
+	const [modalType, setModalType] = useState<'events' | 'venues' | null>(
+		null
+	);
+
+	const addRow = () => {
+		setModalType(activeTab);
+		setShowModal(true);
+	};
+
+	const handleAdd = (newItem: EventData | VenueData) => {
+		if (modalType === 'events') {
+			setEventData([...eventData, newItem as EventData]);
+			setEventDisplay([...eventDisplay, newItem as EventData]);
+		} else if (modalType === 'venues') {
+			setVenueData([...venueData, newItem as VenueData]);
+			setVenueDisplay([...venueDisplay, newItem as VenueData]);
+		}
+		setShowModal(false);
+	};
+
+	const filterData = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const filterString = e.target.value.toLowerCase();
+		setEventDisplay(
+			eventData.filter(
+				(evnt) =>
+					evnt.id.toLowerCase().includes(filterString) ||
+					evnt.name.toLowerCase().includes(filterString)
+			)
+		);
+		setVenueDisplay(
+			venueData.filter(
+				(venue) =>
+					venue.id.includes(filterString) ||
+					venue.location.toLowerCase().includes(filterString)
+			)
+		);
+	};
+
+	const updateTab = (e: string) => {
+		setActiveTab(e as 'events' | 'venues');
+	};
+
 	return (
-		<div>
-			<h1>Home</h1>
-			<p>This page should not be accessible unless you are logged in.</p>
-		</div>
+		<Box style={{ marginTop: '8px' }}>
+			<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
+				<Flex justify="between">
+					<Tabs.List size="2">
+						<Tabs.Trigger value="events">Events</Tabs.Trigger>
+						<Tabs.Trigger value="venues">Venues</Tabs.Trigger>
+					</Tabs.List>
+					<Flex>
+						<TextField.Root
+							placeholder="search"
+							size="3"
+							onChangeCapture={filterData}
+							style={{ marginRight: '8px' }}
+						></TextField.Root>
+
+						<Button
+							onClick={addRow}
+							size="3"
+							style={{ marginRight: '4px' }}
+						>
+							{' '}
+							+{' '}
+						</Button>
+					</Flex>
+				</Flex>
+				<Box>
+					<Tabs.Content value="events">
+						<VendorTable rowData={eventDisplay} />
+					</Tabs.Content>
+					<Tabs.Content value="venues">
+						<VendorTable rowData={venueDisplay} />
+					</Tabs.Content>
+				</Box>
+			</Tabs.Root>
+			{showModal && modalType && (
+				<Modal
+					type={modalType}
+					onSubmit={handleAdd}
+					onClose={() => setShowModal(false)}
+				/>
+			)}
+		</Box>
 	);
 }
