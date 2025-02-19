@@ -170,7 +170,7 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
-select (name, type, basecost, event_datetime, description, disclaimer, num_unique, num_ga, photo), (pk, zip)
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -192,8 +192,16 @@ type UserGetEventsPaginatedParams struct {
 }
 
 type UserGetEventsPaginatedRow struct {
-	Column1 interface{}
-	Column2 interface{}
+	Name          string
+	Type          string
+	Basecost      float64
+	EventDatetime pgtype.Timestamp
+	Description   string
+	Disclaimer    pgtype.Text
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
+	Zip           string
 }
 
 // select * from app.event event
@@ -225,7 +233,18 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 	var items []UserGetEventsPaginatedRow
 	for rows.Next() {
 		var i UserGetEventsPaginatedRow
-		if err := rows.Scan(&i.Column1, &i.Column2); err != nil {
+		if err := rows.Scan(
+			&i.Name,
+			&i.Type,
+			&i.Basecost,
+			&i.EventDatetime,
+			&i.Description,
+			&i.Disclaimer,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+			&i.Zip,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

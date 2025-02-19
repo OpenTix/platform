@@ -72,7 +72,7 @@ insert into app.venue (
 -- and (event.event_datetime >= $6::timestamp)
 -- limit 5
 -- offset (($1::int - 1) * 5);
-select (name, type, basecost, event_datetime, description, disclaimer, num_unique, num_ga, photo), (pk, zip)
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
