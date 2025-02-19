@@ -134,8 +134,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		Photo:       "",
 	}
 
-	tmp, _ := json.Marshal(request.Body)
-	err = json.Unmarshal(tmp, &params)
+	err = json.Unmarshal([]byte(request.Body), &params)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(404, "Could not get Body Params", request.Headers, err)
 	}
