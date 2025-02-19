@@ -175,7 +175,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 	vendor := resp.Pk
 
-	dbVendor, err := queries.CheckVenueVendorStatus(ctx, vendor)
+	dbVendor, err := queries.CheckVenueVendorStatus(ctx, params.Venue)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
