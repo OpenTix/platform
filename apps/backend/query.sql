@@ -29,7 +29,7 @@ where event.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
--- and ($3::int = -1 or $3::int = event.venue)
+and ($3::int = -1 or $3::int = event.venue)
 limit 5
 offset (($1::int - 1) * 5);
 
@@ -61,15 +61,25 @@ insert into app.venue (
 );
 
 -- name: UserGetEventsPaginated :many
-select * from app.event event
-where exists (
-    select * from app.venue venue
-    where ($2::text = '' or venue.zip = $2::text)
-)
-and ($3::text = '' or event.name = $3::text)
-and ($4::text = '' or event.type = $4::text)
-and (event.basecost <= $5::double precision)
-and (event.event_datetime >= $6::timestamp)
+-- select * from app.event event
+-- where exists (
+--     select * from app.venue venue
+--     where ($2::text = '' or venue.zip = $2::text)
+-- )
+-- and ($3::text = '' or event.name = $3::text)
+-- and ($4::text = '' or event.type = $4::text)
+-- and (event.basecost <= $5::double precision)
+-- and (event.event_datetime >= $6::timestamp)
+-- limit 5
+-- offset (($1::int - 1) * 5);
+select *, *
+from app.event event, app.venue venue
+where event.venue = venue.pk
+and ($2::text = '' or $2::text = venue.zip)
+and ($3::text = '' or $3::text = event.name)
+and ($4::text = '' or $4::text = event.type)
+and ($5::double precision >= event.basecost)
+and ($6::timestamp <= event.event_datetime)
 limit 5
 offset (($1::int - 1) * 5);
 -- select * from app.event event

@@ -5,7 +5,6 @@ import (
 	"backend/shared"
 	"context"
 	"encoding/json"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -18,8 +17,10 @@ import (
 
 var connStr string
 
+// ISO 8601
 const time_layout string = "2006-01-02T15:04:05.999Z"
 
+// Type for unmarshalling query params
 type eventGetQueryParams struct {
 	PageNum string `json:"page"`
 	ZipCode string `json:"zip"`
@@ -34,6 +35,7 @@ func init() {
 }
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// Set default parameters
 	var params eventGetQueryParams = eventGetQueryParams{
 		PageNum: "",
 		ZipCode: "",
@@ -43,18 +45,19 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Time:    "",
 	}
 
+	// Easiest way to get query parameters out
 	tmp, _ := json.Marshal(request.QueryStringParameters)
-	log.Printf("tmp = %v\nquerystringparams = %v\n", tmp, request.QueryStringParameters)
 	err := json.Unmarshal(tmp, &params)
 	if err != nil {
-		log.Printf("err = %v\n", err)
-		return shared.CreateErrorResponse(404, "Could not get Query Params", request.Headers)
+		return shared.CreateErrorResponseAndLogError(404, "Could not get Query Params", request.Headers, err)
 	}
 
+	// Parse the parameters that are not strings
 	var tstamp pgtype.Timestamp
 	var page int32
 	var cost float64
 
+	// Set time to a really low value to show all events if not provided
 	if params.Time == "" {
 		tstamp.Scan(time.Time{})
 	} else {
@@ -66,6 +69,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
+	// Default to page 1
 	if params.PageNum == "" {
 		page = 1
 	} else {
@@ -75,6 +79,8 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 			page = 1
 		}
 	}
+
+	// Set cost to a large number so that all events will be displayed if not provided
 	if params.Cost == "" {
 		cost = 10000000000.0
 	} else {
@@ -91,7 +97,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 	defer conn.Close(ctx)
 
-	// Get events for current page
+	// Get events for specified page
 	queries := query.New(conn)
 	dbResponse, err := queries.UserGetEventsPaginated(ctx, query.UserGetEventsPaginatedParams{
 		Column1: page,
@@ -102,10 +108,8 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Column6: tstamp,
 	})
 
-	log.Printf("page = %d\nzip = %s\nname = %s\ntype = %s\ncost = %f\ntime = %v", page, params.ZipCode, params.Name, params.Type, cost, tstamp)
-	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
 	if err != nil {
-		return shared.CreateErrorResponse(404, "This is fuck up lol", request.Headers)
+		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)

@@ -5,7 +5,6 @@ import (
 	"backend/shared"
 	"context"
 	"encoding/json"
-	"log"
 	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -32,6 +31,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
+	// Get query parameters and set defaults if not ok
 	tmp, ok := request.QueryStringParameters["page"]
 	var page int32
 	if !ok {
@@ -55,7 +55,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 			venue = -1
 		}
 	}
-	log.Printf("venue %v\n", venue)
 
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
@@ -69,13 +68,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	dbResponse, err := queries.VendorGetEventsPaginated(ctx, query.VendorGetEventsPaginatedParams{
 		Column1: page,
 		Wallet:  vendorinfo.Wallet,
-		// Column3: venue,
+		Column3: venue,
 	})
 
-	log.Printf("dbReponse = %v\n", dbResponse)
-
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Could not retrieve from the database", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)

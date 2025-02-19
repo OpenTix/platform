@@ -5,7 +5,7 @@ import (
 	"backend/shared"
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -14,7 +14,8 @@ import (
 
 var connStr string
 
-type VenueBodyParams struct {
+// Type for POST request to unmarshal body
+type VenuePostBodyParams struct {
 	Name        string `json:"name"`
 	Streetaddr  string `json:"street_address"`
 	Zip         string `json:"zip"`
@@ -54,10 +55,13 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 
 	// Get events for current page
-	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{1, userinfo.Wallet})
-	log.Printf("err = %v\nresponse = %v\n", err, dbResponse)
+	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{
+		Column1: 1,
+		Wallet:  userinfo.Wallet,
+	})
+
 	if err != nil {
-		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
+		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
@@ -90,6 +94,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
+
 	queries := query.New(conn)
 
 	resp, err := queries.GetVendorByWallet(ctx, userinfo.Wallet)
@@ -98,20 +103,19 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 	vendor := resp.Pk
 
-	var params VenueBodyParams = VenueBodyParams{
-		Vendor: vendor,
-	}
-	err = json.Unmarshal([]byte(request.Body), &params)
-	if err != nil {
-		log.Print("err = %v\nparams = %v\n", err, params)
-		return shared.CreateErrorResponse(500, "Failed to unmarshal body params", request.Headers)
+	var params VenuePostBodyParams = VenuePostBodyParams{
+		Vendor: vendor, // We can set the vendor since we got it from the token
 	}
 
-	// Get events for current page
-	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams(params))
-	log.Printf("err = %v\nresponse = %v\n", err, dbResp)
+	err = json.Unmarshal([]byte(request.Body), &params)
 	if err != nil {
-		return shared.CreateErrorResponse(404, "Shit did not work", request.Headers)
+		return shared.CreateErrorResponseAndLogError(500, "Failed to unmarshal body params", request.Headers, fmt.Errorf("err = %v\nparams = %v\n", err, params))
+	}
+
+	// Insert the venue into the app.venue table
+	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams(params))
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Unable to insert into table or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResp)
