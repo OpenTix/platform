@@ -33,6 +33,32 @@ and ($3::int = -1 or $3::int = event.venue)
 limit 5
 offset (($1::int - 1) * 5);
 
+-- name: CreateEvent :one
+insert into app.event (
+    vendor,
+    venue,
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga,
+    photo
+) values (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) returning (
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga
+);
+
 -- name: CreateVenue :one
 insert into app.venue (
     name,
@@ -61,17 +87,6 @@ insert into app.venue (
 );
 
 -- name: UserGetEventsPaginated :many
--- select * from app.event event
--- where exists (
---     select * from app.venue venue
---     where ($2::text = '' or venue.zip = $2::text)
--- )
--- and ($3::text = '' or event.name = $3::text)
--- and ($4::text = '' or event.type = $4::text)
--- and (event.basecost <= $5::double precision)
--- and (event.event_datetime >= $6::timestamp)
--- limit 5
--- offset (($1::int - 1) * 5);
 select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip
 from app.event event, app.venue venue
 where event.venue = venue.pk
@@ -82,14 +97,3 @@ and ($5::double precision >= event.basecost)
 and ($6::timestamp <= event.event_datetime)
 limit 5
 offset (($1::int - 1) * 5);
--- select * from app.event event
--- where event.venue in (
---     select pk from app.venue venue
---     where (2::text = '' or venue.zip = $2::text)
--- )
--- and ($3::text = '' or event.name = $3::text)
--- and ($4::text = '' or event.type = $4::text)
--- and (event.basecost <= $5::double precision)
--- and (event.event_datetime >= $6::timestamp)
--- limit 5
--- offset (($1::int - 1) * 5);

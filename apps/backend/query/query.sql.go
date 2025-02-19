@@ -12,6 +12,66 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createEvent = `-- name: CreateEvent :one
+insert into app.event (
+    vendor,
+    venue,
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga,
+    photo
+) values (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) returning (
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga
+)
+`
+
+type CreateEventParams struct {
+	Vendor        int32
+	Venue         int32
+	Name          string
+	Type          string
+	EventDatetime pgtype.Timestamp
+	Description   string
+	Disclaimer    pgtype.Text
+	Basecost      float64
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
+}
+
+func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (interface{}, error) {
+	row := q.db.QueryRow(ctx, createEvent,
+		arg.Vendor,
+		arg.Venue,
+		arg.Name,
+		arg.Type,
+		arg.EventDatetime,
+		arg.Description,
+		arg.Disclaimer,
+		arg.Basecost,
+		arg.NumUnique,
+		arg.NumGa,
+		arg.Photo,
+	)
+	var column_1 interface{}
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createVendor = `-- name: CreateVendor :one
 insert into app.vendor (wallet, name) values ($1, $2) returning pk, id, wallet, name
 `
@@ -204,19 +264,6 @@ type UserGetEventsPaginatedRow struct {
 	Zip           string
 }
 
-// select * from app.event event
-// where exists (
-//
-//	select * from app.venue venue
-//	where ($2::text = '' or venue.zip = $2::text)
-//
-// )
-// and ($3::text = ” or event.name = $3::text)
-// and ($4::text = ” or event.type = $4::text)
-// and (event.basecost <= $5::double precision)
-// and (event.event_datetime >= $6::timestamp)
-// limit 5
-// offset (($1::int - 1) * 5);
 func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]UserGetEventsPaginatedRow, error) {
 	rows, err := q.db.Query(ctx, userGetEventsPaginated,
 		arg.Column1,

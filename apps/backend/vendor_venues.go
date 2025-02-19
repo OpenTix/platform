@@ -41,7 +41,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Grab wallet address from token
-	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
@@ -57,7 +57,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Get events for current page
 	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{
 		Column1: 1,
-		Wallet:  userinfo.Wallet,
+		Wallet:  vendorinfo.Wallet,
 	})
 
 	if err != nil {
