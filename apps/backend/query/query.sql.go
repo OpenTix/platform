@@ -170,7 +170,7 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
-select event.pk, event.id, event.vendor, venue, event.name, type, event_datetime, description, disclaimer, basecost, event.num_unique, event.num_ga, event.photo, venue.pk, venue.id, venue.vendor, venue.name, streetaddr, zip, city, state_code, state_name, country_code, country_name, venue.num_unique, venue.num_ga, venue.photo, event.pk, event.id, event.vendor, venue, event.name, type, event_datetime, description, disclaimer, basecost, event.num_unique, event.num_ga, event.photo, venue.pk, venue.id, venue.vendor, venue.name, streetaddr, zip, city, state_code, state_name, country_code, country_name, venue.num_unique, venue.num_ga, venue.photo
+select (name, type, basecost, event_datetime, description, disclaimer, num_unique, num_ga, photo), (pk, zip)
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -192,60 +192,8 @@ type UserGetEventsPaginatedParams struct {
 }
 
 type UserGetEventsPaginatedRow struct {
-	Pk              int32
-	ID              uuid.UUID
-	Vendor          int32
-	Venue           int32
-	Name            string
-	Type            string
-	EventDatetime   pgtype.Timestamp
-	Description     string
-	Disclaimer      pgtype.Text
-	Basecost        float64
-	NumUnique       int32
-	NumGa           int32
-	Photo           pgtype.Text
-	Pk_2            int32
-	ID_2            uuid.UUID
-	Vendor_2        int32
-	Name_2          string
-	Streetaddr      string
-	Zip             string
-	City            string
-	StateCode       string
-	StateName       string
-	CountryCode     string
-	CountryName     string
-	NumUnique_2     int32
-	NumGa_2         int32
-	Photo_2         pgtype.Text
-	Pk_3            int32
-	ID_3            uuid.UUID
-	Vendor_3        int32
-	Venue_2         int32
-	Name_3          string
-	Type_2          string
-	EventDatetime_2 pgtype.Timestamp
-	Description_2   string
-	Disclaimer_2    pgtype.Text
-	Basecost_2      float64
-	NumUnique_3     int32
-	NumGa_3         int32
-	Photo_3         pgtype.Text
-	Pk_4            int32
-	ID_4            uuid.UUID
-	Vendor_4        int32
-	Name_4          string
-	Streetaddr_2    string
-	Zip_2           string
-	City_2          string
-	StateCode_2     string
-	StateName_2     string
-	CountryCode_2   string
-	CountryName_2   string
-	NumUnique_4     int32
-	NumGa_4         int32
-	Photo_4         pgtype.Text
+	Column1 interface{}
+	Column2 interface{}
 }
 
 // select * from app.event event
@@ -277,62 +225,7 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 	var items []UserGetEventsPaginatedRow
 	for rows.Next() {
 		var i UserGetEventsPaginatedRow
-		if err := rows.Scan(
-			&i.Pk,
-			&i.ID,
-			&i.Vendor,
-			&i.Venue,
-			&i.Name,
-			&i.Type,
-			&i.EventDatetime,
-			&i.Description,
-			&i.Disclaimer,
-			&i.Basecost,
-			&i.NumUnique,
-			&i.NumGa,
-			&i.Photo,
-			&i.Pk_2,
-			&i.ID_2,
-			&i.Vendor_2,
-			&i.Name_2,
-			&i.Streetaddr,
-			&i.Zip,
-			&i.City,
-			&i.StateCode,
-			&i.StateName,
-			&i.CountryCode,
-			&i.CountryName,
-			&i.NumUnique_2,
-			&i.NumGa_2,
-			&i.Photo_2,
-			&i.Pk_3,
-			&i.ID_3,
-			&i.Vendor_3,
-			&i.Venue_2,
-			&i.Name_3,
-			&i.Type_2,
-			&i.EventDatetime_2,
-			&i.Description_2,
-			&i.Disclaimer_2,
-			&i.Basecost_2,
-			&i.NumUnique_3,
-			&i.NumGa_3,
-			&i.Photo_3,
-			&i.Pk_4,
-			&i.ID_4,
-			&i.Vendor_4,
-			&i.Name_4,
-			&i.Streetaddr_2,
-			&i.Zip_2,
-			&i.City_2,
-			&i.StateCode_2,
-			&i.StateName_2,
-			&i.CountryCode_2,
-			&i.CountryName_2,
-			&i.NumUnique_4,
-			&i.NumGa_4,
-			&i.Photo_4,
-		); err != nil {
+		if err := rows.Scan(&i.Column1, &i.Column2); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
