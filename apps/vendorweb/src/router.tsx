@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorPage } from '@platform/ui';
 import ConditionalRoot from './routes/ConditionalRoot';
+import ContractTesting from './views/ContractTesting';
 import ExamplePage1 from './views/ExamplePage1';
 import Home from './views/Home';
 
@@ -19,6 +20,11 @@ const router = createBrowserRouter([
 			{
 				path: 'example1',
 				element: <ExamplePage1 />,
+				ErrorBoundary: ErrorPage
+			},
+			{
+				path: 'contract',
+				element: <ContractTesting />,
 				ErrorBoundary: ErrorPage
 			},
 			{
