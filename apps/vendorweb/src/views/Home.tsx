@@ -1,6 +1,6 @@
 // import { VenueData } from '../../../../packages/types/src/VenueData';
 import { VenueData, EventData } from '@platform/types';
-import { Tabs, Box, Flex, TextField, Button } from '@radix-ui/themes';
+import { Tabs, Box, Flex, TextField, Button, Container } from '@radix-ui/themes';
 import { useState } from 'react';
 import Modal from '../components/EventAddModal';
 import VendorTable from '../components/VendorTable';
@@ -74,7 +74,8 @@ export default function Home() {
 	};
 
 	return (
-		<Box style={{ marginTop: '8px' }}>
+		<Container size={'4'}>
+			<Box  style={{padding: '16px 16px'}}>
 			<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
 				<Flex justify="between">
 					<Tabs.List size="2">
@@ -115,6 +116,7 @@ export default function Home() {
 					onClose={() => setShowModal(false)}
 				/>
 			)}
-		</Box>
+			</Box>
+		</Container>
 	);
 }

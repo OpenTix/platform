@@ -1,44 +1,47 @@
 import { Text, Table, Box, ScrollArea } from '@radix-ui/themes';
+import { EventData, VenueData } from '@platform/types';
 
 // import { useState } from 'react';
 
-interface tableRowArray {
-	rowData: tableRowData[];
+interface tableData {
+	rowData: (EventData[] | VenueData[]);
 }
 
-interface tableRowData {
-	id: string;
-	date?: number;
-	name?: string;
-	location?: string;
-}
-
-export default function VendorTable({ rowData }: tableRowArray) {
-	const firstColumnLabel = rowData.some((row) => row.name !== undefined)
-		? 'Name'
-		: 'Location';
-
+export default function VendorTable({ rowData }:tableData) {
+	
+	let header = [];
+	for(const label in rowData[0]){
+		header.push(
+			<Table.ColumnHeaderCell>
+				<Text>
+					{label}
+				</Text>
+			</Table.ColumnHeaderCell>
+		)
+	}
 	const tableHeader = (
 		<Table.Row>
-			<Table.ColumnHeaderCell>
-				<Text>{firstColumnLabel}</Text>
-			</Table.ColumnHeaderCell>
-			<Table.ColumnHeaderCell>
-				<Text>Event ID</Text>
-			</Table.ColumnHeaderCell>
-			<Table.ColumnHeaderCell>
-				<Text>Date Published</Text>
-			</Table.ColumnHeaderCell>
+			{header}
 		</Table.Row>
 	);
 
-	const tableRows = rowData.map((row, idx) => (
+	const tableRows = rowData.map((row, idx) => {
+	let tableRow = [];
+	for(const label in row){
+		tableRow.push(
+			<Table.Cell>
+				<Text>
+					{label=='date'? `${new Date(row[label as keyof typeof row])}` :row[label as keyof typeof row]}
+				</Text>
+			</Table.Cell>
+		);
+	}
+
+	return (
 		<Table.Row key={idx}>
-			<Table.Cell>{row.name || row.location}</Table.Cell>
-			<Table.Cell>{row.id}</Table.Cell>
-			<Table.Cell>{new Date(row.date ?? 0).toString()}</Table.Cell>
+			{tableRow}
 		</Table.Row>
-	));
+	)});
 
 	return (
 		<Box>
