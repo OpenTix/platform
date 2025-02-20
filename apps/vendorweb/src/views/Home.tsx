@@ -1,6 +1,6 @@
 // import { VenueData } from '../../../../packages/types/src/VenueData';
-import { VenueData, EventData } from '@platform/types';
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { VenueData, EventData } from '@platform/types';
 import {
 	Tabs,
 	Box,
@@ -8,19 +8,17 @@ import {
 	TextField,
 	Button,
 	Container,
-	Text,
+	Text
 } from '@radix-ui/themes';
-
 import {
 	useQuery,
 	QueryClient,
-	QueryClientProvider,
- } from '@tanstack/react-query';
-
+	QueryClientProvider
+} from '@tanstack/react-query';
+import { Token } from 'aws-cdk-lib';
 import { useState } from 'react';
 import Modal from '../components/EventAddModal';
 import VendorTable from '../components/VendorTable';
-import { Token } from 'aws-cdk-lib';
 
 const queryClient = new QueryClient();
 
@@ -94,7 +92,6 @@ export default function Home() {
 
 	return (
 		<Container size={'4'}>
-
 			<Box style={{ padding: '16px 16px' }}>
 				<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
 					<Flex justify="between">
@@ -122,14 +119,14 @@ export default function Home() {
 					</Flex>
 					<Box>
 						<Tabs.Content value="events">
-						<QueryClientProvider client={queryClient}>
-							<Events/>
-						</QueryClientProvider>
+							<QueryClientProvider client={queryClient}>
+								<Events />
+							</QueryClientProvider>
 						</Tabs.Content>
 						<Tabs.Content value="venues">
-						<QueryClientProvider client={queryClient}>
-							<Venues/>
-						</QueryClientProvider>
+							<QueryClientProvider client={queryClient}>
+								<Venues />
+							</QueryClientProvider>
 						</Tabs.Content>
 					</Box>
 				</Tabs.Root>
@@ -145,61 +142,66 @@ export default function Home() {
 	);
 }
 
-
-function Venues(){
+function Venues() {
 	const { isPending, isError, data, error } = useQuery({
 		queryKey: ['venues'],
-		queryFn: fetchVenues,
+		queryFn: fetchVenues
 	});
 
-	if(isPending){
-		console.log("loading venues...");
-		return (<Text> Loading... </Text>);
+	if (isPending) {
+		console.log('loading venues...');
+		return <Text> Loading... </Text>;
 	}
 
-	if(isError){
+	if (isError) {
 		console.error(error.message);
-		return (<Text>Error: {error.message}</Text>);
+		return <Text>Error: {error.message}</Text>;
 	}
 
-	console.log(data ?? "no data but the request was successfull");
+	console.log(data ?? 'no data but the request was successfull');
 
-	return (<VendorTable rowData={data} tableType='venue'/>);
+	return <VendorTable rowData={data} tableType="venue" />;
 }
 
-function Events(){
+function Events() {
 	const { isPending, isError, data, error } = useQuery({
 		queryKey: ['events'],
-		queryFn: fetchEvents,
+		queryFn: fetchEvents
 	});
 
-	if(isPending){
-		console.log("loading events...");
-		return (<Text> Loading... </Text>);
+	if (isPending) {
+		console.log('loading events...');
+		return <Text> Loading... </Text>;
 	}
 
-	if(isError){
+	if (isError) {
 		console.error(error.message);
-		return (<Text>Error: {error.message}</Text>);
+		return <Text>Error: {error.message}</Text>;
 	}
 
-	console.log(data ?? "no data but the request was successfull");
+	console.log(data ?? 'no data but the request was successfull');
 
-	return (<VendorTable rowData={data} tableType='event'/>);
+	return <VendorTable rowData={data} tableType="event" />;
 }
 
-async function fetchVenues(){
+async function fetchVenues() {
 	const authToken = getAuthToken();
-	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues`, {method:'GET', headers:{Authorization: `Bearer ${authToken}`}})
-					.then((resp)=> resp.json())
-					.then((data) => data)
-					.catch((error) => error);
+	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues`, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${authToken}` }
+	})
+		.then((resp) => resp.json())
+		.then((data) => data)
+		.catch((error) => error);
 }
 
-async function fetchEvents(){
+async function fetchEvents() {
 	const authToken = getAuthToken();
-	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events`, {method:'GET', headers:{Authorization: `Bearer ${authToken}`}})
-					.then((resp)=> resp.json())
-					.then((data) => data)
-					.catch((error) => error);
+	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events`, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${authToken}` }
+	})
+		.then((resp) => resp.json())
+		.then((data) => data)
+		.catch((error) => error);
 }

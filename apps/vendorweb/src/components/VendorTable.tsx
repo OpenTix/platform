@@ -11,11 +11,11 @@ interface tableData {
 
 export default function VendorTable({ rowData, tableType }: tableData) {
 	let header = [];
-	let labels:string[] = [];
+	let labels: string[] = [];
 
-	if(tableType == 'event'){
+	if (tableType == 'event') {
 		labels = getEventLabels();
-	}else if(tableType == 'venue'){
+	} else if (tableType == 'venue') {
 		labels = getVenueLabels();
 	}
 
@@ -57,25 +57,24 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 	);
 }
 
-
-function getEventLabels(){
-	return ['id',
-			'date',
-			'name'];
+function getEventLabels() {
+	return ['id', 'date', 'name'];
 }
 
-function getVenueLabels(){
-	return ['id',
-			'date',
-			'location',
-			'name',
-			'streetAddr',
-			'zip',
-			'city',
-			'stateCode',
-			'stateName',
-			'countryCode',
-			'countryName',
-			'numUnique',
-			'numGa'];
+function getVenueLabels() {
+	return [
+		'id',
+		'date',
+		'location',
+		'name',
+		'streetAddr',
+		'zip',
+		'city',
+		'stateCode',
+		'stateName',
+		'countryCode',
+		'countryName',
+		'numUnique',
+		'numGa'
+	];
 }
