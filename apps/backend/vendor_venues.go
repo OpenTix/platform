@@ -123,7 +123,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
 	}
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
+		StatusCode: 201,
 		Body:       string(responseBody),
 		Headers:    shared.GetResponseHeaders(request.Headers),
 	}, nil
