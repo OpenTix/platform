@@ -19,7 +19,7 @@ export type Venue = {
 	vendor: number;
 	name: string;
 	street_address: string;
-	zip: number;
+	zip: string;
 	city: string;
 	state_code: string;
 	state_name: string;
