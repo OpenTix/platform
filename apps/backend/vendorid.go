@@ -114,7 +114,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to parse UUID", request.Headers, err)
 	}
-	vendor, err := queries.CreateVendorWithUUID(ctx, query.CreateVendorWithUUIDParams{u, userinfo.Wallet, body.Name})
+	vendor, err := queries.CreateVendorWithUUID(ctx, query.CreateVendorWithUUIDParams{ID: u, Wallet: userinfo.Wallet, Name: body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
 	}
@@ -168,7 +168,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	// update vendor
-	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{userinfo.Wallet, body.Name})
+	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{Wallet: userinfo.Wallet, Name: body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
 	}
