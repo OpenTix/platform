@@ -1,6 +1,5 @@
 import { DynamicWidget, useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { Box, Flex, Heading, Skeleton } from '@radix-ui/themes';
-import { get } from 'http';
+import { Box, Flex, Skeleton } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { NavLink, Navbar } from '@platform/ui';

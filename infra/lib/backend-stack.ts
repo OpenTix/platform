@@ -1,4 +1,4 @@
-import { GoFunction, GoFunctionProps } from '@aws-cdk/aws-lambda-go-alpha';
+import { GoFunction } from '@aws-cdk/aws-lambda-go-alpha';
 import * as cdk from 'aws-cdk-lib';
 import {
 	LambdaIntegration,
