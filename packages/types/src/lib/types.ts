@@ -18,7 +18,7 @@ export type Venue = {
 	id: string;
 	vendor: number;
 	name: string;
-	streetaddr: string;
+	street_address: string;
 	zip: number;
 	city: string;
 	state_code: string;
@@ -46,7 +46,7 @@ export type EventCreationFormData = Pick<
 export type VenueCreationFormData = Pick<
 	Venue,
 	| 'name'
-	| 'streetaddr'
+	| 'street_address'
 	| 'zip'
 	| 'city'
 	| 'state_code'
