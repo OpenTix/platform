@@ -25,7 +25,7 @@ type VenuePostBodyParams struct {
 	CountryCode string `json:"country_code"`
 	CountryName string `json:"country_name"`
 	NumUnique   int32  `json:"num_unique"`
-	NumGa       int32  `json:"num_general"`
+	NumGa       int32  `json:"num_ga"`
 	Vendor      int32
 }
 

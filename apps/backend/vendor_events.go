@@ -21,7 +21,7 @@ var connStr string
 // ISO 8601
 const time_layout string = "2006-01-02T15:04:05.999Z"
 
-type CreateEventPostBody struct {
+type EventPostBodyParams struct {
 	Vendor      int32
 	Venue       int32   `json:"venue"`
 	Name        string  `json:"name"`
@@ -120,7 +120,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
-	var params CreateEventPostBody = CreateEventPostBody{
+	var params EventPostBodyParams = EventPostBodyParams{
 		Vendor:      -1,
 		Venue:       -1,
 		Name:        "",
