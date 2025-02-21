@@ -1,8 +1,6 @@
 import { Event, Venue } from '@platform/types';
 import { Text, Table, Box, ScrollArea } from '@radix-ui/themes';
 
-// import { useState } from 'react';
-
 interface tableData {
 	rowData: Event[] | Venue[];
 }
