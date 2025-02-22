@@ -1,8 +1,4 @@
-import {
-	DynamicEmbeddedAuthFlow,
-	DynamicEmbeddedWidget,
-	DynamicWidget
-} from '@dynamic-labs/sdk-react-core';
+import { DynamicEmbeddedAuthFlow } from '@dynamic-labs/sdk-react-core';
 import styled from 'styled-components';
 import { VersionTag } from '@platform/ui';
 
@@ -37,33 +33,11 @@ const RightSection = styled.div`
 	align-items: center;
 `;
 
-const RightContent = styled.div`
-	padding-bottom: 2.5rem;
-`;
-
 const RightFooter = styled.footer`
 	position: absolute;
 	bottom: 0;
 	right: 0;
 	padding: 0.5rem;
-`;
-
-const Form = styled.form`
-	display: flex;
-	flex-direction: column;
-	width: 300px;
-`;
-
-const Input = styled.input`
-	margin-bottom: 1rem;
-	padding: 0.75rem;
-	font-size: 1rem;
-`;
-
-const Button = styled.button`
-	padding: 0.75rem;
-	font-size: 1rem;
-	cursor: pointer;
 `;
 
 function Login() {

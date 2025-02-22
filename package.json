@@ -26,6 +26,7 @@
 	"dependencies": {
 		"@dynamic-labs/ethereum": "^4.6.1",
 		"@dynamic-labs/sdk-react-core": "^4.6.1",
+		"@radix-ui/react-icons": "^1.3.2",
 		"@radix-ui/themes": "^3.2.0",
 		"aws-cdk-lib": "^2.173.2",
 		"react": "^18.2.0",

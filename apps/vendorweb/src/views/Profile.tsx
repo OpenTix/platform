@@ -179,7 +179,15 @@ export default function Profile() {
 						<Flex gap="3" direction={'column'}>
 							<Card>
 								<Flex gap="3" direction={'column'}>
-									<Heading size="5">{vendorName}</Heading>
+									{vendorName === '' ? (
+										<Skeleton>
+											<Heading size="5">
+												Vendor Name
+											</Heading>
+										</Skeleton>
+									) : (
+										<Heading size="5">{vendorName}</Heading>
+									)}
 									<Callout.Root variant="soft" color="gray">
 										<CalloutIconPointer
 											onClick={handleAddressCopy}

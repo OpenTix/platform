@@ -6,6 +6,7 @@ export interface ErrorPageProps {
 }
 
 export function ErrorPage(ErrorPageProps: ErrorPageProps) {
+	//eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const error: any = useRouteError();
 	console.error(error);
 
