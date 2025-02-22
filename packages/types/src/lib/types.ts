@@ -1,5 +1,8 @@
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+
 // Redone to align with database.
 export type Event = {
+	pk: number;
 	id: string;
 	vendor: number;
 	venue: number;
@@ -15,6 +18,7 @@ export type Event = {
 };
 
 export type Venue = {
+	pk: number;
 	id: string;
 	vendor: number;
 	name: string;
@@ -56,3 +60,10 @@ export type VenueCreationFormData = Pick<
 	| 'num_unique'
 	| 'num_ga'
 >;
+
+// Cannot use Pick as backend changes capitalization
+export type AllVenuesListSimplifiedResponse = {
+	Pk: number;
+	ID: string;
+	Name: string;
+};

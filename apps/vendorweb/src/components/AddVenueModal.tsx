@@ -1,21 +1,15 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { VenueCreationFormData } from '@platform/types';
-import { CrossCircledIcon } from '@radix-ui/react-icons';
-import {
-	Dialog,
-	Button,
-	TextField,
-	Text,
-	Flex,
-	Callout
-} from '@radix-ui/themes';
+import { TextField, Text } from '@radix-ui/themes';
 import { useState } from 'react';
+import { BaseModalForm } from '@platform/ui';
 
 type AddVenueModalProps = {
 	onClose: () => void;
 };
 
 export default function AddVenueModal({ onClose }: AddVenueModalProps) {
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [formData, setFormData] = useState<VenueCreationFormData>({
@@ -66,10 +60,10 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 			setShouldShowError(true);
 			return;
 		}
-		console.log(formData);
-
-		const authToken = getAuthToken();
+		setShouldShowError(false);
+		setIsSubmitting(true);
 		try {
+			const authToken = getAuthToken();
 			const res = await fetch(
 				process.env.NX_PUBLIC_API_BASEURL + '/vendor/venues',
 				{
@@ -82,170 +76,146 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 				}
 			);
 			const data = await res.json();
-			if (res.status !== 201) {
+			if (!res.ok) {
 				setErrorMessage(res.status + ': ' + data.message);
 				setShouldShowError(true);
+				setIsSubmitting(false);
 				return;
 			}
 		} catch (error) {
 			console.error(error);
 			setErrorMessage('Failed to add venue');
 			setShouldShowError(true);
+			setIsSubmitting(false);
 			return;
 		}
-
+		setIsSubmitting(false);
 		onClose();
 	};
 
 	return (
-		<Dialog.Root open onOpenChange={onClose}>
-			<Dialog.Content maxWidth="30vw">
-				<Dialog.Title style={{ textAlign: 'center' }}>
-					Add a New Venue
-				</Dialog.Title>
-
-				<Flex
-					gap="1"
-					direction="column"
-					style={{ marginLeft: '20%', width: '60%' }}
-				>
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Name
-						</Text>
-						<TextField.Root
-							name="name"
-							placeholder="My Venue"
-							value={formData.name}
-							onChange={handleChange}
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Street Address
-						</Text>
-						<TextField.Root
-							name="street_address"
-							placeholder="123 Main Street"
-							value={formData.street_address}
-							onChange={handleChange}
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Zip Code
-						</Text>
-						<TextField.Root
-							name="zip"
-							placeholder="12345"
-							value={formData.zip}
-							onChange={handleChange}
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							City
-						</Text>
-						<TextField.Root
-							name="city"
-							placeholder="Knoxville"
-							value={formData.city}
-							onChange={handleChange}
-						/>
-					</label>
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							State Code
-						</Text>
-						<TextField.Root
-							name="state_code"
-							placeholder="TN-US"
-							value={formData.state_code}
-							onChange={handleChange}
-							pattern="^[A-Z]{2}-[A-Z]{2}$"
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							State Name
-						</Text>
-						<TextField.Root
-							name="state_name"
-							placeholder="Tennessee"
-							value={formData.state_name}
-							onChange={handleChange}
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Country Code
-						</Text>
-						<TextField.Root
-							name="country_code"
-							placeholder="US"
-							value={formData.country_code}
-							onChange={handleChange}
-							pattern="^[A-Z]{2}$"
-						/>
-					</label>
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Country Name
-						</Text>
-						<TextField.Root
-							name="country_name"
-							placeholder="United States"
-							value={formData.country_name}
-							onChange={handleChange}
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Unique Seats Quantity
-						</Text>
-						<TextField.Root
-							name="num_unique"
-							placeholder="Unique Seats Quantity"
-							value={formData.num_unique}
-							onChange={handleChange}
-							type="number"
-						/>
-					</label>
-
-					<label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							General Admission Quantity
-						</Text>
-						<TextField.Root
-							name="num_ga"
-							placeholder="General Admission Quantity"
-							value={formData.num_ga}
-							onChange={handleChange}
-							type="number"
-						/>
-					</label>
-					{shouldShowError && (
-						<Callout.Root color="red">
-							<Callout.Icon>
-								<CrossCircledIcon />
-							</Callout.Icon>
-							<Callout.Text>{errorMessage}</Callout.Text>
-						</Callout.Root>
-					)}
-					<Flex gap="1">
-						<Button onClick={handleSubmit}>Add</Button>
-						<Button onClick={onClose} variant="soft">
-							Cancel
-						</Button>
-					</Flex>
-				</Flex>
-			</Dialog.Content>
-		</Dialog.Root>
+		<BaseModalForm
+			title="Add a New Venue"
+			isSubmitting={isSubmitting}
+			errorMessage={errorMessage}
+			showError={shouldShowError}
+			onSubmit={handleSubmit}
+			onClose={onClose}
+		>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Name
+				</Text>
+				<TextField.Root
+					name="name"
+					placeholder="My Venue"
+					value={formData.name}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Street Address
+				</Text>
+				<TextField.Root
+					name="street_address"
+					placeholder="123 Main Street"
+					value={formData.street_address}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Zip Code
+				</Text>
+				<TextField.Root
+					name="zip"
+					placeholder="12345"
+					value={formData.zip}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					City
+				</Text>
+				<TextField.Root
+					name="city"
+					placeholder="Knoxville"
+					value={formData.city}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					State Code
+				</Text>
+				<TextField.Root
+					name="state_code"
+					placeholder="TN-US"
+					value={formData.state_code}
+					onChange={handleChange}
+					pattern="^[A-Z]{2}-[A-Z]{2}$"
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					State Name
+				</Text>
+				<TextField.Root
+					name="state_name"
+					placeholder="Tennessee"
+					value={formData.state_name}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Country Code
+				</Text>
+				<TextField.Root
+					name="country_code"
+					placeholder="US"
+					value={formData.country_code}
+					onChange={handleChange}
+					pattern="^[A-Z]{2}$"
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Country Name
+				</Text>
+				<TextField.Root
+					name="country_name"
+					placeholder="United States"
+					value={formData.country_name}
+					onChange={handleChange}
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Unique Seats Quantity
+				</Text>
+				<TextField.Root
+					name="num_unique"
+					placeholder="Unique Seats Quantity"
+					value={formData.num_unique}
+					onChange={handleChange}
+					type="number"
+				/>
+			</label>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					General Admission Quantity
+				</Text>
+				<TextField.Root
+					name="num_ga"
+					placeholder="General Admission Quantity"
+					value={formData.num_ga}
+					onChange={handleChange}
+					type="number"
+				/>
+			</label>
+		</BaseModalForm>
 	);
 }

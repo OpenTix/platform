@@ -43,7 +43,7 @@ const RightFooter = styled.footer`
 function Login() {
 	return (
 		<Container>
-			<LeftSection>Vendorweb Login</LeftSection>
+			<LeftSection>Vendor Login</LeftSection>
 
 			<RightSection>
 				<DynamicEmbeddedAuthFlow background="with-border" />
