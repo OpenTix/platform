@@ -315,26 +315,32 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 }
 
 const vendorGetAllVenues = `-- name: VendorGetAllVenues :many
-select (venue.pk, venue.id, venue.name) from app.venue
+select venue.pk, venue.id, venue.name from app.venue
 where venue.vendor = (
     select pk from app.vendor
     where wallet = $1
 )
 `
 
-func (q *Queries) VendorGetAllVenues(ctx context.Context, wallet string) ([]interface{}, error) {
+type VendorGetAllVenuesRow struct {
+	Pk   int32
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) VendorGetAllVenues(ctx context.Context, wallet string) ([]VendorGetAllVenuesRow, error) {
 	rows, err := q.db.Query(ctx, vendorGetAllVenues, wallet)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []VendorGetAllVenuesRow
 	for rows.Next() {
-		var column_1 interface{}
-		if err := rows.Scan(&column_1); err != nil {
+		var i VendorGetAllVenuesRow
+		if err := rows.Scan(&i.Pk, &i.ID, &i.Name); err != nil {
 			return nil, err
 		}
-		items = append(items, column_1)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
