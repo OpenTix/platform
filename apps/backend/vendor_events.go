@@ -268,6 +268,17 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponse(401, "You are not authorized to create an event for that venue", request.Headers)
 	}
 
+	dbVenue, err := queries.VendorGetVenueByPk(ctx, query.VendorGetVenueByPkParams{
+		Pk:     params.Venue,
+		Wallet: vendorinfo.Wallet,
+	})
+	if err != nil {
+		return shared.CreateErrorResponse(500, "Error retrieving venue from database.", request.Headers)
+	}
+	if (dbVenue.NumGa < params.NumGa) || (dbVenue.NumUnique < params.NumUnique) {
+		return shared.CreateErrorResponse(400, "Number of tickets exceeds venue capacity.", request.Headers)
+	}
+	
 	// Get events for current page
 	dbResponse, err := queries.CreateEvent(ctx, query.CreateEventParams{
 		Vendor:        vendor,
