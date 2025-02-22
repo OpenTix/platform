@@ -26,6 +26,31 @@ where venue.vendor = (
 limit 5
 offset (($1::int - 1) * 5);
 
+-- name: VendorGetVenueByPk :one
+select * from app.venue 
+where venue.pk = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1;
+
+-- name: VendorGetVenueByUuid :one
+select * from app.venue 
+where venue.id = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1;
+
+-- name: VendorGetAllVenues :many
+select (venue.pk, venue.id, venue.name) from app.venue
+where venue.vendor = (
+    select pk from app.vendor
+    where wallet = $1
+);
+
 -- name: VendorGetEventsPaginated :many
 select * from app.event event
 where event.vendor = (
@@ -35,6 +60,24 @@ where event.vendor = (
 and ($3::int = -1 or $3::int = event.venue)
 limit 5
 offset (($1::int - 1) * 5);
+
+-- name: VendorGetEventByPk :one
+select * from app.event event
+where event.pk = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1;
+
+-- name: VendorGetEventByUuid :one
+select * from app.event event
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1;
 
 -- name: CreateEvent :one
 insert into app.event (
