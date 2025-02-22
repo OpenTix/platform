@@ -45,7 +45,7 @@ and venue.vendor = (
 limit 1;
 
 -- name: VendorGetAllVenues :many
-select (venue.pk, venue.id, venue.name) from app.venue
+select venue.pk, venue.id, venue.name from app.venue
 where venue.vendor = (
     select pk from app.vendor
     where wallet = $1
