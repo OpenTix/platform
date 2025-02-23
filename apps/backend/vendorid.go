@@ -3,10 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
-	"net/url"
-	"os"
 	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -21,37 +18,16 @@ import (
 
 var (
 	walletRegex *regexp.Regexp
-	dbAddress   string
-	dbPort      string
-	dbUser      string
-	dbPassword  string
-	dbName      string
 	connStr     string
 )
 
 type PostPatchVendorIdRequestBody struct {
-	Name string `json:"name"`
+	Name string `json:"Name"`
 }
 
 func init() {
 	walletRegex = regexp.MustCompile("^[0-9A-Fa-f]{40}$")
-	dbAddress = os.Getenv("DB_ADDRESS")
-	dbPort = os.Getenv("DB_PORT")
-	dbName = os.Getenv("DB_NAME")
-	dbCredentials := shared.GetDBCredentials()
-	dbUser = dbCredentials.Username
-	dbPassword = dbCredentials.Password
-
-	u := &url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(dbUser, dbPassword),
-		Host:   fmt.Sprintf("%s:%s", dbAddress, dbPort),
-		Path:   dbName,
-	}
-	q := u.Query()
-	q.Set("sslmode", "require")
-	u.RawQuery = q.Encode()
-	connStr = u.String()
+	connStr = shared.InitLambda()
 }
 
 // This gets the current vendor's info based off the authorization token
@@ -138,7 +114,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to parse UUID", request.Headers, err)
 	}
-	vendor, err := queries.CreateVendorWithUUID(ctx, query.CreateVendorWithUUIDParams{u, userinfo.Wallet, body.Name})
+	vendor, err := queries.CreateVendorWithUUID(ctx, query.CreateVendorWithUUIDParams{ID: u, Wallet: userinfo.Wallet, Name: body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to create vendor", request.Headers, err)
 	}
@@ -192,7 +168,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	// update vendor
-	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{userinfo.Wallet, body.Name})
+	vendor, err := queries.UpdateVendorName(ctx, query.UpdateVendorNameParams{Wallet: userinfo.Wallet, Name: body.Name})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to update vendor", request.Headers, err)
 	}

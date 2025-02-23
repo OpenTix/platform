@@ -1,22 +1,22 @@
-import { EventData, VenueData } from '@platform/types';
+import { Event, EVENT_KEYS, Venue, VENUE_KEYS } from '@platform/types';
 import { Text, Table, Box, ScrollArea } from '@radix-ui/themes';
 
 // you'll grab the baseurl and then I believe it's /vendor/venues and /vendor/events
 // process.env.NX_PUBLIC_API_BASEURL
 
 interface tableData {
-	rowData: EventData[] | VenueData[];
+	rowData: Event[] | Venue[];
 	tableType: 'event' | 'venue';
 }
 
 export default function VendorTable({ rowData, tableType }: tableData) {
-	let header = [];
+	const header = [];
 	let labels: string[] = [];
 
-	if (tableType == 'event') {
-		labels = getEventLabels();
-	} else if (tableType == 'venue') {
-		labels = getVenueLabels();
+	if (tableType === 'event') {
+		labels = EVENT_KEYS;
+	} else if (tableType === 'venue') {
+		labels = VENUE_KEYS;
 	}
 
 	for (const label in labels) {
@@ -29,12 +29,12 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 	const tableHeader = <Table.Row>{header}</Table.Row>;
 
 	const tableRows = (rowData ?? []).map((row, idx) => {
-		let tableRow = [];
+		const tableRow = [];
 		for (const label in row) {
 			tableRow.push(
 				<Table.Cell>
 					<Text>
-						{label == 'date'
+						{label === 'EventDatetime'
 							? `${new Date(row[label as keyof typeof row])}`
 							: row[label as keyof typeof row]}
 					</Text>
@@ -55,26 +55,4 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 			</ScrollArea>
 		</Box>
 	);
-}
-
-function getEventLabels() {
-	return ['id', 'date', 'name'];
-}
-
-function getVenueLabels() {
-	return [
-		'id',
-		'date',
-		'location',
-		'name',
-		'streetAddr',
-		'zip',
-		'city',
-		'stateCode',
-		'stateName',
-		'countryCode',
-		'countryName',
-		'numUnique',
-		'numGa'
-	];
 }

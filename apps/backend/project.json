@@ -6,20 +6,22 @@
 	"tags": [],
 	"targets": {
 		"build": {
-			"executor": "@nx-go/nx-go:build",
+			"executor": "nx:run-commands",
 			"options": {
-				"main": "{projectRoot}/main.go"
+				"command": "mkdir -p dist/apps/backend && for f in apps/backend/*.go; do go build -o dist/apps/backend/$(basename \"$f\" .go) \"$f\"; done"
 			}
 		},
-		"serve": {
-			"executor": "@nx-go/nx-go:serve",
-			"options": {
-				"main": "{projectRoot}/main.go"
-			}
-		},
-
 		"lint": {
-			"executor": "@nx-go/nx-go:lint"
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "for f in apps/backend/*.go; do go vet \"$f\"; done"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "for f in apps/backend/*.go; do go test -v \"$f\"; done"
+			}
 		},
 		"tidy": {
 			"executor": "@nx-go/nx-go:tidy"

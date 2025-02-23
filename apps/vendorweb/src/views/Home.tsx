@@ -1,6 +1,5 @@
-// import { VenueData } from '../../../../packages/types/src/VenueData';
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
-import { VenueData, EventData } from '@platform/types';
+import { Venue, Event } from '@platform/types';
 import {
 	Tabs,
 	Box,
@@ -15,34 +14,16 @@ import {
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Token } from 'aws-cdk-lib';
 import { useState } from 'react';
-import Modal from '../components/EventAddModal';
+import AddEventModal from '../components/AddEventModal';
+import AddVenueModal from '../components/AddVenueModal';
 import VendorTable from '../components/VendorTable';
 
 const queryClient = new QueryClient();
 
 export default function Home() {
-	const [eventData, setEventData] = useState<EventData[]>([
-		{ id: 'otherstuff', date: Date.now(), name: 'Sample Event' }
-	]);
-	const [venueData, setVenueData] = useState<VenueData[]>([
-		{
-			id: 'somestuff',
-			date: Date.now(),
-			location: 'Sample Venue',
-			name: 'Sample Name',
-			streetAddr: '123 sample st',
-			zip: 123456,
-			city: 'some city',
-			stateCode: 'aa',
-			stateName: 'state',
-			countryCode: 'usa',
-			countryName: 'country',
-			numUnique: 10,
-			numGa: 10
-		} as VenueData
-	]);
+	const [eventData, setEventData] = useState<Event[]>([]);
+	const [venueData, setVenueData] = useState<Venue[]>([]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
 	const [venueDisplay, setVenueDisplay] = useState(venueData);
 	const [activeTab, setActiveTab] = useState<'events' | 'venues'>('events');
@@ -57,31 +38,20 @@ export default function Home() {
 		setShowModal(true);
 	};
 
-	const handleAdd = (newItem: EventData | VenueData) => {
-		if (modalType === 'events') {
-			setEventData([...eventData, newItem as EventData]);
-			setEventDisplay([...eventDisplay, newItem as EventData]);
-		} else if (modalType === 'venues') {
-			setVenueData([...venueData, newItem as VenueData]);
-			setVenueDisplay([...venueDisplay, newItem as VenueData]);
-		}
-		setShowModal(false);
-	};
-
 	const filterData = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const filterString = e.target.value.toLowerCase();
 		setEventDisplay(
 			eventData.filter(
 				(evnt) =>
-					evnt.id.toLowerCase().includes(filterString) ||
-					evnt.name.toLowerCase().includes(filterString)
+					evnt.ID.toLowerCase().includes(filterString) ||
+					evnt.Name.toLowerCase().includes(filterString)
 			)
 		);
 		setVenueDisplay(
 			venueData.filter(
 				(venue) =>
-					venue.id.includes(filterString) ||
-					venue.location.toLowerCase().includes(filterString)
+					venue.ID.includes(filterString) ||
+					venue.Name.toLowerCase().includes(filterString)
 			)
 		);
 	};
@@ -130,13 +100,13 @@ export default function Home() {
 						</Tabs.Content>
 					</Box>
 				</Tabs.Root>
-				{showModal && modalType && (
-					<Modal
-						type={modalType}
-						onSubmit={handleAdd}
-						onClose={() => setShowModal(false)}
-					/>
-				)}
+				{showModal &&
+					modalType &&
+					(modalType === 'events' ? (
+						<AddEventModal onClose={() => setShowModal(false)} />
+					) : (
+						<AddVenueModal onClose={() => setShowModal(false)} />
+					))}
 			</Box>
 		</Container>
 	);

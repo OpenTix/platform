@@ -9,7 +9,80 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const checkVenueVendorStatus = `-- name: CheckVenueVendorStatus :one
+select vendor from app.venue
+where pk = $1::int
+`
+
+func (q *Queries) CheckVenueVendorStatus(ctx context.Context, dollar_1 int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkVenueVendorStatus, dollar_1)
+	var vendor int32
+	err := row.Scan(&vendor)
+	return vendor, err
+}
+
+const createEvent = `-- name: CreateEvent :one
+insert into app.event (
+    vendor,
+    venue,
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga,
+    photo
+) values (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) returning (
+    name,
+    type,
+    event_datetime,
+    description,
+    disclaimer,
+    basecost,
+    num_unique,
+    num_ga
+)
+`
+
+type CreateEventParams struct {
+	Vendor        int32
+	Venue         int32
+	Name          string
+	Type          string
+	EventDatetime pgtype.Timestamp
+	Description   string
+	Disclaimer    pgtype.Text
+	Basecost      float64
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
+}
+
+func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (interface{}, error) {
+	row := q.db.QueryRow(ctx, createEvent,
+		arg.Vendor,
+		arg.Venue,
+		arg.Name,
+		arg.Type,
+		arg.EventDatetime,
+		arg.Description,
+		arg.Disclaimer,
+		arg.Basecost,
+		arg.NumUnique,
+		arg.NumGa,
+		arg.Photo,
+	)
+	var column_1 interface{}
+	err := row.Scan(&column_1)
+	return column_1, err
+}
 
 const createVendor = `-- name: CreateVendor :one
 insert into app.vendor (wallet, name) values ($1, $2) returning pk, id, wallet, name
@@ -52,6 +125,67 @@ func (q *Queries) CreateVendorWithUUID(ctx context.Context, arg CreateVendorWith
 		&i.Name,
 	)
 	return i, err
+}
+
+const createVenue = `-- name: CreateVenue :one
+insert into app.venue (
+    name,
+    street_address,
+    zip,
+    city,
+    state_code,
+    state_name,
+    country_code,
+    country_name,
+    num_unique,
+    num_ga,
+    vendor
+) values (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) returning (
+    name,
+    street_address,
+    zip,
+    city,
+    state_code,
+    country_code,
+    country_name,
+    num_unique,
+    num_ga
+)
+`
+
+type CreateVenueParams struct {
+	Name          string
+	StreetAddress string
+	Zip           string
+	City          string
+	StateCode     string
+	StateName     string
+	CountryCode   string
+	CountryName   string
+	NumUnique     int32
+	NumGa         int32
+	Vendor        int32
+}
+
+func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (interface{}, error) {
+	row := q.db.QueryRow(ctx, createVenue,
+		arg.Name,
+		arg.StreetAddress,
+		arg.Zip,
+		arg.City,
+		arg.StateCode,
+		arg.StateName,
+		arg.CountryCode,
+		arg.CountryName,
+		arg.NumUnique,
+		arg.NumGa,
+		arg.Vendor,
+	)
+	var column_1 interface{}
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const getVendorByUuid = `-- name: GetVendorByUuid :one
@@ -105,4 +239,358 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 		&i.Name,
 	)
 	return i, err
+}
+
+const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip
+from app.event event, app.venue venue
+where event.venue = venue.pk
+and ($2::text = '' or $2::text = venue.zip)
+and ($3::text = '' or $3::text = event.name)
+and ($4::text = '' or $4::text = event.type)
+and ($5::double precision >= event.basecost)
+and ($6::timestamp <= event.event_datetime)
+limit 5
+offset (($1::int - 1) * 5)
+`
+
+type UserGetEventsPaginatedParams struct {
+	Column1 int32
+	Column2 string
+	Column3 string
+	Column4 string
+	Column5 float64
+	Column6 pgtype.Timestamp
+}
+
+type UserGetEventsPaginatedRow struct {
+	Name          string
+	Type          string
+	Basecost      float64
+	EventDatetime pgtype.Timestamp
+	Description   string
+	Disclaimer    pgtype.Text
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
+	Zip           string
+}
+
+func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]UserGetEventsPaginatedRow, error) {
+	rows, err := q.db.Query(ctx, userGetEventsPaginated,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UserGetEventsPaginatedRow
+	for rows.Next() {
+		var i UserGetEventsPaginatedRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Type,
+			&i.Basecost,
+			&i.EventDatetime,
+			&i.Description,
+			&i.Disclaimer,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+			&i.Zip,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const vendorGetAllVenues = `-- name: VendorGetAllVenues :many
+select venue.pk, venue.id, venue.name from app.venue
+where venue.vendor = (
+    select pk from app.vendor
+    where wallet = $1
+)
+`
+
+type VendorGetAllVenuesRow struct {
+	Pk   int32
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) VendorGetAllVenues(ctx context.Context, wallet string) ([]VendorGetAllVenuesRow, error) {
+	rows, err := q.db.Query(ctx, vendorGetAllVenues, wallet)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []VendorGetAllVenuesRow
+	for rows.Next() {
+		var i VendorGetAllVenuesRow
+		if err := rows.Scan(&i.Pk, &i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const vendorGetEventByPk = `-- name: VendorGetEventByPk :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.pk = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetEventByPkParams struct {
+	Pk     int32
+	Wallet string
+}
+
+func (q *Queries) VendorGetEventByPk(ctx context.Context, arg VendorGetEventByPkParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorGetEventByPk, arg.Pk, arg.Wallet)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetEventByUuid = `-- name: VendorGetEventByUuid :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetEventByUuidParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorGetEventByUuid(ctx context.Context, arg VendorGetEventByUuidParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorGetEventByUuid, arg.ID, arg.Wallet)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetEventsPaginated = `-- name: VendorGetEventsPaginated :many
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.vendor = (
+    select pk from app.vendor vendor
+    where vendor.wallet = $2
+)
+and ($3::int = -1 or $3::int = event.venue)
+limit 5
+offset (($1::int - 1) * 5)
+`
+
+type VendorGetEventsPaginatedParams struct {
+	Column1 int32
+	Wallet  string
+	Column3 int32
+}
+
+func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEventsPaginatedParams) ([]AppEvent, error) {
+	rows, err := q.db.Query(ctx, vendorGetEventsPaginated, arg.Column1, arg.Wallet, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppEvent
+	for rows.Next() {
+		var i AppEvent
+		if err := rows.Scan(
+			&i.Pk,
+			&i.ID,
+			&i.Vendor,
+			&i.Venue,
+			&i.Name,
+			&i.Type,
+			&i.EventDatetime,
+			&i.Description,
+			&i.Disclaimer,
+			&i.Basecost,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const vendorGetVenueByPk = `-- name: VendorGetVenueByPk :one
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+where venue.pk = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetVenueByPkParams struct {
+	Pk     int32
+	Wallet string
+}
+
+func (q *Queries) VendorGetVenueByPk(ctx context.Context, arg VendorGetVenueByPkParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorGetVenueByPk, arg.Pk, arg.Wallet)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetVenueByUuid = `-- name: VendorGetVenueByUuid :one
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+where venue.id = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetVenueByUuidParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorGetVenueByUuid(ctx context.Context, arg VendorGetVenueByUuidParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorGetVenueByUuid, arg.ID, arg.Wallet)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetVenuesPaginated = `-- name: VendorGetVenuesPaginated :many
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
+where venue.vendor = (
+    select pk from app.vendor vendor
+    where vendor.wallet = $2
+)
+limit 5
+offset (($1::int - 1) * 5)
+`
+
+type VendorGetVenuesPaginatedParams struct {
+	Column1 int32
+	Wallet  string
+}
+
+func (q *Queries) VendorGetVenuesPaginated(ctx context.Context, arg VendorGetVenuesPaginatedParams) ([]AppVenue, error) {
+	rows, err := q.db.Query(ctx, vendorGetVenuesPaginated, arg.Column1, arg.Wallet)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppVenue
+	for rows.Next() {
+		var i AppVenue
+		if err := rows.Scan(
+			&i.Pk,
+			&i.ID,
+			&i.Vendor,
+			&i.Name,
+			&i.StreetAddress,
+			&i.Zip,
+			&i.City,
+			&i.StateCode,
+			&i.StateName,
+			&i.CountryCode,
+			&i.CountryName,
+			&i.NumUnique,
+			&i.NumGa,
+			&i.Photo,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

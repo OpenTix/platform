@@ -1,4 +1,4 @@
-import { GoFunction, GoFunctionProps } from '@aws-cdk/aws-lambda-go-alpha';
+import { GoFunction } from '@aws-cdk/aws-lambda-go-alpha';
 import * as cdk from 'aws-cdk-lib';
 import {
 	LambdaIntegration,
@@ -149,6 +149,21 @@ export class BackendStack extends cdk.Stack {
 			role: LambdaLogRole
 		});
 
+		const UserEventsLambda = new GoFunction(this, 'UserEventsLambda', {
+			entry: `${basePath}/user_events.go`,
+			...LambdaDBAccessProps
+		});
+
+		const VendorVenuesLambda = new GoFunction(this, 'VendorVenuesLambda', {
+			entry: `${basePath}/vendor_venues.go`,
+			...LambdaDBAccessProps
+		});
+
+		const VendorEventsLambda = new GoFunction(this, 'VendorEventsLambda', {
+			entry: `${basePath}/vendor_events.go`,
+			...LambdaDBAccessProps
+		});
+
 		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
 			resource.addMethod(
 				'OPTIONS',
@@ -219,6 +234,51 @@ export class BackendStack extends cdk.Stack {
 			}
 		);
 		addDynamicOptions(vendorIdResource);
+
+		const vendorVenuesResource = vendorResource.addResource('venues');
+		vendorVenuesResource.addMethod(
+			'GET',
+			new LambdaIntegration(VendorVenuesLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorVenuesResource.addMethod(
+			'POST',
+			new LambdaIntegration(VendorVenuesLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorVenuesResource);
+
+		const vendorEventsResource = vendorResource.addResource('events');
+		vendorEventsResource.addMethod(
+			'GET',
+			new LambdaIntegration(VendorEventsLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorEventsResource.addMethod(
+			'POST',
+			new LambdaIntegration(VendorEventsLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorEventsResource);
+
+		const userResource = api.root.addResource('user');
+		const userEventsResource = userResource.addResource('events');
+		userEventsResource.addMethod(
+			'GET',
+			new LambdaIntegration(UserEventsLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(userEventsResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url

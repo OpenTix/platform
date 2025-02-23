@@ -28,7 +28,7 @@ type AppEvent struct {
 type AppUser struct {
 	Pk       int32
 	Wallet   string
-	Darkmode pgtype.Bool
+	DarkMode pgtype.Bool
 }
 
 type AppVendor struct {
@@ -39,18 +39,18 @@ type AppVendor struct {
 }
 
 type AppVenue struct {
-	Pk          int32
-	ID          uuid.UUID
-	Vendor      int32
-	Name        string
-	Streetaddr  string
-	Zip         string
-	City        string
-	StateCode   string
-	StateName   string
-	CountryCode string
-	CountryName string
-	NumUnique   int32
-	NumGa       int32
-	Photo       pgtype.Text
+	Pk            int32
+	ID            uuid.UUID
+	Vendor        int32
+	Name          string
+	StreetAddress string
+	Zip           string
+	City          string
+	StateCode     string
+	StateName     string
+	CountryCode   string
+	CountryName   string
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
 }
