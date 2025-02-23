@@ -314,6 +314,112 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 	return items, nil
 }
 
+const vendorGetAllVenues = `-- name: VendorGetAllVenues :many
+select venue.pk, venue.id, venue.name from app.venue
+where venue.vendor = (
+    select pk from app.vendor
+    where wallet = $1
+)
+`
+
+type VendorGetAllVenuesRow struct {
+	Pk   int32
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) VendorGetAllVenues(ctx context.Context, wallet string) ([]VendorGetAllVenuesRow, error) {
+	rows, err := q.db.Query(ctx, vendorGetAllVenues, wallet)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []VendorGetAllVenuesRow
+	for rows.Next() {
+		var i VendorGetAllVenuesRow
+		if err := rows.Scan(&i.Pk, &i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const vendorGetEventByPk = `-- name: VendorGetEventByPk :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.pk = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetEventByPkParams struct {
+	Pk     int32
+	Wallet string
+}
+
+func (q *Queries) VendorGetEventByPk(ctx context.Context, arg VendorGetEventByPkParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorGetEventByPk, arg.Pk, arg.Wallet)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetEventByUuid = `-- name: VendorGetEventByUuid :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetEventByUuidParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorGetEventByUuid(ctx context.Context, arg VendorGetEventByUuidParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorGetEventByUuid, arg.ID, arg.Wallet)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
 const vendorGetEventsPaginated = `-- name: VendorGetEventsPaginated :many
 select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
 where event.vendor = (
@@ -363,6 +469,80 @@ func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEve
 		return nil, err
 	}
 	return items, nil
+}
+
+const vendorGetVenueByPk = `-- name: VendorGetVenueByPk :one
+select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+where venue.pk = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetVenueByPkParams struct {
+	Pk     int32
+	Wallet string
+}
+
+func (q *Queries) VendorGetVenueByPk(ctx context.Context, arg VendorGetVenueByPkParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorGetVenueByPk, arg.Pk, arg.Wallet)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.Streetaddr,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const vendorGetVenueByUuid = `-- name: VendorGetVenueByUuid :one
+select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+where venue.id = $1 
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+limit 1
+`
+
+type VendorGetVenueByUuidParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorGetVenueByUuid(ctx context.Context, arg VendorGetVenueByUuidParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorGetVenueByUuid, arg.ID, arg.Wallet)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.Streetaddr,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
 }
 
 const vendorGetVenuesPaginated = `-- name: VendorGetVenuesPaginated :many
