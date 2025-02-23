@@ -22,12 +22,12 @@ const time_layout string = "2006-01-02T15:04:05.999Z"
 
 // Type for unmarshalling query params
 type eventGetQueryParams struct {
-	PageNum string `json:"page"`
-	ZipCode string `json:"zip"`
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	Cost    string `json:"basecost"`
-	Time    string `json:"event_datetime"`
+	PageNum string `json:"Page"`
+	ZipCode string `json:"Zip"`
+	Name    string `json:"Name"`
+	Type    string `json:"Type"`
+	Cost    string `json:"Basecost"`
+	Time    string `json:"EventDatetime"`
 }
 
 func init() {

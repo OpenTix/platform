@@ -98,7 +98,7 @@ export default function Profile() {
 	};
 	const handleAddressCopy = () => {
 		if (primaryWallet?.address)
-			navigator.clipboard.writeText(primaryWallet?.address);
+			navigator.clipboard.writeText(primaryWallet.address);
 	};
 	const handleSendbalance = async () => {
 		try {
@@ -141,7 +141,7 @@ export default function Profile() {
 				'Content-Type': 'application/json',
 				Authorization: `Bearer ${tk}`
 			},
-			body: JSON.stringify({ name: newVendorName })
+			body: JSON.stringify({ Name: newVendorName })
 		}).then((res) => {
 			if (res.ok && res.status === 200) {
 				setVendorName(newVendorName);

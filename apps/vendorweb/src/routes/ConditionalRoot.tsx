@@ -118,7 +118,7 @@ function ConditionalRoot() {
 					Authorization: `Bearer ${authToken}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ name: organizationName })
+				body: JSON.stringify({ Name: organizationName })
 			});
 			if (response.status === 201) {
 				setIsVendor(true);

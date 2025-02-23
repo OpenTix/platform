@@ -19,15 +19,15 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 		AllVenuesListSimplifiedResponse[]
 	>([]);
 	const [formData, setFormData] = useState<EventCreationFormData>({
-		venue: 0,
-		name: '',
-		type: '',
-		event_datetime: '',
-		description: '',
-		disclaimer: '',
-		basecost: 0,
-		num_unique: 0,
-		num_ga: 0
+		Venue: 0,
+		Name: '',
+		Type: '',
+		EventDatetime: '',
+		Description: '',
+		Disclaimer: '',
+		Basecost: 0,
+		NumUnique: 0,
+		NumGa: 0
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,15 +47,15 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 
 	const validate = (event: EventCreationFormData) => {
 		if (
-			event.venue === 0 ||
-			event.name === '' ||
-			event.type === '' ||
-			!isIsoString(event.event_datetime) ||
-			event.description === '' ||
-			event.disclaimer === '' ||
-			event.basecost === 0 ||
-			event.num_unique < 0 ||
-			event.num_ga < 0
+			event.Venue === 0 ||
+			event.Name === '' ||
+			event.Type === '' ||
+			!isIsoString(event.EventDatetime) ||
+			event.Description === '' ||
+			event.Disclaimer === '' ||
+			event.Basecost === 0 ||
+			event.NumUnique < 0 ||
+			event.NumGa < 0
 		) {
 			setErrorMessage(
 				'You are either missing a field or have an invalid input'
@@ -68,8 +68,8 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 	const handleSubmit = async () => {
 		// Convert local string to ISO String
 		const eventToSubmit = { ...formData };
-		eventToSubmit.event_datetime = new Date(
-			formData.event_datetime
+		eventToSubmit.EventDatetime = new Date(
+			formData.EventDatetime
 		).toISOString();
 
 		if (!validate(eventToSubmit)) {
@@ -151,17 +151,22 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 				onValueChange={(val) =>
 					setFormData({
 						...formData,
-						venue: parseInt(val, 10) || 0
+						Venue: parseInt(val, 10) || 0
 					})
 				}
 			>
 				<Select.Trigger placeholder="Venue" />
 				<Select.Content>
-					{venueList.map((venue: AllVenuesListSimplifiedResponse) => (
-						<Select.Item key={venue.Pk} value={String(venue.Pk)}>
-							{venue.Name}
-						</Select.Item>
-					))}
+					{(venueList ?? []).map(
+						(venue: AllVenuesListSimplifiedResponse) => (
+							<Select.Item
+								key={venue.Pk}
+								value={String(venue.Pk)}
+							>
+								{venue.Name}
+							</Select.Item>
+						)
+					)}
 				</Select.Content>
 			</Select.Root>
 			<label>
@@ -169,9 +174,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Name
 				</Text>
 				<TextField.Root
-					name="name"
+					name="Name"
 					placeholder="My Event"
-					value={formData.name}
+					value={formData.Name}
 					onChange={handleChange}
 				/>
 			</label>
@@ -180,9 +185,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Type
 				</Text>
 				<TextField.Root
-					name="type"
+					name="Type"
 					placeholder="Concert"
-					value={formData.type}
+					value={formData.Type}
 					onChange={handleChange}
 				/>
 			</label>
@@ -191,8 +196,8 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Event Date
 				</Text>
 				<TextField.Root
-					name="event_datetime"
-					value={formData.event_datetime}
+					name="EventDatetime"
+					value={formData.EventDatetime}
 					onChange={handleChange}
 					type="datetime-local"
 				/>
@@ -202,9 +207,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Description
 				</Text>
 				<TextField.Root
-					name="description"
+					name="Description"
 					placeholder="This is a description"
-					value={formData.description}
+					value={formData.Description}
 					onChange={handleChange}
 				/>
 			</label>
@@ -213,9 +218,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Disclaimer
 				</Text>
 				<TextField.Root
-					name="disclaimer"
+					name="Disclaimer"
 					placeholder="This is a disclaimer"
-					value={formData.disclaimer}
+					value={formData.Disclaimer}
 					onChange={handleChange}
 				/>
 			</label>
@@ -224,9 +229,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Base Cost
 				</Text>
 				<TextField.Root
-					name="basecost"
+					name="Basecost"
 					placeholder="100"
-					value={formData.basecost}
+					value={formData.Basecost}
 					onChange={handleChange}
 					type="number"
 				/>
@@ -236,9 +241,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					Unique Seats Quantity
 				</Text>
 				<TextField.Root
-					name="num_unique"
+					name="NumUnique"
 					placeholder="100"
-					value={formData.num_unique}
+					value={formData.NumUnique}
 					onChange={handleChange}
 					type="number"
 				/>
@@ -248,9 +253,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					General Admission Seats Quantity
 				</Text>
 				<TextField.Root
-					name="num_ga"
+					name="NumGa"
 					placeholder="100"
-					value={formData.num_ga}
+					value={formData.NumGa}
 					onChange={handleChange}
 					type="number"
 				/>

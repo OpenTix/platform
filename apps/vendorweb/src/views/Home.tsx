@@ -1,3 +1,4 @@
+import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { Venue, Event } from '@platform/types';
 import {
 	Tabs,
@@ -5,12 +6,20 @@ import {
 	Flex,
 	TextField,
 	Button,
-	Container
+	Container,
+	Text
 } from '@radix-ui/themes';
+import {
+	useQuery,
+	QueryClient,
+	QueryClientProvider
+} from '@tanstack/react-query';
 import { useState } from 'react';
 import AddEventModal from '../components/AddEventModal';
 import AddVenueModal from '../components/AddVenueModal';
 import VendorTable from '../components/VendorTable';
+
+const queryClient = new QueryClient();
 
 export default function Home() {
 	const [eventData, setEventData] = useState<Event[]>([]);
@@ -34,15 +43,15 @@ export default function Home() {
 		setEventDisplay(
 			eventData.filter(
 				(evnt) =>
-					evnt.id.toLowerCase().includes(filterString) ||
-					evnt.name.toLowerCase().includes(filterString)
+					evnt.ID.toLowerCase().includes(filterString) ||
+					evnt.Name.toLowerCase().includes(filterString)
 			)
 		);
 		setVenueDisplay(
 			venueData.filter(
 				(venue) =>
-					venue.id.includes(filterString) ||
-					venue.name.toLowerCase().includes(filterString)
+					venue.ID.includes(filterString) ||
+					venue.Name.toLowerCase().includes(filterString)
 			)
 		);
 	};
@@ -80,10 +89,14 @@ export default function Home() {
 					</Flex>
 					<Box>
 						<Tabs.Content value="events">
-							<VendorTable rowData={eventDisplay} />
+							<QueryClientProvider client={queryClient}>
+								<Events />
+							</QueryClientProvider>
 						</Tabs.Content>
 						<Tabs.Content value="venues">
-							<VendorTable rowData={venueDisplay} />
+							<QueryClientProvider client={queryClient}>
+								<Venues />
+							</QueryClientProvider>
 						</Tabs.Content>
 					</Box>
 				</Tabs.Root>
@@ -97,4 +110,62 @@ export default function Home() {
 			</Box>
 		</Container>
 	);
+}
+
+function Venues() {
+	const { isPending, isError, data, error } = useQuery({
+		queryKey: ['venues'],
+		queryFn: fetchVenues
+	});
+
+	if (isPending) {
+		return <Text> Loading... </Text>;
+	}
+
+	if (isError) {
+		console.error(error.message);
+		return <Text>Error: {error.message}</Text>;
+	}
+
+	return <VendorTable rowData={data} tableType="venue" />;
+}
+
+function Events() {
+	const { isPending, isError, data, error } = useQuery({
+		queryKey: ['events'],
+		queryFn: fetchEvents
+	});
+
+	if (isPending) {
+		return <Text> Loading... </Text>;
+	}
+
+	if (isError) {
+		console.error(error.message);
+		return <Text>Error: {error.message}</Text>;
+	}
+
+	return <VendorTable rowData={data} tableType="event" />;
+}
+
+async function fetchVenues() {
+	const authToken = getAuthToken();
+	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues`, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${authToken}` }
+	})
+		.then((resp) => resp.json())
+		.then((data) => data)
+		.catch((error) => error);
+}
+
+async function fetchEvents() {
+	const authToken = getAuthToken();
+	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events`, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${authToken}` }
+	})
+		.then((resp) => resp.json())
+		.then((data) => data)
+		.catch((error) => error);
 }

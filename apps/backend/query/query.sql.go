@@ -130,7 +130,7 @@ func (q *Queries) CreateVendorWithUUID(ctx context.Context, arg CreateVendorWith
 const createVenue = `-- name: CreateVenue :one
 insert into app.venue (
     name,
-    streetaddr,
+    street_address,
     zip,
     city,
     state_code,
@@ -144,7 +144,7 @@ insert into app.venue (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) returning (
     name,
-    streetaddr,
+    street_address,
     zip,
     city,
     state_code,
@@ -156,23 +156,23 @@ insert into app.venue (
 `
 
 type CreateVenueParams struct {
-	Name        string
-	Streetaddr  string
-	Zip         string
-	City        string
-	StateCode   string
-	StateName   string
-	CountryCode string
-	CountryName string
-	NumUnique   int32
-	NumGa       int32
-	Vendor      int32
+	Name          string
+	StreetAddress string
+	Zip           string
+	City          string
+	StateCode     string
+	StateName     string
+	CountryCode   string
+	CountryName   string
+	NumUnique     int32
+	NumGa         int32
+	Vendor        int32
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (interface{}, error) {
 	row := q.db.QueryRow(ctx, createVenue,
 		arg.Name,
-		arg.Streetaddr,
+		arg.StreetAddress,
 		arg.Zip,
 		arg.City,
 		arg.StateCode,
@@ -472,7 +472,7 @@ func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEve
 }
 
 const vendorGetVenueByPk = `-- name: VendorGetVenueByPk :one
-select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
 where venue.pk = $1 
 and venue.vendor = (
     select pk from app.vendor
@@ -494,7 +494,7 @@ func (q *Queries) VendorGetVenueByPk(ctx context.Context, arg VendorGetVenueByPk
 		&i.ID,
 		&i.Vendor,
 		&i.Name,
-		&i.Streetaddr,
+		&i.StreetAddress,
 		&i.Zip,
 		&i.City,
 		&i.StateCode,
@@ -509,7 +509,7 @@ func (q *Queries) VendorGetVenueByPk(ctx context.Context, arg VendorGetVenueByPk
 }
 
 const vendorGetVenueByUuid = `-- name: VendorGetVenueByUuid :one
-select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue 
 where venue.id = $1 
 and venue.vendor = (
     select pk from app.vendor
@@ -531,7 +531,7 @@ func (q *Queries) VendorGetVenueByUuid(ctx context.Context, arg VendorGetVenueBy
 		&i.ID,
 		&i.Vendor,
 		&i.Name,
-		&i.Streetaddr,
+		&i.StreetAddress,
 		&i.Zip,
 		&i.City,
 		&i.StateCode,
@@ -546,7 +546,7 @@ func (q *Queries) VendorGetVenueByUuid(ctx context.Context, arg VendorGetVenueBy
 }
 
 const vendorGetVenuesPaginated = `-- name: VendorGetVenuesPaginated :many
-select pk, id, vendor, name, streetaddr, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
+select pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo from app.venue venue
 where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
@@ -574,7 +574,7 @@ func (q *Queries) VendorGetVenuesPaginated(ctx context.Context, arg VendorGetVen
 			&i.ID,
 			&i.Vendor,
 			&i.Name,
-			&i.Streetaddr,
+			&i.StreetAddress,
 			&i.Zip,
 			&i.City,
 			&i.StateCode,

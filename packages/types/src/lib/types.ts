@@ -1,69 +1,101 @@
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-
-// Redone to align with database.
 export type Event = {
-	pk: number;
-	id: string;
-	vendor: number;
-	venue: number;
-	name: string;
-	type: string;
-	event_datetime: string;
-	description: string;
-	disclaimer: string;
-	basecost: number;
-	num_unique: number;
-	num_ga: number;
-	photo: string;
+	Pk: number;
+	ID: string;
+	Vendor: number;
+	Venue: number;
+	Name: string;
+	Type: string;
+	EventDatetime: string;
+	Description: string;
+	Disclaimer: string;
+	Basecost: number;
+	NumUnique: number;
+	NumGa: number;
+	Photo: string;
 };
 
 export type Venue = {
-	pk: number;
-	id: string;
-	vendor: number;
-	name: string;
-	street_address: string;
-	zip: string;
-	city: string;
-	state_code: string;
-	state_name: string;
-	country_code: string;
-	country_name: string;
-	num_unique: number;
-	num_ga: number;
-	photo: string;
+	Pk: number;
+	ID: string;
+	Vendor: number;
+	Name: string;
+	StreetAddress: string;
+	Zip: string;
+	City: string;
+	StateCode: string;
+	StateName: string;
+	CountryCode: string;
+	CountryName: string;
+	NumUnique: number;
+	NumGa: number;
+	Photo: string;
 };
 
 export type EventCreationFormData = Pick<
 	Event,
-	| 'venue'
-	| 'name'
-	| 'type'
-	| 'event_datetime'
-	| 'description'
-	| 'disclaimer'
-	| 'basecost'
-	| 'num_unique'
-	| 'num_ga'
+	| 'Venue'
+	| 'Name'
+	| 'Type'
+	| 'EventDatetime'
+	| 'Description'
+	| 'Disclaimer'
+	| 'Basecost'
+	| 'NumUnique'
+	| 'NumGa'
 >;
 
 export type VenueCreationFormData = Pick<
 	Venue,
-	| 'name'
-	| 'street_address'
-	| 'zip'
-	| 'city'
-	| 'state_code'
-	| 'state_name'
-	| 'country_code'
-	| 'country_name'
-	| 'num_unique'
-	| 'num_ga'
+	| 'Name'
+	| 'StreetAddress'
+	| 'Zip'
+	| 'City'
+	| 'StateCode'
+	| 'StateName'
+	| 'CountryCode'
+	| 'CountryName'
+	| 'NumUnique'
+	| 'NumGa'
 >;
 
-// Cannot use Pick as backend changes capitalization
-export type AllVenuesListSimplifiedResponse = {
-	Pk: number;
-	ID: string;
-	Name: string;
+export type AllVenuesListSimplifiedResponse = Pick<Venue, 'Pk' | 'ID' | 'Name'>;
+
+const EVENT_DEFAULT_DO_NOT_USE: Event = {
+	Pk: 0,
+	ID: '',
+	Vendor: 0,
+	Venue: 0,
+	Name: '',
+	Type: '',
+	EventDatetime: '',
+	Description: '',
+	Disclaimer: '',
+	Basecost: 0,
+	NumUnique: 0,
+	NumGa: 0,
+	Photo: ''
 };
+
+const VENUE_DEFAULT_DO_NOT_USE: Venue = {
+	Pk: 0,
+	ID: '',
+	Vendor: 0,
+	Name: '',
+	StreetAddress: '',
+	Zip: '',
+	City: '',
+	StateCode: '',
+	StateName: '',
+	CountryCode: '',
+	CountryName: '',
+	NumUnique: 0,
+	NumGa: 0,
+	Photo: ''
+};
+
+export const EVENT_KEYS = Object.keys(
+	EVENT_DEFAULT_DO_NOT_USE
+) as (keyof Event)[];
+export const VENUE_KEYS = Object.keys(
+	VENUE_DEFAULT_DO_NOT_USE
+) as (keyof Venue)[];

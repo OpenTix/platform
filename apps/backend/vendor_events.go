@@ -24,16 +24,16 @@ const time_layout string = "2006-01-02T15:04:05.999Z"
 
 type EventPostBodyParams struct {
 	Vendor      int32
-	Venue       int32   `json:"venue"`
-	Name        string  `json:"name"`
-	Type        string  `json:"type"`
-	Time        string  `json:"event_datetime"`
-	Description string  `json:"description"`
-	Disclaimer  string  `json:"disclaimer"`
-	Basecost    float64 `json:"basecost"`
-	NumUnique   int32   `json:"num_unique"`
-	NumGa       int32   `json:"num_ga"`
-	Photo       string  `json:"photo"`
+	Venue       int32   `json:"Venue"`
+	Name        string  `json:"Name"`
+	Type        string  `json:"Type"`
+	Time        string  `json:"EventDatetime"`
+	Description string  `json:"Description"`
+	Disclaimer  string  `json:"Disclaimer"`
+	Basecost    float64 `json:"Basecost"`
+	NumUnique   int32   `json:"NumUnique"`
+	NumGa       int32   `json:"NumGa"`
+	Photo       string  `json:"Photo"`
 }
 
 func init() {
@@ -119,7 +119,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	/* ---- Breakaway for different queries based on input params ---- */
-	tmp, ok := request.QueryStringParameters["pk"]
+	tmp, ok := request.QueryStringParameters["Pk"]
 	if ok {
 		pk, err := strconv.ParseInt(tmp, 10, 32)
 		if err != nil {
@@ -128,7 +128,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return handleGetByPk(ctx, request, int32(pk), vendorinfo)
 	}
 
-	tmp, ok = request.QueryStringParameters["id"]
+	tmp, ok = request.QueryStringParameters["ID"]
 	if ok {
 		return handleGetByUuid(ctx, request, tmp, vendorinfo)
 	}
@@ -137,7 +137,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Return all events as paginated response
 
 	// Get query parameters and set defaults if not ok
-	tmp, ok = request.QueryStringParameters["page"]
+	tmp, ok = request.QueryStringParameters["Page"]
 	var page int32
 	if !ok {
 		page = 1
@@ -149,7 +149,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
-	tmp, ok = request.QueryStringParameters["venue"]
+	tmp, ok = request.QueryStringParameters["Venue"]
 	var venue int32
 	if !ok {
 		venue = -1

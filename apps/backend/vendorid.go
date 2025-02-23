@@ -22,7 +22,7 @@ var (
 )
 
 type PostPatchVendorIdRequestBody struct {
-	Name string `json:"name"`
+	Name string `json:"Name"`
 }
 
 func init() {

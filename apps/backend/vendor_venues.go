@@ -18,16 +18,16 @@ var connStr string
 
 // Type for POST request to unmarshal body
 type VenuePostBodyParams struct {
-	Name        string `json:"name"`
-	Streetaddr  string `json:"street_address"`
-	Zip         string `json:"zip"`
-	City        string `json:"city"`
-	StateCode   string `json:"state_code"`
-	StateName   string `json:"state_name"`
-	CountryCode string `json:"country_code"`
-	CountryName string `json:"country_name"`
-	NumUnique   int32  `json:"num_unique"`
-	NumGa       int32  `json:"num_ga"`
+	Name        string `json:"Name"`
+	StreetAddress  string `json:"StreetAddress"`
+	Zip         string `json:"Zip"`
+	City        string `json:"City"`
+	StateCode   string `json:"StateCode"`
+	StateName   string `json:"StateName"`
+	CountryCode string `json:"CountryCode"`
+	CountryName string `json:"CountryName"`
+	NumUnique   int32  `json:"NumUnique"`
+	NumGa       int32  `json:"NumGa"`
 	Vendor      int32
 }
 
@@ -143,16 +143,16 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return handleGetAll(ctx, request, vendorinfo)
 	}
 
-	tmp, ok = request.QueryStringParameters["pk"]
+	tmp, ok = request.QueryStringParameters["Pk"]
 	if ok {
 		pk, err := strconv.ParseInt(tmp, 10, 32)
 		if err != nil {
-			return shared.CreateErrorResponse(400, "Invalid pk", request.Headers)
+			return shared.CreateErrorResponse(400, "Invalid Pk", request.Headers)
 		}
 		return handleGetByPk(ctx, request, int32(pk), vendorinfo)
 	}
 
-	tmp, ok = request.QueryStringParameters["id"]
+	tmp, ok = request.QueryStringParameters["ID"]
 	if ok {
 		return handleGetByUuid(ctx, request, tmp, vendorinfo)
 	}
@@ -161,7 +161,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Return all venues as paginated response
 
 	// Get query parameters and set defaults if not ok
-	tmp, ok = request.QueryStringParameters["page"]
+	tmp, ok = request.QueryStringParameters["Page"]
 	var page int32
 	if !ok {
 		page = 1

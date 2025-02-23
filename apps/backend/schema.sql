@@ -9,7 +9,7 @@ create table app."user" (
         constraint user_wallet unique
         constraint user_wallet_fmt            
             check ((wallet)::text ~ '^[0-9A-Fa-f]{40}$'::text),    
-    darkmode boolean default false
+    dark_mode boolean default false
 );
 
 create table app.vendor (
@@ -37,7 +37,7 @@ create table app.venue (
             references app.vendor
             on delete cascade,
     name text not null,
-    streetaddr text not null,
+    street_address text not null,
     zip text not null,
     city text not null,
     state_code varchar(5) not null

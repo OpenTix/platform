@@ -108,7 +108,7 @@ insert into app.event (
 -- name: CreateVenue :one
 insert into app.venue (
     name,
-    streetaddr,
+    street_address,
     zip,
     city,
     state_code,
@@ -122,7 +122,7 @@ insert into app.venue (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) returning (
     name,
-    streetaddr,
+    street_address,
     zip,
     city,
     state_code,
