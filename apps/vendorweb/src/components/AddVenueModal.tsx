@@ -107,7 +107,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Name
 				</Text>
 				<TextField.Root
-					name="name"
+					name="Name"
 					placeholder="My Venue"
 					value={formData.Name}
 					onChange={handleChange}
@@ -118,7 +118,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Street Address
 				</Text>
 				<TextField.Root
-					name="street_address"
+					name="StreetAddress"
 					placeholder="123 Main Street"
 					value={formData.StreetAddress}
 					onChange={handleChange}
@@ -129,7 +129,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Zip Code
 				</Text>
 				<TextField.Root
-					name="zip"
+					name="Zip"
 					placeholder="12345"
 					value={formData.Zip}
 					onChange={handleChange}
@@ -140,7 +140,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					City
 				</Text>
 				<TextField.Root
-					name="city"
+					name="City"
 					placeholder="Knoxville"
 					value={formData.City}
 					onChange={handleChange}
@@ -151,7 +151,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					State Code
 				</Text>
 				<TextField.Root
-					name="state_code"
+					name="StateCode"
 					placeholder="TN-US"
 					value={formData.StateCode}
 					onChange={handleChange}
@@ -163,7 +163,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					State Name
 				</Text>
 				<TextField.Root
-					name="state_name"
+					name="StateName"
 					placeholder="Tennessee"
 					value={formData.StateName}
 					onChange={handleChange}
@@ -174,7 +174,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Country Code
 				</Text>
 				<TextField.Root
-					name="country_code"
+					name="CountryCode"
 					placeholder="US"
 					value={formData.CountryCode}
 					onChange={handleChange}
@@ -186,7 +186,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Country Name
 				</Text>
 				<TextField.Root
-					name="country_name"
+					name="CountryName"
 					placeholder="United States"
 					value={formData.CountryName}
 					onChange={handleChange}
@@ -197,7 +197,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					Unique Seats Quantity
 				</Text>
 				<TextField.Root
-					name="num_unique"
+					name="NumUnique"
 					placeholder="Unique Seats Quantity"
 					value={formData.NumUnique}
 					onChange={handleChange}
@@ -209,7 +209,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					General Admission Quantity
 				</Text>
 				<TextField.Root
-					name="num_ga"
+					name="NumGa"
 					placeholder="General Admission Quantity"
 					value={formData.NumGa}
 					onChange={handleChange}

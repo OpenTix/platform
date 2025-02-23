@@ -119,7 +119,6 @@ function Venues() {
 	});
 
 	if (isPending) {
-		console.log('loading venues...');
 		return <Text> Loading... </Text>;
 	}
 
@@ -127,8 +126,6 @@ function Venues() {
 		console.error(error.message);
 		return <Text>Error: {error.message}</Text>;
 	}
-
-	console.log(data ?? 'no data but the request was successfull');
 
 	return <VendorTable rowData={data} tableType="venue" />;
 }
@@ -140,7 +137,6 @@ function Events() {
 	});
 
 	if (isPending) {
-		console.log('loading events...');
 		return <Text> Loading... </Text>;
 	}
 
@@ -148,8 +144,6 @@ function Events() {
 		console.error(error.message);
 		return <Text>Error: {error.message}</Text>;
 	}
-
-	console.log(data ?? 'no data but the request was successfull');
 
 	return <VendorTable rowData={data} tableType="event" />;
 }
