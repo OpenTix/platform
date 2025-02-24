@@ -1,0 +1,15 @@
+{
+	"name": "blockchain",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "packages/blockchain/src",
+	"projectType": "library",
+	"tags": [],
+	"targets": {
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "npx jest packages/blockchain --passWithNoTests"
+			}
+		}
+	}
+}

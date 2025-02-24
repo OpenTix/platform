@@ -2,6 +2,7 @@ import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { VenueCreationFormData } from '@platform/types';
 import { TextField, Text } from '@radix-ui/themes';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BaseModalForm } from '@platform/ui';
 
 type AddVenueModalProps = {
@@ -9,6 +10,7 @@ type AddVenueModalProps = {
 };
 
 export default function AddVenueModal({ onClose }: AddVenueModalProps) {
+	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
@@ -91,6 +93,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 		}
 		setIsSubmitting(false);
 		onClose();
+		navigate(0);
 	};
 
 	return (

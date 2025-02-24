@@ -6,6 +6,8 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
+import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
+import MintTicketsModal from '../components/MintTicketsModal';
 
 //70/30 left right column split
 const LeftColumn = styled.div`
@@ -38,7 +40,10 @@ export default function Details({ typestring }: DetailsProps) {
 	//eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const id = useParams().id!;
 	const [data, setData] = useState<Venue | Event>();
-	const [shouldShowModal, setShouldShowModal] = useState<boolean>(false);
+	const [shouldShowEditModal, setShouldShowEditModal] =
+		useState<boolean>(false);
+	const [shouldShowMintModal, setShouldShowMintModal] =
+		useState<boolean>(false);
 
 	const validateUUID = () => {
 		if (
@@ -135,14 +140,22 @@ export default function Details({ typestring }: DetailsProps) {
 								<Flex direction="column" gap="3">
 									<ActionsText
 										onClick={() => {
-											setShouldShowModal(true);
+											setShouldShowEditModal(true);
 										}}
 									>
 										Edit
 									</ActionsText>
 									{typestring === 'event' &&
 										!(data as Event)?.TransactionHash && (
-											<ActionsText>Mint</ActionsText>
+											<ActionsText
+												onClick={() => {
+													setShouldShowMintModal(
+														true
+													);
+												}}
+											>
+												Mint
+											</ActionsText>
 										)}
 								</Flex>
 							</Card>
@@ -153,24 +166,47 @@ export default function Details({ typestring }: DetailsProps) {
 			{typestring === 'event' && (
 				<Box width="100%">
 					<Card>
-						<Heading size={'4'}>Transactions</Heading>
-						<Text>Transactions list or list of NFTs?</Text>
+						<Heading size={'4'}>NFTs for this event:</Heading>
+						{data && (data as Event)?.TransactionHash ? (
+							<ListOfNFTsForEvent
+								Title={(data as Event)?.Name}
+								EventDatetime={(data as Event)?.EventDatetime}
+								ID={(data as Event)?.ID}
+							/>
+						) : (
+							<Text>
+								You have not minted NFTs for this event yet.
+							</Text>
+						)}
 					</Card>
 				</Box>
 			)}
 
-			{shouldShowModal &&
+			{shouldShowEditModal &&
 				(typestring === 'event' ? (
 					<EditEventModal
 						pk={data?.Pk ?? 0}
-						onClose={() => setShouldShowModal(false)}
+						onClose={() => setShouldShowEditModal(false)}
 					/>
 				) : (
 					<EditVenueModal
 						pk={data?.Pk ?? 0}
-						onClose={() => setShouldShowModal(false)}
+						onClose={() => setShouldShowEditModal(false)}
 					/>
 				))}
+
+			{shouldShowMintModal && typestring === 'event' && (
+				<MintTicketsModal
+					onClose={() => setShouldShowMintModal(false)}
+					Basecost={(data as Event)?.Basecost}
+					NumGa={(data as Event)?.NumGa}
+					NumUnique={(data as Event)?.NumUnique}
+					Title={(data as Event)?.Name}
+					EventDatetime={(data as Event)?.EventDatetime}
+					ID={(data as Event)?.ID}
+					Pk={(data as Event)?.Pk}
+				/>
+			)}
 		</>
 	);
 }
