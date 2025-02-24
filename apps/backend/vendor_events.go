@@ -33,7 +33,18 @@ type EventPostBodyParams struct {
 	Basecost    float64 `json:"Basecost"`
 	NumUnique   int32   `json:"NumUnique"`
 	NumGa       int32   `json:"NumGa"`
-	Photo       string  `json:"Photo"`
+}
+
+type EventPatchBodyParams struct {
+	Pk            int32   `json:"Pk"`
+	Venue       int32   `json:"Venue"`
+	Name        string  `json:"Name"`
+	Type        string  `json:"Type"`
+	Time        string  `json:"EventDatetime"`
+	Description string  `json:"Description"`
+	Disclaimer  string  `json:"Disclaimer"`
+	Photo	   string  `json:"Photo"`
+	TransactionHash string `json:"TransactionHash"`
 }
 
 func init() {
@@ -215,7 +226,6 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		Basecost:    0,
 		NumUnique:   0,
 		NumGa:       0,
-		Photo:       "",
 	}
 
 	err = json.Unmarshal([]byte(request.Body), &params)
@@ -229,7 +239,6 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 
 	// Parse the parameters that are not strings
 	var tstamp pgtype.Timestamp
-	var photo pgtype.Text
 	var disclaimer pgtype.Text
 
 	// Set time to a really low value to show all events if not provided
@@ -240,7 +249,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
 	}
 
-	if photo.Scan(params.Photo) != nil || disclaimer.Scan(params.Disclaimer) != nil {
+	if disclaimer.Scan(params.Disclaimer) != nil {
 		return shared.CreateErrorResponseAndLogError(404, "Unable to parse photo or disclaimer", request.Headers, err)
 	}
 
@@ -291,7 +300,6 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		Basecost:      params.Basecost,
 		NumUnique:     params.NumUnique,
 		NumGa:         params.NumGa,
-		Photo:         photo,
 	})
 
 	if err != nil {
@@ -309,18 +317,86 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}, nil
 }
 
+func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Grab auth token
+    tk, err := shared.GetTokenFromRequest(request)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+    }
+
+    // Grab wallet address from token
+    vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+    }
+
+    // Unmarshal body into EventPatchBodyParams
+    var params EventPatchBodyParams
+    err = json.Unmarshal([]byte(request.Body), &params)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
+    }
+
+    // Connect to the database
+    conn, err := pgx.Connect(ctx, connStr)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+    }
+    defer conn.Close(ctx)
+    queries := query.New(conn)
+
+
+	// Process timestamp conversion for Column5.
+	var eventTime pgtype.Timestamp
+	if params.Time != "" {
+		tmps := strings.Trim(params.Time, "\x0d\x0a")
+		t, err := time.Parse(time_layout, tmps)
+		eventTime.Scan(t)
+		if err != nil || !eventTime.Valid {
+			return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
+		}
+		
+	}
+
+	// Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
+	arg := query.VendorPatchEventParams{
+		Pk:       params.Pk,
+		Wallet:   vendorinfo.Wallet,
+		Column3:  params.Name,
+		Column4:  params.Type,
+		Column5:  eventTime,
+		Column6:  params.Description,
+		Column7:  params.Disclaimer,
+		Column8:  params.Photo,
+		Column9:  params.TransactionHash,
+	}
+
+    updatedVenue, err := queries.VendorPatchEvent(ctx, arg)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
+    }
+
+    responseBody, err := json.Marshal(updatedVenue)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
+    }
+
+    return events.APIGatewayProxyResponse{
+        StatusCode: 200,
+        Body:       string(responseBody),
+        Headers:    shared.GetResponseHeaders(request.Headers),
+    }, nil
+}
+
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if request.HTTPMethod == "GET" {
 		return handleGet(ctx, request)
 	} else if request.HTTPMethod == "POST" {
 		return handlePost(ctx, request)
+	} else if request.HTTPMethod == "PATCH" {
+		return handlePatch(ctx, request)
 	} else {
-		body, _ := json.Marshal(map[string]string{"message": "Method Not Allowed."})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 405,
-			Body:       string(body),
-			Headers:    shared.GetResponseHeaders(request.Headers),
-		}, nil
+		return shared.CreateErrorResponse(405, "Method Not Allowed", request.Headers)
 	}
 }
 

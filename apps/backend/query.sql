@@ -79,6 +79,52 @@ and event.vendor = (
 )
 limit 1;
 
+-- name: VendorAddTransactionHash :one
+update app.event set transaction_hash = $3 
+where event.pk = $1 
+and event.vendor = (
+    select pk from app.vendor 
+    where wallet = $2
+) 
+returning *;
+
+
+-- name: VendorPatchEvent :one
+update app.event
+set
+  name = coalesce(nullif($3::text, ''), name),
+  type = coalesce(nullif($4::text, ''), type),
+  event_datetime = coalesce($5::timestamp, event_datetime),
+  description = coalesce(nullif($6::text, ''), description),
+  disclaimer = coalesce(nullif($7::text, ''), disclaimer),
+  photo = coalesce(nullif($8::text, ''), photo),
+  transaction_hash = coalesce(nullif($9::text, ''), transaction_hash)
+where event.pk = $1
+  and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+  )
+returning *;
+
+-- name: VendorPatchVenue :one
+update app.venue
+set
+  name = coalesce(nullif($3::text, ''), name),
+  street_address = coalesce(nullif($4::text, ''), street_address),
+  zip = coalesce(nullif($5::text, ''), zip),
+  city = coalesce(nullif($6::text, ''), city),
+  state_code = coalesce(nullif($7::text, ''), state_code),
+  state_name = coalesce(nullif($8::text, ''), state_name),
+  country_code = coalesce(nullif($9::text, ''), country_code),
+  country_name = coalesce(nullif($10::text, ''), country_name),
+  photo = coalesce(nullif($11::text, ''), photo)
+where venue.pk = $1
+  and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+  )
+returning *;
+
 -- name: CreateEvent :one
 insert into app.event (
     vendor,
@@ -90,10 +136,9 @@ insert into app.event (
     disclaimer,
     basecost,
     num_unique,
-    num_ga,
-    photo
+    num_ga
 ) values (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) returning (
     name,
     type,

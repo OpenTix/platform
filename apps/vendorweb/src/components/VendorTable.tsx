@@ -1,5 +1,6 @@
 import { Event, EVENT_KEYS, Venue, VENUE_KEYS } from '@platform/types';
 import { Text, Table, Box, ScrollArea } from '@radix-ui/themes';
+import { useNavigate } from 'react-router-dom';
 
 // you'll grab the baseurl and then I believe it's /vendor/venues and /vendor/events
 // process.env.NX_PUBLIC_API_BASEURL
@@ -10,6 +11,7 @@ interface tableData {
 }
 
 export default function VendorTable({ rowData, tableType }: tableData) {
+	const navigate = useNavigate();
 	const header = [];
 	let labels: string[] = [];
 
@@ -42,7 +44,14 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 			);
 		}
 
-		return <Table.Row key={idx}>{tableRow}</Table.Row>;
+		return (
+			<Table.Row
+				key={idx}
+				onClick={() => navigate(tableType + '/' + row.ID)}
+			>
+				{tableRow}
+			</Table.Row>
+		);
 	});
 
 	return (

@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorPage } from '@platform/ui';
 import ConditionalRoot from './routes/ConditionalRoot';
+import Details from './views/Details';
 import Home from './views/Home';
 import Profile from './views/Profile';
 
@@ -19,6 +20,16 @@ const router = createBrowserRouter([
 			{
 				path: 'profile',
 				element: <Profile />,
+				ErrorBoundary: ErrorPage
+			},
+			{
+				path: 'venue/:id',
+				element: <Details typestring="venue" />,
+				ErrorBoundary: ErrorPage
+			},
+			{
+				path: 'event/:id',
+				element: <Details typestring="event" />,
 				ErrorBoundary: ErrorPage
 			},
 			{
