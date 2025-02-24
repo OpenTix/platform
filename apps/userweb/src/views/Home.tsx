@@ -1,25 +1,14 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { Event } from '@platform/types';
-import '@radix-ui/colors/black-alpha.css';
-import '@radix-ui/colors/mauve.css';
-import '@radix-ui/colors/violet.css';
-import {
-	Box,
-	Container,
-	Flex,
-	Text,
-	Select,
-	TextField
-} from '@radix-ui/themes';
+import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Toolbar } from 'radix-ui';
+import { Avatar, Toolbar } from 'radix-ui';
 import { useState } from 'react';
 import styled from 'styled-components';
-import UserTable from '../components/UserTable';
 
 const queryClient = new QueryClient();
 
@@ -27,10 +16,10 @@ const TBButton = styled(Toolbar.Button)`
 	padding-left: 10px;
 	padding-right: 10px;
 	color: white;
-	background-color: var(--violet-9);
+	background-color: #4e3282;
 	border-radius: 6px;
 	&:hover {
-		background-color: var(--violet-10);
+		background-color: #30304a;
 		color: white;
 	}
 `;
@@ -43,7 +32,7 @@ const TBRoot = styled(Toolbar.Root)`
 	min-width: max-content;
 	border-radius: 6px;
 	background-color: white;
-	box-shadow: 0 2px 10px var(--black-a7);
+	box-shadow: 0 2px 10px black;
 	column-gap: 5px;
 	margin-top: 10px;
 `;
@@ -61,15 +50,14 @@ export default function Home() {
 	const [type, setType] = useState<string>('');
 	const [ename, setEname] = useState<string>('');
 	const [cost, setCost] = useState<number>(1000000);
+	// const [eventDate, setEventDate] = useState<string>(
+	// 	new Date().toISOString()
+	// );
 	const [eventDate, setEventDate] = useState<string>(
-		new Date().toISOString()
-	);
-	const [displayDate, setDisplayDate] = useState<string>(
 		new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
 			.toISOString()
 			.slice(0, 16)
 	);
-	const [events, setEvents] = useState<Event[]>([]);
 
 	function Events() {
 		const { isPending, isError, data, error } = useQuery({
@@ -86,7 +74,51 @@ export default function Home() {
 			return <Text>Error: {error.message}</Text>;
 		}
 
-		return <UserTable rowData={data} tableType="event" />;
+		return (
+			data?.map((data: Event, idx: number) => {
+				const keys = Object.keys(data);
+				let photo_uri = '';
+				return (
+					<Card key={idx} size={'3'} variant="classic">
+						<Flex direction="column">
+							{Object.values(data)?.map(
+								(value: string | number, idx: number) => {
+									if (keys[idx] === 'Photo') {
+										photo_uri = value as string;
+										return null;
+									}
+									return (
+										<Text color="violet">
+											{keys[idx]}:{' '}
+											{keys[idx] === 'EventDatetime'
+												? new Date(
+														value
+													).toLocaleString()
+												: keys[idx] === 'Basecost'
+													? `$${value}`
+													: value}
+										</Text>
+									);
+								}
+							)}
+							<Avatar.Root>
+								<Avatar.Image
+									src={photo_uri}
+									alt="Image of venue"
+								/>
+								{/* <Avatar.Fallback delayMs={600}>
+                            No Image
+                        </Avatar.Fallback> */}
+							</Avatar.Root>
+						</Flex>
+					</Card>
+				);
+			}) ?? (
+				<Card>
+					<Text>There are no results for page {page}</Text>
+				</Card>
+			)
+		);
 	}
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +132,13 @@ export default function Home() {
 				break;
 			case 'Time':
 				setEventDate(value);
-				setDisplayDate(value);
+				// setDisplayDate(value);
+				break;
+			case 'Zip':
+				setZip(value);
+				break;
+			case 'Name':
+				setEname(value);
 				break;
 			default:
 				break;
@@ -152,9 +190,18 @@ export default function Home() {
 						</Text>
 						<TextField.Root
 							name="Time"
-							value={displayDate}
+							value={eventDate}
 							onChange={handleChange}
 							type="datetime-local"
+						/>
+					</Label>
+					<Label>
+						<Text>Zip</Text>
+						<TextField.Root
+							name="Zip"
+							value={zip}
+							onChange={handleChange}
+							pattern={'{d}[5]'}
 						/>
 					</Label>
 				</Flex>
@@ -162,7 +209,9 @@ export default function Home() {
 			<Container style={{ alignSelf: 'center' }} size={'4'}>
 				<Box style={{ maxWidth: '90vw', padding: '16px 16px' }}>
 					<QueryClientProvider client={queryClient}>
-						<Events />
+						<Flex direction="column" gap="3">
+							<Events />
+						</Flex>
 					</QueryClientProvider>
 					<TBRoot>
 						{page > 1 ? (
