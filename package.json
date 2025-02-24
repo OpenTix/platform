@@ -16,7 +16,7 @@
 		"prepare": "husky || true",
 		"prettier": "prettier --check .",
 		"prettier-fix": "prettier --write .",
-		"jest": "DOTENV_CONFIG_PATH=.env.build npx jest --setupFiles=dotenv/config"
+		"jest": "npx jest"
 	},
 	"lint-staged": {
 		"*": "prettier --ignore-unknown --write",
