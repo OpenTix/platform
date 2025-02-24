@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -364,6 +365,8 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
         return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
     }
 
+	log.Println(params)
+
     // Connect to the database
     conn, err := pgx.Connect(ctx, connStr)
     if err != nil {
@@ -397,6 +400,8 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		Column8:  params.Photo,
 		Column9:  params.TransactionHash,
 	}
+
+	log.Println(arg)
 
     updatedVenue, err := queries.VendorPatchEvent(ctx, arg)
     if err != nil {
