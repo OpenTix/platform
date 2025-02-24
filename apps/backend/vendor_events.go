@@ -313,37 +313,6 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}, nil
 }
 
-// func handlePatchTransactionHash(ctx context.Context, request events.APIGatewayProxyRequest, pk int32, vendorinfo shared.GetWalletAndUUIDFromTokenResponse, TransactionHash string) (events.APIGatewayProxyResponse, error) {
-// 	// Connect to the database
-// 	conn, err := pgx.Connect(ctx, connStr)
-// 	if err != nil {
-// 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-// 	}
-// 	defer conn.Close(ctx)
-
-// 	queries := query.New(conn)
-
-// 	// Get events for current page
-// 	dbResponse, err := queries.VendorAddTransactionHash(ctx, query.VendorAddTransactionHashParams{
-// 		Pk:     pk,
-// 		Wallet: vendorinfo.Wallet,
-// 		TransactionHash: pgtype.Text{String: TransactionHash, Valid: true},
-// 	})
-// 	if err != nil {
-// 		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
-// 	}
-
-// 	responseBody, err := json.Marshal(dbResponse)
-// 	if err != nil {
-// 		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
-// 	}
-// 	return events.APIGatewayProxyResponse{
-// 		StatusCode: 200,
-// 		Body:       string(responseBody),
-// 		Headers:    shared.GetResponseHeaders(request.Headers),
-// 	}, nil
-// }
-
 func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
     // Grab auth token
     tk, err := shared.GetTokenFromRequest(request)
