@@ -76,6 +76,7 @@ create table app.event(
     basecost double precision not null,
     num_unique integer not null,
     num_ga integer not null,
-    photo text
+    photo text,
+    transaction_hash text
 );
 
