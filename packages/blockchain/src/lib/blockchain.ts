@@ -1,4 +1,4 @@
-export const ContractAddress = '0xeB60D2D16F2D48324C84D9ffB26465A88d40659f';
+export const ContractAddress = '0x578d05ef4BDC8Ee7f0d23b3130BE5F130f88ab29';
 
 export const ContractABI = [
 	{ inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
@@ -223,6 +223,34 @@ export const ContractABI = [
 		type: 'event'
 	},
 	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: 'address',
+				name: 'seller',
+				type: 'address'
+			},
+			{
+				indexed: true,
+				internalType: 'address',
+				name: 'buyer',
+				type: 'address'
+			}
+		],
+		name: 'User_To_User_Transfer_Concluded',
+		type: 'event'
+	},
+	{
+		inputs: [
+			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+		],
+		name: 'allow_user_to_user_ticket_transfer',
+		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
 		inputs: [
 			{ internalType: 'address', name: 'account', type: 'address' },
 			{ internalType: 'uint256', name: 'id', type: 'uint256' }
@@ -240,6 +268,16 @@ export const ContractABI = [
 		name: 'balanceOfBatch',
 		outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
 		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{ internalType: 'address', name: 'user', type: 'address' },
+			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+		],
+		name: 'buy_ticket_from_user',
+		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		stateMutability: 'payable',
 		type: 'function'
 	},
 	{
@@ -277,11 +315,30 @@ export const ContractABI = [
 		type: 'function'
 	},
 	{
+		inputs: [],
+		name: 'disallow_user_to_user_ticket_transfer',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
 		inputs: [
 			{ internalType: 'string', name: 'description', type: 'string' }
 		],
 		name: 'get_event_ids',
-		outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+		outputs: [
+			{ internalType: 'uint256[]', name: '', type: 'uint256[]' },
+			{
+				components: [
+					{ internalType: 'uint256', name: 'min', type: 'uint256' },
+					{ internalType: 'uint256', name: 'max', type: 'uint256' },
+					{ internalType: 'bool', name: 'exists', type: 'bool' }
+				],
+				internalType: 'struct Ids',
+				name: '',
+				type: 'tuple'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
@@ -298,6 +355,15 @@ export const ContractABI = [
 			{ internalType: 'address', name: 'operator', type: 'address' }
 		],
 		name: 'isApprovedForAll',
+		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{ internalType: 'string', name: 'description', type: 'string' }
+		],
+		name: 'is_description_available',
 		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
 		stateMutability: 'view',
 		type: 'function'

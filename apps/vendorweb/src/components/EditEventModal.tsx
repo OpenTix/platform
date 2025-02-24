@@ -16,7 +16,6 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [formData, setFormData] = useState<EventEditableFields>({
-		Name: '',
 		Type: '',
 		Description: '',
 		Disclaimer: ''
@@ -95,17 +94,6 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 		>
 			<Text>Only fields edited here will be changed.</Text>
 
-			<label>
-				<Text as="div" size="2" mb="1" weight="bold">
-					Name
-				</Text>
-				<TextField.Root
-					name="Name"
-					placeholder="My Event"
-					value={formData.Name}
-					onChange={handleChange}
-				/>
-			</label>
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
 					Type

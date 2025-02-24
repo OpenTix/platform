@@ -90,7 +90,7 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 
 	return (
 		<BaseModalForm
-			title="Update an Event."
+			title="Update a Venue."
 			isSubmitting={isSubmitting}
 			errorMessage={errorMessage}
 			showError={shouldShowError}
