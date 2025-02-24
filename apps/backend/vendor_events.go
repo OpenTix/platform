@@ -249,6 +249,10 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
 	}
 
+	if disclaimer.Scan(params.Disclaimer) != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Unable to parse photo or disclaimer", request.Headers, err)
+	}
+
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
