@@ -92,13 +92,13 @@ returning *;
 -- name: VendorPatchEvent :one
 update app.event
 set
-  name = coalesce($3::text, name),
-  type = coalesce($4::text, type),
+  name = coalesce(nullif($3::text, ''), name),
+  type = coalesce(nullif($4::text, ''), type),
   event_datetime = coalesce($5::timestamp, event_datetime),
-  description = coalesce($6::text, description),
-  disclaimer = coalesce($7::text, disclaimer),
-  photo = coalesce($8::text, photo),
-  transaction_hash = coalesce($9::text, transaction_hash)
+  description = coalesce(nullif($6::text, ''), description),
+  disclaimer = coalesce(nullif($7::text, ''), disclaimer),
+  photo = coalesce(nullif($8::text, ''), photo),
+  transaction_hash = coalesce(nullif($9::text, ''), transaction_hash)
 where event.pk = $1
   and event.vendor = (
     select pk from app.vendor
@@ -109,15 +109,15 @@ returning *;
 -- name: VendorPatchVenue :one
 update app.venue
 set
-  name = coalesce($3::text, name),
-  street_address = coalesce($4::text, street_address),
-  zip = coalesce($5::text, zip),
-  city = coalesce($6::text, city),
-  state_code = coalesce($7::text, state_code),
-  state_name = coalesce($8::text, state_name),
-  country_code = coalesce($9::text, country_code),
-  country_name = coalesce($10::text, country_name),
-  photo = coalesce($11::text, photo)
+  name = coalesce(nullif($3::text, ''), name),
+  street_address = coalesce(nullif($4::text, ''), street_address),
+  zip = coalesce(nullif($5::text, ''), zip),
+  city = coalesce(nullif($6::text, ''), city),
+  state_code = coalesce(nullif($7::text, ''), state_code),
+  state_name = coalesce(nullif($8::text, ''), state_name),
+  country_code = coalesce(nullif($9::text, ''), country_code),
+  country_name = coalesce(nullif($10::text, ''), country_name),
+  photo = coalesce(nullif($11::text, ''), photo)
 where venue.pk = $1
   and venue.vendor = (
     select pk from app.vendor
