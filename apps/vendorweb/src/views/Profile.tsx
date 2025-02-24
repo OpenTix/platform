@@ -181,12 +181,12 @@ export default function Profile() {
 								<Flex gap="3" direction={'column'}>
 									{vendorName === '' ? (
 										<Skeleton>
-											<Heading size="5">
+											<Heading size="4">
 												Vendor Name
 											</Heading>
 										</Skeleton>
 									) : (
-										<Heading size="5">{vendorName}</Heading>
+										<Heading size="4">{vendorName}</Heading>
 									)}
 									<Callout.Root variant="soft" color="gray">
 										<CalloutIconPointer
@@ -207,7 +207,7 @@ export default function Profile() {
 							</Card>
 							<Card>
 								<Flex gap="3" direction={'column'}>
-									<Heading size="5">Funding</Heading>
+									<Heading size="4">Funding</Heading>
 									<Flex align="center" gap="2">
 										<Text weight="light">Exchange</Text>
 										<Badge color="green">Easiest</Badge>
@@ -271,7 +271,7 @@ export default function Profile() {
 						<Flex gap="3" direction={'column'}>
 							<Card>
 								<Flex gap="3" direction={'column'}>
-									<Heading size="5">Balance</Heading>
+									<Heading size="4">Balance</Heading>
 									<Flex gap="3">
 										{usdBalance === undefined ? (
 											<Skeleton>
@@ -298,7 +298,7 @@ export default function Profile() {
 							</Card>
 							<Card>
 								<Flex gap="3" direction={'column'}>
-									<Heading size="5">Actions</Heading>
+									<Heading size="4">Actions</Heading>
 									<Dialog.Root>
 										<Dialog.Trigger>
 											<ActionsText>

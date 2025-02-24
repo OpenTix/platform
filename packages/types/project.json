@@ -7,8 +7,9 @@
 	"// targets": "to see all targets run: nx show project types --web",
 	"targets": {
 		"test": {
+			"executor": "nx:run-commands",
 			"options": {
-				"passWithNoTests": true
+				"command": "npx jest packages/types --passWithNoTests"
 			}
 		}
 	}

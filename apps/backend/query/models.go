@@ -10,19 +10,20 @@ import (
 )
 
 type AppEvent struct {
-	Pk            int32
-	ID            uuid.UUID
-	Vendor        int32
-	Venue         int32
-	Name          string
-	Type          string
-	EventDatetime pgtype.Timestamp
-	Description   string
-	Disclaimer    pgtype.Text
-	Basecost      float64
-	NumUnique     int32
-	NumGa         int32
-	Photo         pgtype.Text
+	Pk              int32
+	ID              uuid.UUID
+	Vendor          int32
+	Venue           int32
+	Name            string
+	Type            string
+	EventDatetime   pgtype.Timestamp
+	Description     string
+	Disclaimer      pgtype.Text
+	Basecost        float64
+	NumUnique       int32
+	NumGa           int32
+	Photo           pgtype.Text
+	TransactionHash pgtype.Text
 }
 
 type AppUser struct {

@@ -35,10 +35,9 @@ insert into app.event (
     disclaimer,
     basecost,
     num_unique,
-    num_ga,
-    photo
+    num_ga
 ) values (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) returning (
     name,
     type,
@@ -62,7 +61,6 @@ type CreateEventParams struct {
 	Basecost      float64
 	NumUnique     int32
 	NumGa         int32
-	Photo         pgtype.Text
 }
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (interface{}, error) {
@@ -77,7 +75,6 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (inter
 		arg.Basecost,
 		arg.NumUnique,
 		arg.NumGa,
-		arg.Photo,
 	)
 	var column_1 interface{}
 	err := row.Scan(&column_1)
@@ -317,6 +314,44 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 	return items, nil
 }
 
+const vendorAddTransactionHash = `-- name: VendorAddTransactionHash :one
+update app.event set transaction_hash = $3 
+where event.pk = $1 
+and event.vendor = (
+    select pk from app.vendor 
+    where wallet = $2
+) 
+returning pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash
+`
+
+type VendorAddTransactionHashParams struct {
+	Pk              int32
+	Wallet          string
+	TransactionHash pgtype.Text
+}
+
+func (q *Queries) VendorAddTransactionHash(ctx context.Context, arg VendorAddTransactionHashParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorAddTransactionHash, arg.Pk, arg.Wallet, arg.TransactionHash)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
 const vendorGetAllVenues = `-- name: VendorGetAllVenues :many
 select venue.pk, venue.id, venue.name from app.venue
 where venue.vendor = (
@@ -352,7 +387,7 @@ func (q *Queries) VendorGetAllVenues(ctx context.Context, wallet string) ([]Vend
 }
 
 const vendorGetEventByPk = `-- name: VendorGetEventByPk :one
-select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
 where event.pk = $1
 and event.vendor = (
     select pk from app.vendor
@@ -383,12 +418,13 @@ func (q *Queries) VendorGetEventByPk(ctx context.Context, arg VendorGetEventByPk
 		&i.NumUnique,
 		&i.NumGa,
 		&i.Photo,
+		&i.TransactionHash,
 	)
 	return i, err
 }
 
 const vendorGetEventByUuid = `-- name: VendorGetEventByUuid :one
-select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
 where event.id = $1
 and event.vendor = (
     select pk from app.vendor
@@ -419,12 +455,13 @@ func (q *Queries) VendorGetEventByUuid(ctx context.Context, arg VendorGetEventBy
 		&i.NumUnique,
 		&i.NumGa,
 		&i.Photo,
+		&i.TransactionHash,
 	)
 	return i, err
 }
 
 const vendorGetEventsPaginated = `-- name: VendorGetEventsPaginated :many
-select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo from app.event event
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
 where event.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
@@ -463,6 +500,7 @@ func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEve
 			&i.NumUnique,
 			&i.NumGa,
 			&i.Photo,
+			&i.TransactionHash,
 		); err != nil {
 			return nil, err
 		}
@@ -596,4 +634,134 @@ func (q *Queries) VendorGetVenuesPaginated(ctx context.Context, arg VendorGetVen
 		return nil, err
 	}
 	return items, nil
+}
+
+const vendorPatchEvent = `-- name: VendorPatchEvent :one
+update app.event
+set
+  name = coalesce(nullif($3::text, ''), name),
+  type = coalesce(nullif($4::text, ''), type),
+  event_datetime = coalesce($5::timestamp, event_datetime),
+  description = coalesce(nullif($6::text, ''), description),
+  disclaimer = coalesce(nullif($7::text, ''), disclaimer),
+  photo = coalesce(nullif($8::text, ''), photo),
+  transaction_hash = coalesce(nullif($9::text, ''), transaction_hash)
+where event.pk = $1
+  and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+  )
+returning pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash
+`
+
+type VendorPatchEventParams struct {
+	Pk      int32
+	Wallet  string
+	Column3 string
+	Column4 string
+	Column5 pgtype.Timestamp
+	Column6 string
+	Column7 string
+	Column8 string
+	Column9 string
+}
+
+func (q *Queries) VendorPatchEvent(ctx context.Context, arg VendorPatchEventParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorPatchEvent,
+		arg.Pk,
+		arg.Wallet,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+	)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
+const vendorPatchVenue = `-- name: VendorPatchVenue :one
+update app.venue
+set
+  name = coalesce(nullif($3::text, ''), name),
+  street_address = coalesce(nullif($4::text, ''), street_address),
+  zip = coalesce(nullif($5::text, ''), zip),
+  city = coalesce(nullif($6::text, ''), city),
+  state_code = coalesce(nullif($7::text, ''), state_code),
+  state_name = coalesce(nullif($8::text, ''), state_name),
+  country_code = coalesce(nullif($9::text, ''), country_code),
+  country_name = coalesce(nullif($10::text, ''), country_name),
+  photo = coalesce(nullif($11::text, ''), photo)
+where venue.pk = $1
+  and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+  )
+returning pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo
+`
+
+type VendorPatchVenueParams struct {
+	Pk       int32
+	Wallet   string
+	Column3  string
+	Column4  string
+	Column5  string
+	Column6  string
+	Column7  string
+	Column8  string
+	Column9  string
+	Column10 string
+	Column11 string
+}
+
+func (q *Queries) VendorPatchVenue(ctx context.Context, arg VendorPatchVenueParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorPatchVenue,
+		arg.Pk,
+		arg.Wallet,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+		arg.Column11,
+	)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
 }

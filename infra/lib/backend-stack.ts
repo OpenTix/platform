@@ -250,6 +250,13 @@ export class BackendStack extends cdk.Stack {
 				authorizer: auth
 			}
 		);
+		vendorVenuesResource.addMethod(
+			'PATCH',
+			new LambdaIntegration(VendorVenuesLambda),
+			{
+				authorizer: auth
+			}
+		);
 		addDynamicOptions(vendorVenuesResource);
 
 		const vendorEventsResource = vendorResource.addResource('events');
@@ -262,6 +269,13 @@ export class BackendStack extends cdk.Stack {
 		);
 		vendorEventsResource.addMethod(
 			'POST',
+			new LambdaIntegration(VendorEventsLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorEventsResource.addMethod(
+			'PATCH',
 			new LambdaIntegration(VendorEventsLambda),
 			{
 				authorizer: auth

@@ -54,7 +54,7 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 			event.Description === '' ||
 			event.Disclaimer === '' ||
 			event.Basecost === 0 ||
-			event.NumUnique + event.NumGa < 0
+			(event.NumUnique === 0 && event.NumGa === 0) ||
 		) {
 			setErrorMessage(
 				'You are either missing a field or have an invalid input'
