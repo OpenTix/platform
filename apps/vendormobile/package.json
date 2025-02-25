@@ -13,5 +13,6 @@
 		"expo": "*",
 		"react-native-svg": "*",
 		"react-native-web": "*"
-	}
+	},
+	"devDependencies": {}
 }

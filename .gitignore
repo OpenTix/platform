@@ -3,6 +3,12 @@
 .cdk.staging
 cdk.out
 
+# mobile output
+**/dist
+**/.expo
+**/ios
+**/android
+
 # compiled output
 dist
 tmp
