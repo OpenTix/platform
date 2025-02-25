@@ -239,7 +239,7 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
-select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -247,6 +247,7 @@ and ($3::text = '' or $3::text = event.name)
 and ($4::text = '' or $4::text = event.type)
 and ($5::double precision >= event.basecost)
 and ($6::timestamp <= event.event_datetime)
+order by event.event_datetime, event.name
 limit 5
 offset (($1::int - 1) * 5)
 `
@@ -271,6 +272,7 @@ type UserGetEventsPaginatedRow struct {
 	NumGa         int32
 	Photo         pgtype.Text
 	Zip           string
+	StreetAddress string
 }
 
 func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]UserGetEventsPaginatedRow, error) {
@@ -300,6 +302,7 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 			&i.NumGa,
 			&i.Photo,
 			&i.Zip,
+			&i.StreetAddress,
 		); err != nil {
 			return nil, err
 		}
