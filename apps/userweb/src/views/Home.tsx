@@ -50,9 +50,6 @@ export default function Home() {
 	const [type, setType] = useState<string>('');
 	const [ename, setEname] = useState<string>('');
 	const [cost, setCost] = useState<number>(1000000);
-	// const [eventDate, setEventDate] = useState<string>(
-	// 	new Date().toISOString()
-	// );
 	const [eventDate, setEventDate] = useState<string>(
 		new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
 			.toISOString()
@@ -132,7 +129,6 @@ export default function Home() {
 				break;
 			case 'Time':
 				setEventDate(value);
-				// setDisplayDate(value);
 				break;
 			case 'Zip':
 				setZip(value);
