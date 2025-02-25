@@ -8,7 +8,7 @@
 		"build": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "mkdir -p dist/apps/backend && for f in apps/backend/*.go; do go build -o dist/apps/backend/$(basename \"$f\" .go) \"$f\"; done"
+				"command": "sh -c 'mkdir -p dist/apps/backend; for f in apps/backend/*.go; do go build -o dist/apps/backend/$(basename \"$f\" .go) \"$f\"; done'"
 			}
 		},
 		"lint": {
