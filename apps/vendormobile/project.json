@@ -1,0 +1,9 @@
+{
+	"name": "vendormobile",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/vendormobile/src",
+	"projectType": "application",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project vendormobile --web",
+	"targets": {}
+}
