@@ -5,6 +5,7 @@ export type Event = {
 	Venue: number;
 	Name: string;
 	Type: string;
+	StreetAddress: string;
 	EventDatetime: string;
 	Description: string;
 	Disclaimer: string;
@@ -85,6 +86,7 @@ const EVENT_DEFAULT_DO_NOT_USE: Event = {
 	Venue: 0,
 	Name: '',
 	Type: '',
+	StreetAddress: '',
 	EventDatetime: '',
 	Description: '',
 	Disclaimer: '',
