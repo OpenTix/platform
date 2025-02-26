@@ -32,12 +32,11 @@ export type Venue = {
 	Photo: string;
 };
 
-export type UserEventResponse =
-	| Event
-	| {
-			StreetAddress: string;
-			ID: string;
-	  };
+export type UserEventResponse = Omit<
+	Event,
+	'Pk' | 'Vendor' | 'Venue' | 'TransactionHash'
+> &
+	Pick<Venue, 'StreetAddress' | 'Zip'>;
 
 export type EventCreationFormData = Pick<
 	Event,
