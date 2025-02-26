@@ -2,7 +2,7 @@ import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-export default function EventPage() {
+export default function EventDetailsPage() {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const id = useParams().id!;
 	const [eventdata, setEventData] = useState<Event[] | null>(null);
@@ -10,7 +10,7 @@ export default function EventPage() {
 	async function getEventDetails() {
 		const authToken = getAuthToken();
 		const resp = await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/user/events?ID=${id}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}?ID=${id}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }
