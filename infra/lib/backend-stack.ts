@@ -288,9 +288,6 @@ export class BackendStack extends cdk.Stack {
 		userEventsResource.addMethod(
 			'GET',
 			new LambdaIntegration(UserEventsLambda)
-			// {
-			// 	authorizer: auth
-			// }
 		);
 		addDynamicOptions(userEventsResource);
 
