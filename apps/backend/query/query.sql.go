@@ -238,8 +238,36 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 	return i, err
 }
 
+const userGetEventByUuid = `-- name: UserGetEventByUuid :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
+where event.id = $1
+limit 1
+`
+
+func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, userGetEventByUuid, id)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
-select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address, event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -273,6 +301,7 @@ type UserGetEventsPaginatedRow struct {
 	Photo         pgtype.Text
 	Zip           string
 	StreetAddress string
+	ID            uuid.UUID
 }
 
 func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsPaginatedParams) ([]UserGetEventsPaginatedRow, error) {
@@ -303,6 +332,7 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 			&i.Photo,
 			&i.Zip,
 			&i.StreetAddress,
+			&i.ID,
 		); err != nil {
 			return nil, err
 		}

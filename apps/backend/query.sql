@@ -178,7 +178,7 @@ insert into app.venue (
 );
 
 -- name: UserGetEventsPaginated :many
-select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address
+select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address, event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -189,3 +189,8 @@ and ($6::timestamp <= event.event_datetime)
 order by event.event_datetime, event.name
 limit 5
 offset (($1::int - 1) * 5);
+
+-- name: UserGetEventByUuid :one
+select * from app.event event
+where event.id = $1
+limit 1;
