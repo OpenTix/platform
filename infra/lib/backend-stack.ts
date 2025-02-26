@@ -287,10 +287,10 @@ export class BackendStack extends cdk.Stack {
 		const userEventsResource = userResource.addResource('events');
 		userEventsResource.addMethod(
 			'GET',
-			new LambdaIntegration(UserEventsLambda),
-			{
-				authorizer: auth
-			}
+			new LambdaIntegration(UserEventsLambda)
+			// {
+			// 	authorizer: auth
+			// }
 		);
 		addDynamicOptions(userEventsResource);
 
