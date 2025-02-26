@@ -62,7 +62,7 @@ export type VenueCreationFormData = Pick<
 
 export type EventEditableFields = Pick<
 	Event,
-	'Name' | 'Type' | 'Description' | 'Disclaimer'
+	'Type' | 'Description' | 'Disclaimer'
 >;
 
 export type VenueEditableFields = Pick<

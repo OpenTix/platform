@@ -5,6 +5,7 @@ import {
 } from '@platform/types';
 import { Select, TextField, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BaseModalForm } from '@platform/ui';
 
 type AddEventModalProps = {
@@ -12,6 +13,7 @@ type AddEventModalProps = {
 };
 
 export default function AddEventModal({ onClose }: AddEventModalProps) {
+	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
@@ -108,6 +110,7 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 		}
 		setIsSubmitting(false);
 		onClose();
+		navigate(0);
 	};
 
 	const getVenues = async () => {

@@ -2,6 +2,7 @@ import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { EventEditableFields } from '@platform/types';
 import { TextField, Text } from '@radix-ui/themes';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BaseModalForm } from '@platform/ui';
 
 type EditEventModalProps = {
@@ -10,11 +11,11 @@ type EditEventModalProps = {
 };
 
 export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
+	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [formData, setFormData] = useState<EventEditableFields>({
-		Name: '',
 		Type: '',
 		Description: '',
 		Disclaimer: ''
@@ -79,6 +80,7 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 		}
 		setIsSubmitting(false);
 		onClose();
+		navigate(0);
 	};
 
 	return (
@@ -92,17 +94,6 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 		>
 			<Text>Only fields edited here will be changed.</Text>
 
-			<label>
-				<Text as="div" size="2" mb="1" weight="bold">
-					Name
-				</Text>
-				<TextField.Root
-					name="Name"
-					placeholder="My Event"
-					value={formData.Name}
-					onChange={handleChange}
-				/>
-			</label>
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
 					Type
