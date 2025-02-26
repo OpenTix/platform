@@ -1,5 +1,5 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
-import { Event } from '@platform/types';
+import { UserEventResponse } from '@platform/types';
 import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
 import {
 	useQuery,
@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { Avatar, Toolbar } from 'radix-ui';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const queryClient = new QueryClient();
@@ -72,42 +73,46 @@ export default function Home() {
 		}
 
 		return (
-			data?.map((data: Event, idx: number) => {
+			data?.map((data: UserEventResponse, idx: number) => {
 				const keys = Object.keys(data);
 				let photo_uri = '';
 				return (
-					<Card key={idx} size={'3'} variant="classic">
-						<Flex direction="column">
-							{Object.values(data)?.map(
-								(value: string | number, idx: number) => {
-									if (keys[idx] === 'Photo') {
-										photo_uri = value as string;
-										return null;
+					<Card asChild key={idx} size={'3'} variant="classic">
+						<Link to={`/event/${data.ID}`}>
+							<Flex direction="column">
+								{Object.values(data)?.map(
+									(value: string | number, idx: number) => {
+										if (keys[idx] === 'Photo') {
+											photo_uri = value as string;
+											return null;
+										} else if (keys[idx] === 'ID') {
+											return null;
+										}
+										return (
+											<Text key={idx} color="violet">
+												{keys[idx]}:{' '}
+												{keys[idx] === 'EventDatetime'
+													? new Date(
+															value
+														).toLocaleString()
+													: keys[idx] === 'Basecost'
+														? `$${value}`
+														: value}
+											</Text>
+										);
 									}
-									return (
-										<Text color="violet">
-											{keys[idx]}:{' '}
-											{keys[idx] === 'EventDatetime'
-												? new Date(
-														value
-													).toLocaleString()
-												: keys[idx] === 'Basecost'
-													? `$${value}`
-													: value}
-										</Text>
-									);
-								}
-							)}
-							<Avatar.Root>
-								<Avatar.Image
-									src={photo_uri}
-									alt="Image of venue"
-								/>
-								{/* <Avatar.Fallback delayMs={600}>
+								)}
+								<Avatar.Root>
+									<Avatar.Image
+										src={photo_uri}
+										alt="Image of venue"
+									/>
+									{/* <Avatar.Fallback delayMs={600}>
                             No Image
                         </Avatar.Fallback> */}
-							</Avatar.Root>
-						</Flex>
+								</Avatar.Root>
+							</Flex>
+						</Link>
 					</Card>
 				);
 			}) ?? (

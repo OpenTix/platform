@@ -5,7 +5,6 @@ export type Event = {
 	Venue: number;
 	Name: string;
 	Type: string;
-	StreetAddress: string;
 	EventDatetime: string;
 	Description: string;
 	Disclaimer: string;
@@ -32,6 +31,13 @@ export type Venue = {
 	NumGa: number;
 	Photo: string;
 };
+
+export type UserEventResponse =
+	| Event
+	| {
+			StreetAddress: string;
+			ID: string;
+	  };
 
 export type EventCreationFormData = Pick<
 	Event,
@@ -86,7 +92,6 @@ const EVENT_DEFAULT_DO_NOT_USE: Event = {
 	Venue: 0,
 	Name: '',
 	Type: '',
-	StreetAddress: '',
 	EventDatetime: '',
 	Description: '',
 	Disclaimer: '',
