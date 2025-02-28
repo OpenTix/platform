@@ -14,7 +14,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
-	const [formData, setFormData] = useState<VenueCreationFormData>({
+	const [formData, setFormData] = useState({
 		Name: '',
 		StreetAddress: '',
 		Zip: '',
@@ -23,31 +23,33 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 		StateName: '',
 		CountryCode: '',
 		CountryName: '',
-		NumUnique: 0,
-		NumGa: 0
+		NumUnique: '',
+		NumGa: ''
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		setFormData({
 			...formData,
-			[name]: type === 'number' ? parseInt(value, 10) || 0 : value
+			[name]: value
 		});
 	};
 
-	const validate = () => {
+	const validate = (venue: VenueCreationFormData) => {
 		if (
-			formData.Name === '' ||
-			formData.StreetAddress === '' ||
-			!/^\d{5}$/.test(formData.Zip.toString()) ||
-			formData.City === '' ||
-			!/^[A-Z]{2}-[A-Z]{2}$/.test(formData.StateCode) ||
-			formData.StateCode === '' ||
-			!/^[A-Z]{2}$/.test(formData.CountryCode) ||
-			formData.CountryName === '' ||
-			(formData.NumUnique === 0 && formData.NumGa === 0) ||
-			formData.NumUnique < 0 ||
-			formData.NumGa < 0
+			venue.Name === '' ||
+			venue.StreetAddress === '' ||
+			!/^\d{5}$/.test(venue.Zip.toString()) ||
+			venue.City === '' ||
+			!/^[A-Z]{2}-[A-Z]{2}$/.test(venue.StateCode) ||
+			venue.StateCode === '' ||
+			!/^[A-Z]{2}$/.test(venue.CountryCode) ||
+			venue.CountryName === '' ||
+			Number.isNaN(venue.NumGa) ||
+			Number.isNaN(venue.NumUnique) ||
+			(venue.NumUnique === 0 && venue.NumGa === 0) ||
+			venue.NumUnique < 0 ||
+			venue.NumGa < 0
 		) {
 			setErrorMessage(
 				'You are either missing a field or have an invalid input'
@@ -58,10 +60,24 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 	};
 
 	const handleSubmit = async () => {
-		if (!validate()) {
+		const obj: VenueCreationFormData = {
+			Name: formData.Name,
+			StreetAddress: formData.StreetAddress,
+			Zip: formData.Zip,
+			City: formData.City,
+			StateCode: formData.StateCode,
+			StateName: formData.StateName,
+			CountryCode: formData.CountryCode,
+			CountryName: formData.CountryName,
+			NumUnique: parseInt(formData.NumUnique),
+			NumGa: parseInt(formData.NumGa)
+		};
+
+		if (!validate(obj)) {
 			setShouldShowError(true);
 			return;
 		}
+
 		setShouldShowError(false);
 		setIsSubmitting(true);
 		try {
@@ -74,7 +90,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 						'Content-Type': 'application/json',
 						Authorization: `Bearer ${authToken}`
 					},
-					body: JSON.stringify(formData)
+					body: JSON.stringify(obj)
 				}
 			);
 			const data = await res.json();
@@ -204,7 +220,6 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					placeholder="Unique Seats Quantity"
 					value={formData.NumUnique}
 					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 			<label>
@@ -216,7 +231,6 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					placeholder="General Admission Quantity"
 					value={formData.NumGa}
 					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 		</BaseModalForm>

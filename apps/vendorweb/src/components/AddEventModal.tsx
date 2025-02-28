@@ -20,23 +20,23 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 	const [venueList, setVenueList] = useState<
 		AllVenuesListSimplifiedResponse[]
 	>([]);
-	const [formData, setFormData] = useState<EventCreationFormData>({
+	const [formData, setFormData] = useState({
 		Venue: 0,
 		Name: '',
 		Type: '',
 		EventDatetime: '',
 		Description: '',
 		Disclaimer: '',
-		Basecost: 0,
-		NumUnique: 0,
-		NumGa: 0
+		Basecost: '',
+		NumUnique: '',
+		NumGa: ''
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		setFormData({
 			...formData,
-			[name]: type === 'number' ? parseInt(value, 10) || 0 : value
+			[name]: value
 		});
 	};
 
@@ -55,6 +55,9 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 			!isIsoString(event.EventDatetime) ||
 			event.Description === '' ||
 			event.Disclaimer === '' ||
+			Number.isNaN(event.Basecost) ||
+			Number.isNaN(event.NumUnique) ||
+			Number.isNaN(event.NumGa) ||
 			event.Basecost === 0 ||
 			(event.NumUnique === 0 && event.NumGa === 0) ||
 			event.NumUnique < 0 ||
@@ -69,11 +72,24 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 	};
 
 	const handleSubmit = async () => {
+		if (formData.NumGa === '') {
+			formData.NumGa = '0';
+		}
+		if (formData.NumUnique === '') {
+			formData.NumUnique = '0';
+		}
 		// Convert local string to ISO String
-		const eventToSubmit = { ...formData };
-		eventToSubmit.EventDatetime = new Date(
-			formData.EventDatetime
-		).toISOString();
+		const eventToSubmit: EventCreationFormData = {
+			Venue: formData.Venue,
+			Name: formData.Name,
+			Type: formData.Type,
+			EventDatetime: new Date(formData.EventDatetime).toISOString(),
+			Description: formData.Description,
+			Disclaimer: formData.Disclaimer,
+			Basecost: parseFloat(formData.Basecost),
+			NumUnique: parseInt(formData.NumUnique),
+			NumGa: parseInt(formData.NumGa)
+		};
 
 		if (!validate(eventToSubmit)) {
 			setShouldShowError(true);
@@ -237,7 +253,6 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					placeholder="100"
 					value={formData.Basecost}
 					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 			<label>
@@ -249,7 +264,6 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					placeholder="100"
 					value={formData.NumUnique}
 					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 			<label>
@@ -261,7 +275,6 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 					placeholder="100"
 					value={formData.NumGa}
 					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 		</BaseModalForm>

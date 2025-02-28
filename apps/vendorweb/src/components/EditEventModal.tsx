@@ -22,10 +22,10 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		setFormData({
 			...formData,
-			[name]: type === 'number' ? parseInt(value, 10) || 0 : value
+			[name]: value
 		});
 	};
 

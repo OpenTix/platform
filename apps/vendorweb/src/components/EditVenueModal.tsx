@@ -27,22 +27,49 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		setFormData({
 			...formData,
-			[name]: type === 'number' ? parseInt(value, 10) || 0 : value
+			[name]: value
 		});
 	};
 
-	const convertToBody = (event: VenueEditableFields): object => {
+	const convertToBody = (venue: VenueEditableFields): object => {
 		let returnObject = {};
-		for (const key in event) {
-			const value = event[key as keyof VenueEditableFields];
+		for (const key in venue) {
+			const value = venue[key as keyof VenueEditableFields];
 			if (value !== '') {
 				returnObject = { ...returnObject, [key]: value };
 			}
 		}
 		return returnObject;
+	};
+
+	const validate = (venue: { [key: string]: any }) => {
+		Object.keys(venue).forEach((key) => {
+			if (key === 'Zip' && !/^\d{5}$/.test(venue[key].toString())) {
+				setErrorMessage('Zip code must be 5 digits');
+				setShouldShowError(true);
+				return false;
+			}
+			if (
+				key === 'StateCode' &&
+				!/^[A-Z]{2}-[A-Z]{2}$/.test(venue[key].toString())
+			) {
+				setErrorMessage('State code must be in the format XX-XX');
+				setShouldShowError(true);
+				return false;
+			}
+			if (
+				key === 'CountryCode' &&
+				!/^[A-Z]{2}$/.test(venue[key].toString())
+			) {
+				setErrorMessage('Country code must be 2 letters');
+				setShouldShowError(true);
+				return false;
+			}
+		});
+		return true;
 	};
 
 	const handleSubmit = async () => {
@@ -52,6 +79,10 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 			setShouldShowError(true);
 			return;
 		}
+		if (!validate(body)) {
+			return;
+		}
+
 		body = { ...body, Pk: pk };
 		console.log(body);
 		setShouldShowError(false);
