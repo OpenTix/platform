@@ -67,6 +67,13 @@ export default function Home() {
 		}
 	}, [showModal, wasAddSuccessful]);
 
+	useEffect(() => {
+		if (wasAddSuccessful) {
+			queryClient.invalidateQueries({ queryKey: ['events'] });
+			queryClient.invalidateQueries({ queryKey: ['venues'] });
+		}
+	}, [wasAddSuccessful]);
+
 	return (
 		<Container size={'4'}>
 			{wasAddSuccessful && (
