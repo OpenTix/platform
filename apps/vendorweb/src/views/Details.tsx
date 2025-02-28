@@ -4,6 +4,7 @@ import { Box, Card, DataList, Flex, Heading, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { SuccessAlert } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
@@ -44,6 +45,8 @@ export default function Details({ typestring }: DetailsProps) {
 		useState<boolean>(false);
 	const [shouldShowMintModal, setShouldShowMintModal] =
 		useState<boolean>(false);
+	const [wasUpdateSuccessful, setWasUpdateSuccessful] =
+		useState<boolean>(false);
 
 	const validateUUID = () => {
 		if (
@@ -81,6 +84,12 @@ export default function Details({ typestring }: DetailsProps) {
 	};
 
 	useEffect(() => {
+		if (!shouldShowEditModal && validateUUID()) {
+			fetchData();
+		}
+	}, [shouldShowEditModal]);
+
+	useEffect(() => {
 		if (validateUUID()) {
 			fetchData();
 		}
@@ -94,6 +103,9 @@ export default function Details({ typestring }: DetailsProps) {
 					Details - {data?.Name}
 				</Heading>
 			</Box>
+			{wasUpdateSuccessful && (
+				<SuccessAlert message="Updated Successfully" />
+			)}
 			<Flex gap="5" py={'5'}>
 				<LeftColumn>
 					<Box width="100%">
@@ -187,11 +199,13 @@ export default function Details({ typestring }: DetailsProps) {
 					<EditEventModal
 						pk={data?.Pk ?? 0}
 						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				) : (
 					<EditVenueModal
 						pk={data?.Pk ?? 0}
 						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				))}
 

@@ -14,7 +14,8 @@ import {
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { SuccessAlert } from '@platform/ui';
 import AddEventModal from '../components/AddEventModal';
 import AddVenueModal from '../components/AddVenueModal';
 import VendorTable from '../components/VendorTable';
@@ -27,11 +28,11 @@ export default function Home() {
 	const [eventDisplay, setEventDisplay] = useState(eventData);
 	const [venueDisplay, setVenueDisplay] = useState(venueData);
 	const [activeTab, setActiveTab] = useState<'events' | 'venues'>('events');
-
 	const [showModal, setShowModal] = useState(false);
 	const [modalType, setModalType] = useState<'events' | 'venues' | null>(
 		null
 	);
+	const [wasAddSuccessful, setWasAddSuccessful] = useState<boolean>(false);
 
 	const addRow = () => {
 		setModalType(activeTab);
@@ -60,8 +61,19 @@ export default function Home() {
 		setActiveTab(e as 'events' | 'venues');
 	};
 
+	useEffect(() => {
+		if (showModal && wasAddSuccessful) {
+			setWasAddSuccessful(false);
+		}
+	}, [showModal, wasAddSuccessful]);
+
 	return (
 		<Container size={'4'}>
+			{wasAddSuccessful && (
+				<Box pt="4">
+					<SuccessAlert message="Created Successfully" />
+				</Box>
+			)}
 			<Box style={{ padding: '16px 16px' }}>
 				<Tabs.Root defaultValue={activeTab} onValueChange={updateTab}>
 					<Flex justify="between">
@@ -103,9 +115,15 @@ export default function Home() {
 				{showModal &&
 					modalType &&
 					(modalType === 'events' ? (
-						<AddEventModal onClose={() => setShowModal(false)} />
+						<AddEventModal
+							onClose={() => setShowModal(false)}
+							onSuccess={() => setWasAddSuccessful(true)}
+						/>
 					) : (
-						<AddVenueModal onClose={() => setShowModal(false)} />
+						<AddVenueModal
+							onClose={() => setShowModal(false)}
+							onSuccess={() => setWasAddSuccessful(true)}
+						/>
 					))}
 			</Box>
 		</Container>

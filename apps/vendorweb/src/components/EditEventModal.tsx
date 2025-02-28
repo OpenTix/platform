@@ -7,10 +7,15 @@ import { BaseModalForm } from '@platform/ui';
 
 type EditEventModalProps = {
 	onClose: () => void;
+	onSuccess: () => void;
 	pk: number;
 };
 
-export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
+export default function EditEventModal({
+	pk,
+	onClose,
+	onSuccess
+}: EditEventModalProps) {
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
@@ -79,8 +84,8 @@ export default function EditEventModal({ pk, onClose }: EditEventModalProps) {
 			return;
 		}
 		setIsSubmitting(false);
+		onSuccess();
 		onClose();
-		navigate(0);
 	};
 
 	return (

@@ -7,9 +7,13 @@ import { BaseModalForm } from '@platform/ui';
 
 type AddVenueModalProps = {
 	onClose: () => void;
+	onSuccess: () => void;
 };
 
-export default function AddVenueModal({ onClose }: AddVenueModalProps) {
+export default function AddVenueModal({
+	onClose,
+	onSuccess
+}: AddVenueModalProps) {
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
@@ -108,8 +112,8 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 			return;
 		}
 		setIsSubmitting(false);
+		onSuccess();
 		onClose();
-		navigate(0);
 	};
 
 	return (

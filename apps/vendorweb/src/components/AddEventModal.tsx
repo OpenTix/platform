@@ -10,9 +10,13 @@ import { BaseModalForm } from '@platform/ui';
 
 type AddEventModalProps = {
 	onClose: () => void;
+	onSuccess: () => void;
 };
 
-export default function AddEventModal({ onClose }: AddEventModalProps) {
+export default function AddEventModal({
+	onClose,
+	onSuccess
+}: AddEventModalProps) {
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
@@ -125,8 +129,8 @@ export default function AddEventModal({ onClose }: AddEventModalProps) {
 			return;
 		}
 		setIsSubmitting(false);
+		onSuccess();
 		onClose();
-		navigate(0);
 	};
 
 	const getVenues = async () => {

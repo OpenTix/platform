@@ -7,10 +7,15 @@ import { BaseModalForm } from '@platform/ui';
 
 type EditVenueModalProps = {
 	onClose: () => void;
+	onSuccess: () => void;
 	pk: number;
 };
 
-export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
+export default function EditVenueModal({
+	pk,
+	onClose,
+	onSuccess
+}: EditVenueModalProps) {
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
@@ -46,7 +51,7 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 	};
 
 	const validate = (venue: { [key: string]: any }) => {
-		Object.keys(venue).forEach((key) => {
+		for (const key of Object.keys(venue)) {
 			if (key === 'Zip' && !/^\d{5}$/.test(venue[key].toString())) {
 				setErrorMessage('Zip code must be 5 digits');
 				setShouldShowError(true);
@@ -68,7 +73,7 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 				setShouldShowError(true);
 				return false;
 			}
-		});
+		}
 		return true;
 	};
 
@@ -84,7 +89,6 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 		}
 
 		body = { ...body, Pk: pk };
-		console.log(body);
 		setShouldShowError(false);
 		setIsSubmitting(true);
 		try {
@@ -115,8 +119,8 @@ export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 			return;
 		}
 		setIsSubmitting(false);
+		onSuccess();
 		onClose();
-		navigate(0);
 	};
 
 	return (
