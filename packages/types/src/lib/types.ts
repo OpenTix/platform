@@ -55,7 +55,7 @@ export type UserEventDetailsResponse = Omit<
 		Venuename: string;
 		Venuephoto: string;
 		Eventname: string;
-		EventPhoto: string;
+		Eventphoto: string;
 	};
 
 export type EventCreationFormData = Pick<

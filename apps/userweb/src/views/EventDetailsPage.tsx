@@ -11,7 +11,7 @@ export default function EventDetailsPage() {
 	async function getEventDetails() {
 		const authToken = getAuthToken();
 		const resp = await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}?ID=${id}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}/user/events?ID=${id}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }
