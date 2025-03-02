@@ -23,6 +23,7 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
+order by venue.name
 limit 5
 offset (($1::int - 1) * 5);
 
@@ -49,7 +50,8 @@ select venue.pk, venue.id, venue.name from app.venue
 where venue.vendor = (
     select pk from app.vendor
     where wallet = $1
-);
+)
+order by venue.name;
 
 -- name: VendorGetEventsPaginated :many
 select * from app.event event
@@ -58,6 +60,7 @@ where event.vendor = (
     where vendor.wallet = $2
 )
 and ($3::int = -1 or $3::int = event.venue)
+order by event.event_datetime, event.name
 limit 5
 offset (($1::int - 1) * 5);
 
@@ -178,7 +181,9 @@ insert into app.venue (
 );
 
 -- name: UserGetEventsPaginated :many
-select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address, event.id
+select event.name, event.type, event.event_datetime,
+venue.state_code, venue.country_code, event.photo,
+event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -191,6 +196,14 @@ limit 5
 offset (($1::int - 1) * 5);
 
 -- name: UserGetEventByUuid :one
-select * from app.event event
+select event.name, event.type, event.event_datetime,
+event.id, event.description, event.disclaimer,
+event.basecost, event.num_unique, event.num_ga,
+event.photo, venue.name, venue.zip, venue.city,
+venue.state_code, venue.country_code, venue.country_name,
+venue.photo, vendor.name
+from app.event event, app.venue venue, app.vendor vendor
 where event.id = $1
+and event.venue = venue.pk
+and event.vendor = vendor.pk
 limit 1;

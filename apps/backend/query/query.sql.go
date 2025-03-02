@@ -239,35 +239,70 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventByUuid = `-- name: UserGetEventByUuid :one
-select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
+select event.name, event.type, event.event_datetime,
+event.id, event.description, event.disclaimer,
+event.basecost, event.num_unique, event.num_ga,
+event.photo, venue.name, venue.zip, venue.city,
+venue.state_code, venue.country_code, venue.country_name,
+venue.photo, vendor.name
+from app.event event, app.venue venue, app.vendor vendor
 where event.id = $1
+and event.venue = venue.pk
+and event.vendor = vendor.pk
 limit 1
 `
 
-func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (AppEvent, error) {
+type UserGetEventByUuidRow struct {
+	Name          string
+	Type          string
+	EventDatetime pgtype.Timestamp
+	ID            uuid.UUID
+	Description   string
+	Disclaimer    pgtype.Text
+	Basecost      float64
+	NumUnique     int32
+	NumGa         int32
+	Photo         pgtype.Text
+	Name_2        string
+	Zip           string
+	City          string
+	StateCode     string
+	CountryCode   string
+	CountryName   string
+	Photo_2       pgtype.Text
+	Name_3        string
+}
+
+func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (UserGetEventByUuidRow, error) {
 	row := q.db.QueryRow(ctx, userGetEventByUuid, id)
-	var i AppEvent
+	var i UserGetEventByUuidRow
 	err := row.Scan(
-		&i.Pk,
-		&i.ID,
-		&i.Vendor,
-		&i.Venue,
 		&i.Name,
 		&i.Type,
 		&i.EventDatetime,
+		&i.ID,
 		&i.Description,
 		&i.Disclaimer,
 		&i.Basecost,
 		&i.NumUnique,
 		&i.NumGa,
 		&i.Photo,
-		&i.TransactionHash,
+		&i.Name_2,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.Photo_2,
+		&i.Name_3,
 	)
 	return i, err
 }
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
-select event.name, event.type, event.basecost, event.event_datetime, event.description, event.disclaimer, event.num_unique, event.num_ga, event.photo, venue.zip, venue.street_address, event.id
+select event.name, event.type, event.event_datetime,
+venue.state_code, venue.country_code, event.photo,
+event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
 and ($2::text = '' or $2::text = venue.zip)
@@ -292,15 +327,10 @@ type UserGetEventsPaginatedParams struct {
 type UserGetEventsPaginatedRow struct {
 	Name          string
 	Type          string
-	Basecost      float64
 	EventDatetime pgtype.Timestamp
-	Description   string
-	Disclaimer    pgtype.Text
-	NumUnique     int32
-	NumGa         int32
+	StateCode     string
+	CountryCode   string
 	Photo         pgtype.Text
-	Zip           string
-	StreetAddress string
 	ID            uuid.UUID
 }
 
@@ -323,15 +353,10 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 		if err := rows.Scan(
 			&i.Name,
 			&i.Type,
-			&i.Basecost,
 			&i.EventDatetime,
-			&i.Description,
-			&i.Disclaimer,
-			&i.NumUnique,
-			&i.NumGa,
+			&i.StateCode,
+			&i.CountryCode,
 			&i.Photo,
-			&i.Zip,
-			&i.StreetAddress,
 			&i.ID,
 		); err != nil {
 			return nil, err
@@ -388,6 +413,7 @@ where venue.vendor = (
     select pk from app.vendor
     where wallet = $1
 )
+order by venue.name
 `
 
 type VendorGetAllVenuesRow struct {
@@ -497,6 +523,7 @@ where event.vendor = (
     where vendor.wallet = $2
 )
 and ($3::int = -1 or $3::int = event.venue)
+order by event.event_datetime, event.name
 limit 5
 offset (($1::int - 1) * 5)
 `
@@ -622,6 +649,7 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
+order by venue.name
 limit 5
 offset (($1::int - 1) * 5)
 `
