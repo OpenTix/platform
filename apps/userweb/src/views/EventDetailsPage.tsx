@@ -20,6 +20,7 @@ export default function EventDetailsPage() {
 			return null;
 		}
 		const json = await resp.json();
+		console.log(json);
 		setEventData(json);
 	}
 

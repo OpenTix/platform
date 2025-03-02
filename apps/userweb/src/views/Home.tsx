@@ -75,6 +75,7 @@ export default function Home() {
 		return (
 			data?.map((data: UserEventResponse, idx: number) => {
 				const keys = Object.keys(data);
+				console.log(keys);
 				let photo_uri = '';
 				return (
 					<Card asChild key={idx} size={'3'} variant="classic">
