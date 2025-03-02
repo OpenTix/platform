@@ -239,12 +239,12 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventByUuid = `-- name: UserGetEventByUuid :one
-select event.name as Eventname, event.type, event.event_datetime,
+select event.name Eventname, event.type, event.event_datetime,
 event.id, event.description, event.disclaimer,
 event.basecost, event.num_unique, event.num_ga,
-event.photo as Eventphoto, venue.name as Venuename, venue.zip, venue.city,
+event.photo Eventphoto, venue.name Venuename, venue.street_address, venue.zip, venue.city,
 venue.state_code, venue.country_code, venue.country_name,
-venue.photo as Venuephoto, vendor.name as Vendorname
+venue.photo Venuephoto, vendor.name Vendorname
 from app.event event, app.venue venue, app.vendor vendor
 where event.id = $1
 and event.venue = venue.pk
@@ -264,6 +264,7 @@ type UserGetEventByUuidRow struct {
 	NumGa         int32
 	Eventphoto    pgtype.Text
 	Venuename     string
+	StreetAddress string
 	Zip           string
 	City          string
 	StateCode     string
@@ -288,6 +289,7 @@ func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (UserGet
 		&i.NumGa,
 		&i.Eventphoto,
 		&i.Venuename,
+		&i.StreetAddress,
 		&i.Zip,
 		&i.City,
 		&i.StateCode,
