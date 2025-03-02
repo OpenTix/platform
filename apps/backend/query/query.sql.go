@@ -239,12 +239,12 @@ func (q *Queries) UpdateVendorName(ctx context.Context, arg UpdateVendorNamePara
 }
 
 const userGetEventByUuid = `-- name: UserGetEventByUuid :one
-select event.name, event.type, event.event_datetime,
+select event.name as Name, event.type, event.event_datetime,
 event.id, event.description, event.disclaimer,
 event.basecost, event.num_unique, event.num_ga,
-event.photo, venue.name, venue.zip, venue.city,
+event.photo, venue.name as VenueName, venue.zip, venue.city,
 venue.state_code, venue.country_code, venue.country_name,
-venue.photo, vendor.name
+venue.photo, vendor.name as VendorName
 from app.event event, app.venue venue, app.vendor vendor
 where event.id = $1
 and event.venue = venue.pk
@@ -263,14 +263,14 @@ type UserGetEventByUuidRow struct {
 	NumUnique     int32
 	NumGa         int32
 	Photo         pgtype.Text
-	Name_2        string
+	Venuename     string
 	Zip           string
 	City          string
 	StateCode     string
 	CountryCode   string
 	CountryName   string
 	Photo_2       pgtype.Text
-	Name_3        string
+	Vendorname    string
 }
 
 func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (UserGetEventByUuidRow, error) {
@@ -287,14 +287,14 @@ func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (UserGet
 		&i.NumUnique,
 		&i.NumGa,
 		&i.Photo,
-		&i.Name_2,
+		&i.Venuename,
 		&i.Zip,
 		&i.City,
 		&i.StateCode,
 		&i.CountryCode,
 		&i.CountryName,
 		&i.Photo_2,
-		&i.Name_3,
+		&i.Vendorname,
 	)
 	return i, err
 }
