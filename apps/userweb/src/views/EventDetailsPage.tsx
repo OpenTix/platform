@@ -1,4 +1,5 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { UserEventDetailsResponse } from '@platform/types';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 

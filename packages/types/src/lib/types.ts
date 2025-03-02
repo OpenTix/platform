@@ -32,11 +32,31 @@ export type Venue = {
 	Photo: string;
 };
 
-export type UserEventResponse = Omit<
+export type UserEventResponse = Pick<
 	Event,
-	'Pk' | 'Vendor' | 'Venue' | 'TransactionHash'
+	'Name' | 'Type' | 'EventDatetime' | 'Photo' | 'ID'
 > &
-	Pick<Venue, 'StreetAddress' | 'Zip'>;
+	Pick<Venue, 'StateCode' | 'CountryCode'>;
+
+export type UserEventDetailsResponse = Omit<
+	Event,
+	'Pk' | 'Vendor' | 'Venue' | 'TransactionHash' | 'Name' | 'Photo'
+> &
+	Pick<
+		Venue,
+		| 'StreetAddress'
+		| 'Zip'
+		| 'City'
+		| 'CountryCode'
+		| 'StateCode'
+		| 'CountryName'
+	> & {
+		Vendorname: string;
+		Venuename: string;
+		Venuephoto: string;
+		Eventname: string;
+		EventPhoto: string;
+	};
 
 export type EventCreationFormData = Pick<
 	Event,
