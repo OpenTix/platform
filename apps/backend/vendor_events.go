@@ -223,9 +223,9 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		Time:        "",
 		Description: "",
 		Disclaimer:  "",
-		Basecost:    0,
-		NumUnique:   0,
-		NumGa:       0,
+		Basecost:    -1,
+		NumUnique:   -1,
+		NumGa:       -1,
 	}
 
 	err = json.Unmarshal([]byte(request.Body), &params)
@@ -233,7 +233,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(404, "Could not get Body Params", request.Headers, err)
 	}
 
-	if params.Venue == -1 || params.Name == "" || params.Type == "" || params.Time == "" || params.Description == "" || params.Disclaimer == "" || params.Basecost == 0 || params.NumUnique == 0 || params.NumGa == 0 {
+	if params.Venue == -1 || params.Name == "" || params.Type == "" || params.Time == "" || params.Description == "" || params.Disclaimer == "" || params.Basecost == -1 || params.NumUnique == -1 || params.NumGa == -1 {
 		return shared.CreateErrorResponseAndLogError(404, "One of the required fields is empty in body request", request.Headers, fmt.Errorf("params = %v\n", params))
 	}
 
