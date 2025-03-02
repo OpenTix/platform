@@ -196,12 +196,12 @@ limit 5
 offset (($1::int - 1) * 5);
 
 -- name: UserGetEventByUuid :one
-select event.name as Name, event.type, event.event_datetime,
+select event.name as Eventname, event.type, event.event_datetime,
 event.id, event.description, event.disclaimer,
 event.basecost, event.num_unique, event.num_ga,
-event.photo, venue.name as VenueName, venue.zip, venue.city,
+event.photo as Eventphoto, venue.name as Venuename, venue.zip, venue.city,
 venue.state_code, venue.country_code, venue.country_name,
-venue.photo, vendor.name as VendorName
+venue.photo as Venuephoto, vendor.name as Vendorname
 from app.event event, app.venue venue, app.vendor vendor
 where event.id = $1
 and event.venue = venue.pk
