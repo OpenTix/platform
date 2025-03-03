@@ -70,7 +70,7 @@ export class BackendStack extends cdk.Stack {
 
 		// Roles
 		const LambdaLogRole = new Role(this, 'LambdaLogRole', {
-			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
+			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
 		});
 		LambdaLogRole.addToPolicy(
 			new PolicyStatement({
@@ -85,7 +85,7 @@ export class BackendStack extends cdk.Stack {
 		);
 
 		const LambdaDBAccessRole = new Role(this, 'LambdaDBAccessRole', {
-			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
+			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
 		});
 		LambdaDBAccessRole.addToPolicy(
 			new PolicyStatement({
@@ -107,7 +107,7 @@ export class BackendStack extends cdk.Stack {
 		);
 
 		const PhotoBucketRole = new Role(this, 'PhotoBucketRole', {
-			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
+			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
 		});
 		PhotoBucketRole.addToPolicy(
 			new PolicyStatement({
