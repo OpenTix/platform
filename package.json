@@ -31,7 +31,7 @@
 		"@react-native-community/cli": "15.0.1",
 		"@react-native-community/cli-platform-ios": "15.0.1",
 		"@tanstack/react-query": "^5.66.9",
-		"aws-cdk-lib": "^2.173.2",
+		"aws-cdk-lib": "^2.177.0",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
 		"react-native": "0.76.7",
@@ -110,6 +110,8 @@
 		"webpack-cli": "^5.1.4"
 	},
 	"overrides": {
-		"eciesjs": "0.4.14"
+		"eciesjs": "0.4.14",
+		"koa": ">=2.15.4",
+		"cross-spawn": ">=6.0.6"
 	}
 }
