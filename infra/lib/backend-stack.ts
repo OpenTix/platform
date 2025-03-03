@@ -288,6 +288,31 @@ export class BackendStack extends cdk.Stack {
 		);
 		addDynamicOptions(vendorVenuesResource);
 
+		const vendorVenuesPhotosResource =
+			vendorVenuesResource.addResource('photos');
+		vendorVenuesPhotosResource.addMethod(
+			'GET',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorVenuesPhotosResource.addMethod(
+			'POST',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorVenuesPhotosResource.addMethod(
+			'DELETE',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorVenuesPhotosResource);
+
 		const vendorEventsResource = vendorResource.addResource('events');
 		vendorEventsResource.addMethod(
 			'GET',
@@ -312,29 +337,30 @@ export class BackendStack extends cdk.Stack {
 		);
 		addDynamicOptions(vendorEventsResource);
 
-		const vendorPhotosResource = vendorResource.addResource('photos');
-		vendorPhotosResource.addMethod(
+		const vendorEventsPhotosResource =
+			vendorEventsResource.addResource('photos');
+		vendorEventsPhotosResource.addMethod(
 			'GET',
 			new LambdaIntegration(VendorPhotosLambda),
 			{
 				authorizer: auth
 			}
 		);
-		vendorPhotosResource.addMethod(
+		vendorEventsPhotosResource.addMethod(
 			'POST',
 			new LambdaIntegration(VendorPhotosLambda),
 			{
 				authorizer: auth
 			}
 		);
-		vendorPhotosResource.addMethod(
+		vendorEventsPhotosResource.addMethod(
 			'DELETE',
 			new LambdaIntegration(VendorPhotosLambda),
 			{
 				authorizer: auth
 			}
 		);
-		addDynamicOptions(vendorPhotosResource);
+		addDynamicOptions(vendorEventsPhotosResource);
 
 		const userResource = api.root.addResource('user');
 		const userEventsResource = userResource.addResource('events');

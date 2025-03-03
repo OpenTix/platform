@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -34,7 +35,6 @@ func init() {
 }
 
 type PostVendorPhotoRequest struct {
-	ImageType string `json:"ImageType"`
 	RecordID  string    `json:"RecordID"`
 	Filename string    `json:"Filename"`
 }
@@ -61,11 +61,20 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Validate the request body.
-	if req.ImageType == "" || req.RecordID == "" || req.Filename == "" {
+	if req.RecordID == "" || req.Filename == "" {
 		return shared.CreateErrorResponse(400, "Missing required fields", request.Headers)
 	}
 
-	if req.ImageType != "event" && req.ImageType != "venue" {
+	var ImageType string
+	if strings.Contains(request.Path, "events") {
+		ImageType = "event"
+	} else if strings.Contains(request.Path, "venues") {
+		ImageType = "venue"
+	} else {
+		return shared.CreateErrorResponse(400, "Invalid path", request.Headers)
+	}
+
+	if ImageType != "event" && ImageType != "venue" {
 		return shared.CreateErrorResponse(400, "Invalid ImageType. event or venue needed.", request.Headers)
 	}
 
@@ -97,7 +106,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Check if the record exists
 	// Check if the vendor is allowed to upload for this record
 	// Check if the record does not already have a photo
-	if req.ImageType == "event" {
+	if ImageType == "event" {
 		// Check if the event exists
 		event, err := queries.VendorGetEventByUuid(ctx, query.VendorGetEventByUuidParams{Wallet: vendorinfo.Wallet, ID: recordUUID})
 		if err != nil {
@@ -108,7 +117,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		if event.Photo.Valid == true {
 			return shared.CreateErrorResponse(400, "Event already has a photo", request.Headers)
 		}
-	} else if req.ImageType == "venue" {
+	} else if ImageType == "venue" {
 		// Check if the venue exists
 		venue, err := queries.VendorGetVenueByUuid(ctx, query.VendorGetVenueByUuidParams{Wallet: vendorinfo.Wallet, ID: recordUUID})
 		if err != nil {
@@ -162,12 +171,21 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}, nil
 }
 
+func handleDelete(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       "DELETE",
+		Headers:    shared.GetResponseHeaders(request.Headers),
+	}, nil
+}
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if request.HTTPMethod == "GET" {
 		return handleGet(ctx, request)
 	} else if request.HTTPMethod == "POST" {
 		return handlePost(ctx, request)
+	} else if request.HTTPMethod == "DELETE" {
+		return handleDelete(ctx, request)
 	} else {
 		body, _ := json.Marshal(map[string]string{"message": "Method Not Allowed."})
 		return events.APIGatewayProxyResponse{
