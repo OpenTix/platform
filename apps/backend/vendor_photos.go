@@ -133,8 +133,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Set default content type.
 	fileType := "application/octet-stream"
 
-	// Determine the object key. If a fileName is provided, use it; otherwise, generate a UUID.
-	objectKey := req.Filename + "-" + req.RecordID
+	objectKey := req.Filename + "-" + ImageType + "-" +req.RecordID
 
 	// Create an AWS session.
 	cfg, err := config.LoadDefaultConfig(context.TODO(),

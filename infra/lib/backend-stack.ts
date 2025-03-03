@@ -20,6 +20,8 @@ import {
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as snsSubscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Construct } from 'constructs';
 
 export class BackendStack extends cdk.Stack {
@@ -45,6 +47,8 @@ export class BackendStack extends cdk.Stack {
 		const jwksURL =
 			'https://app.dynamic.xyz/api/v0/sdk/e332e4a7-4ed1-41ed-8ae9-7d7c462bf453/.well-known/jwks';
 		const photoBucket = 'dev-openticket-images';
+		const photoUploadTopicArn =
+			'arn:aws:sns:us-east-1:390403894969:S3ImageUploaded';
 
 		// DB
 		const vpc = Vpc.fromLookup(this, 'VPC', {
@@ -373,5 +377,43 @@ export class BackendStack extends cdk.Stack {
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
 		});
+
+		// React to photo upload event
+		const photoUploadTopic = sns.Topic.fromTopicArn(
+			this,
+			'PhotoUploadTopic',
+			photoUploadTopicArn
+		);
+		//create sqs queue for topic
+		const photoUploadQueue = new cdk.aws_sqs.Queue(
+			this,
+			'PhotoUploadQueue',
+			{
+				visibilityTimeout: cdk.Duration.seconds(300)
+			}
+		);
+
+		//subscribe queue to topic
+		photoUploadTopic.addSubscription(
+			new snsSubscriptions.SqsSubscription(photoUploadQueue)
+		);
+
+		//create lambda to process photo upload event
+		const PhotoUploadEventLambda = new GoFunction(
+			this,
+			'PhotoUploadEventLambda',
+			{
+				entry: `${basePath}/PhotoUploadEvent.go`,
+				...LambdaDBAccessProps
+			}
+		);
+
+		//grant lambda permissions to read from queue
+		photoUploadQueue.grantConsumeMessages(PhotoUploadEventLambda);
+
+		//create event source mapping
+		PhotoUploadEventLambda.addEventSource(
+			new cdk.aws_lambda_event_sources.SqsEventSource(photoUploadQueue)
+		);
 	}
 }
