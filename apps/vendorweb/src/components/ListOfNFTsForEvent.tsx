@@ -80,7 +80,7 @@ export default function ListOfNFTsForEvent({
 													Available
 												</Badge>
 											) : (
-												<Badge color="crimson">
+												<Badge color="green">
 													Sold
 												</Badge>
 											)}
