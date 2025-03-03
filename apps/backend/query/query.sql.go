@@ -951,3 +951,79 @@ func (q *Queries) VendorPatchVenue(ctx context.Context, arg VendorPatchVenuePara
 	)
 	return i, err
 }
+
+const vendorRemoveEventPhoto = `-- name: VendorRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash
+`
+
+type VendorRemoveEventPhotoParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorRemoveEventPhoto(ctx context.Context, arg VendorRemoveEventPhotoParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, vendorRemoveEventPhoto, arg.ID, arg.Wallet)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
+const vendorRemoveVenuePhoto = `-- name: VendorRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo
+`
+
+type VendorRemoveVenuePhotoParams struct {
+	ID     uuid.UUID
+	Wallet string
+}
+
+func (q *Queries) VendorRemoveVenuePhoto(ctx context.Context, arg VendorRemoveVenuePhotoParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, vendorRemoveVenuePhoto, arg.ID, arg.Wallet)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}

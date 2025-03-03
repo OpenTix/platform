@@ -232,3 +232,23 @@ update app.event
 set photo = null
 where event.id = $1
 returning *;
+
+-- name: VendorRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning *;
+
+-- name: VendorRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning *;

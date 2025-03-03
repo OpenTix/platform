@@ -35,7 +35,7 @@ func init() {
 }
 
 type PostVendorPhotoRequest struct {
-	RecordID  string    `json:"RecordID"`
+	RecordID  string    `json:"ID"`
 	Filename string    `json:"Filename"`
 }
 
@@ -44,12 +44,8 @@ type PostVendorPhotoResponse struct {
 	ObjectKey string
 }
 
-func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       "GET",
-		Headers:    shared.GetResponseHeaders(request.Headers),
-	}, nil
+type DeleteVendorPhotoRequest struct {
+	RecordID  string    `json:"ID"`
 }
 
 func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -171,17 +167,87 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 }
 
 func handleDelete(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       "DELETE",
-		Headers:    shared.GetResponseHeaders(request.Headers),
-	}, nil
+	var req DeleteVendorPhotoRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return shared.CreateErrorResponse(400, "Invalid request body", request.Headers)
+	}
+
+	if req.RecordID == "" {
+		return shared.CreateErrorResponse(400, "Missing required fields", request.Headers)
+	}
+
+	recordUUID, err := uuid.Parse(req.RecordID)
+	if err != nil {
+		return shared.CreateErrorResponse(400, "Invalid RecordID", request.Headers)
+	}
+
+	var ImageType string
+	if strings.Contains(request.Path, "events") {
+		ImageType = "event"
+	} else if strings.Contains(request.Path, "venues") {
+		ImageType = "venue"
+	} else {
+		return shared.CreateErrorResponse(400, "Invalid path", request.Headers)
+	}
+
+	if ImageType != "event" && ImageType != "venue" {
+		return shared.CreateErrorResponse(400, "Invalid ImageType. event or venue needed.", request.Headers)
+	}
+
+	// Grab auth token
+	tk, err := shared.GetTokenFromRequest(request)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+	}
+
+	// Grab wallet address from token
+	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+	}
+
+	// Connect to the database
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+	}
+	defer conn.Close(ctx)
+	queries := query.New(conn)
+
+	if ImageType == "event" {
+		event, err := queries.VendorRemoveEventPhoto(ctx, query.VendorRemoveEventPhotoParams{Wallet: vendorinfo.Wallet, ID: recordUUID})
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to remove event photo. Potentially, record does not exist or vendor is not authorized for this record.", request.Headers, err)
+		}
+		responseBody, err := json.Marshal(event)
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
+		}
+		return events.APIGatewayProxyResponse{
+			StatusCode: 202,
+			Body:       string(responseBody),
+			Headers: shared.GetResponseHeaders(request.Headers),
+		}, nil
+	} else {
+		venue, err := queries.VendorRemoveVenuePhoto(ctx, query.VendorRemoveVenuePhotoParams{Wallet: vendorinfo.Wallet, ID: recordUUID})
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to remove venue photo. Potentially, record does not exist or vendor is not authorized for this record.", request.Headers, err)
+		}
+		responseBody, err := json.Marshal(venue)
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
+		}
+		return events.APIGatewayProxyResponse{
+			StatusCode: 202,
+			Body:       string(responseBody),
+			Headers: shared.GetResponseHeaders(request.Headers),
+		}, nil
+	}
+
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if request.HTTPMethod == "GET" {
-		return handleGet(ctx, request)
-	} else if request.HTTPMethod == "POST" {
+	if request.HTTPMethod == "POST" {
 		return handlePost(ctx, request)
 	} else if request.HTTPMethod == "DELETE" {
 		return handleDelete(ctx, request)
