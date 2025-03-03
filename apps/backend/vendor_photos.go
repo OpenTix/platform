@@ -23,13 +23,13 @@ import (
 )
 
 var connStr string
-var BUCKET_NAME string
+var PHOTO_BUCKET string
 
 func init() {
 	connStr = shared.InitLambda()
-	BUCKET_NAME = os.Getenv("BUCKET_NAME")
-	if BUCKET_NAME == "" {
-		panic("BUCKET_NAME must be set")
+	PHOTO_BUCKET = os.Getenv("PHOTO_BUCKET")
+	if PHOTO_BUCKET == "" {
+		panic("PHOTO_BUCKET must be set")
 	}
 }
 
@@ -138,7 +138,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Generate a presigned URL valid for 15 minutes.
 	svc := s3.NewFromConfig(cfg)
 	input := s3.PutObjectInput{
-		Bucket:      aws.String(BUCKET_NAME),
+		Bucket:      aws.String(PHOTO_BUCKET),
 		Key:         aws.String(objectKey),
 		ContentType: aws.String(fileType),
 	}
