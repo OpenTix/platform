@@ -42,10 +42,9 @@ export class BackendStack extends cdk.Stack {
 		const dbInternalName = 'openticket';
 		const dbSecretArn =
 			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-7b97592e-38be-4add-9eea-f5057439df30-L9XP8Y';
-		const magicSecretArn =
-			'arn:aws:secretsmanager:us-east-1:390403894969:secret:MagicAuth/SecretKey-idvwer';
 		const jwksURL =
 			'https://app.dynamic.xyz/api/v0/sdk/e332e4a7-4ed1-41ed-8ae9-7d7c462bf453/.well-known/jwks';
+		const photoBucket = 'dev-openticket-images';
 
 		// DB
 		const vpc = Vpc.fromLookup(this, 'VPC', {
@@ -64,11 +63,6 @@ export class BackendStack extends cdk.Stack {
 			'DBSecret',
 			dbSecretArn
 		);
-		const MagicPrivateSecret = Secret.fromSecretCompleteArn(
-			this,
-			'MagicPrivateSecret',
-			magicSecretArn
-		);
 
 		// Roles
 		const LambdaLogRole = new Role(this, 'LambdaLogRole', {
@@ -85,7 +79,6 @@ export class BackendStack extends cdk.Stack {
 				resources: ['*']
 			})
 		);
-		MagicPrivateSecret.grantRead(LambdaLogRole);
 
 		const LambdaDBAccessRole = new Role(this, 'LambdaDBAccessRole', {
 			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
@@ -103,8 +96,31 @@ export class BackendStack extends cdk.Stack {
 		);
 
 		dbSecret.grantRead(LambdaDBAccessRole);
-		MagicPrivateSecret.grantRead(LambdaDBAccessRole);
 		LambdaDBAccessRole.addManagedPolicy(
+			ManagedPolicy.fromAwsManagedPolicyName(
+				'service-role/AWSLambdaVPCAccessExecutionRole'
+			)
+		);
+
+		const PhotoBucketRole = new Role(this, 'PhotoBucketRole', {
+			assumedBy: new ServicePrincipal('lambda.us-east-1.amazonaws.com')
+		});
+		PhotoBucketRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					's3:PutObject',
+					's3:GetObject',
+					's3:DeleteObject',
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: [`arn:aws:s3:::${photoBucket}/*`]
+			})
+		);
+		dbSecret.grantRead(PhotoBucketRole);
+		PhotoBucketRole.addManagedPolicy(
 			ManagedPolicy.fromAwsManagedPolicyName(
 				'service-role/AWSLambdaVPCAccessExecutionRole'
 			)
@@ -118,11 +134,11 @@ export class BackendStack extends cdk.Stack {
 				DB_ADDRESS: dbAddress,
 				DB_PORT: dbPort,
 				DB_NAME: dbInternalName,
-				DB_SECRET_ARN: dbSecretArn,
-				MAGIC_SECRET_ARN: magicSecretArn
+				DB_SECRET_ARN: dbSecretArn
 			}
 		};
 
+		// Lambdas
 		const auth = new TokenAuthorizer(this, 'Auth', {
 			handler: new GoFunction(this, 'AuthLambda', {
 				entry: `${basePath}/auth.go`,
@@ -133,7 +149,6 @@ export class BackendStack extends cdk.Stack {
 			})
 		});
 
-		// Lambdas
 		const DBTestLambda = new GoFunction(this, 'DBTestLambda', {
 			entry: `${basePath}/dbtest.go`,
 			...LambdaDBAccessProps
@@ -162,6 +177,20 @@ export class BackendStack extends cdk.Stack {
 		const VendorEventsLambda = new GoFunction(this, 'VendorEventsLambda', {
 			entry: `${basePath}/vendor_events.go`,
 			...LambdaDBAccessProps
+		});
+
+		const VendorPhotosLambda = new GoFunction(this, 'VendorPhotosLambda', {
+			entry: `${basePath}/vendor_photos.go`,
+			role: PhotoBucketRole,
+			vpc: vpc,
+			securityGroups: [dbSecurityGroup],
+			environment: {
+				DB_ADDRESS: dbAddress,
+				DB_PORT: dbPort,
+				DB_NAME: dbInternalName,
+				DB_SECRET_ARN: dbSecretArn,
+				PHOTO_BUCKET: photoBucket
+			}
 		});
 
 		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
@@ -282,6 +311,30 @@ export class BackendStack extends cdk.Stack {
 			}
 		);
 		addDynamicOptions(vendorEventsResource);
+
+		const vendorPhotosResource = vendorResource.addResource('photos');
+		vendorPhotosResource.addMethod(
+			'GET',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorPhotosResource.addMethod(
+			'POST',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		vendorPhotosResource.addMethod(
+			'DELETE',
+			new LambdaIntegration(VendorPhotosLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorPhotosResource);
 
 		const userResource = api.root.addResource('user');
 		const userEventsResource = userResource.addResource('events');
