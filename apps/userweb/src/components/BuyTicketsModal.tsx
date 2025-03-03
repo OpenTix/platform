@@ -1,25 +1,30 @@
 import { isEthereumWallet } from '@dynamic-labs/ethereum';
-import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Dialog, Flex, Text } from '@radix-ui/themes';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+type ReturnedMetadata = {
+	min: bigint;
+	max: bigint;
+	exists: boolean;
+};
+
 export interface BuyTicketsModalProps {
 	onClose: () => void;
-	// Basecost: number;
-	// NumGa: number;
-	// NumUnique: number;
 	Title: string;
 	EventDatetime: string;
 	ID: string;
+	TicketID: bigint;
 }
 export default function BuyTicketsModal({
 	onClose,
 	Title,
 	EventDatetime,
-	ID
+	ID,
+	TicketID
 }: BuyTicketsModalProps) {
 	const navigate = useNavigate();
 	const [showError, setShowError] = useState<boolean>(false);
@@ -41,14 +46,14 @@ export default function BuyTicketsModal({
 				const p = await primaryWallet.getPublicClient();
 
 				if (w && p) {
-					const data = await p.readContract({
+					const data = (await p.readContract({
 						abi: ContractABI,
 						address: ContractAddress,
 						functionName: 'get_event_ids',
 						args: [description]
-					});
-					// console.log(data);
-					return (data as Array<any>)[0] as Array<bigint>;
+					})) as [bigint[], ReturnedMetadata];
+
+					return data[0] as Array<bigint>;
 				} else {
 					console.error('Wallet client or public client not set up');
 				}
@@ -61,14 +66,13 @@ export default function BuyTicketsModal({
 	const onSubmit = async () => {
 		setIsSubmitting(true);
 
-		const TicketIDarr = await getTicketID(NFTMintingDescription);
+		const valid_TicketIDs = await getTicketID(NFTMintingDescription);
 
-		if (TicketIDarr === undefined) {
+		// check that the ticket id is valid
+		if (!valid_TicketIDs?.includes(TicketID)) {
+			console.log(`${TicketID} is not a valid TicketID.`);
 			throw Error;
 		}
-
-		const TicketID = TicketIDarr[0];
-		console.log(`TicketID = ${TicketID}`);
 
 		if (primaryWallet && isEthereumWallet(primaryWallet)) {
 			try {
@@ -84,10 +88,8 @@ export default function BuyTicketsModal({
 						args: [NFTMintingDescription, [TicketID]],
 						value: BigInt(1000000000000000)
 					});
-					console.log(`request = ${request}`);
 					const hash = await w.writeContract(request);
 					console.log(hash);
-					// await updateEventWithTransactionHash(hash);
 					setIsSubmitting(false);
 					onClose();
 					navigate(0);
