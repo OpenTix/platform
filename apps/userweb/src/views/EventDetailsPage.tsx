@@ -104,6 +104,7 @@ export default function EventDetailsPage() {
 					}
 					ID={(data as UserEventDetailsResponse)?.ID}
 					TicketID={TicketID}
+					BaseCost={(data as UserEventDetailsResponse)?.Basecost}
 				/>
 			)}
 		</div>

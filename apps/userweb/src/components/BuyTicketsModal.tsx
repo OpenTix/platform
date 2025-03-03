@@ -18,13 +18,15 @@ export interface BuyTicketsModalProps {
 	EventDatetime: string;
 	ID: string;
 	TicketID: bigint;
+	BaseCost: number;
 }
 export default function BuyTicketsModal({
 	onClose,
 	Title,
 	EventDatetime,
 	ID,
-	TicketID
+	TicketID,
+	BaseCost
 }: BuyTicketsModalProps) {
 	const navigate = useNavigate();
 	const [showError, setShowError] = useState<boolean>(false);
@@ -86,7 +88,7 @@ export default function BuyTicketsModal({
 						functionName: 'buy_tickets',
 						account: w.account,
 						args: [NFTMintingDescription, [TicketID]],
-						value: BigInt(1000000000000000)
+						value: BigInt(BaseCost)
 					});
 					const hash = await w.writeContract(request);
 					console.log(hash);
