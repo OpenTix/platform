@@ -4,8 +4,11 @@ import { Box, Card, DataList, Flex, Heading, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { SuccessAlert } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
+import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
+import MintTicketsModal from '../components/MintTicketsModal';
 
 //70/30 left right column split
 const LeftColumn = styled.div`
@@ -38,7 +41,12 @@ export default function Details({ typestring }: DetailsProps) {
 	//eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const id = useParams().id!;
 	const [data, setData] = useState<Venue | Event>();
-	const [shouldShowModal, setShouldShowModal] = useState<boolean>(false);
+	const [shouldShowEditModal, setShouldShowEditModal] =
+		useState<boolean>(false);
+	const [shouldShowMintModal, setShouldShowMintModal] =
+		useState<boolean>(false);
+	const [wasUpdateSuccessful, setWasUpdateSuccessful] =
+		useState<boolean>(false);
 
 	const validateUUID = () => {
 		if (
@@ -76,6 +84,12 @@ export default function Details({ typestring }: DetailsProps) {
 	};
 
 	useEffect(() => {
+		if (!shouldShowEditModal && validateUUID()) {
+			fetchData();
+		}
+	}, [shouldShowEditModal]);
+
+	useEffect(() => {
 		if (validateUUID()) {
 			fetchData();
 		}
@@ -89,6 +103,9 @@ export default function Details({ typestring }: DetailsProps) {
 					Details - {data?.Name}
 				</Heading>
 			</Box>
+			{wasUpdateSuccessful && (
+				<SuccessAlert message="Updated Successfully" />
+			)}
 			<Flex gap="5" py={'5'}>
 				<LeftColumn>
 					<Box width="100%">
@@ -135,14 +152,22 @@ export default function Details({ typestring }: DetailsProps) {
 								<Flex direction="column" gap="3">
 									<ActionsText
 										onClick={() => {
-											setShouldShowModal(true);
+											setShouldShowEditModal(true);
 										}}
 									>
 										Edit
 									</ActionsText>
 									{typestring === 'event' &&
 										!(data as Event)?.TransactionHash && (
-											<ActionsText>Mint</ActionsText>
+											<ActionsText
+												onClick={() => {
+													setShouldShowMintModal(
+														true
+													);
+												}}
+											>
+												Mint
+											</ActionsText>
 										)}
 								</Flex>
 							</Card>
@@ -153,24 +178,49 @@ export default function Details({ typestring }: DetailsProps) {
 			{typestring === 'event' && (
 				<Box width="100%">
 					<Card>
-						<Heading size={'4'}>Transactions</Heading>
-						<Text>Transactions list or list of NFTs?</Text>
+						<Heading size={'4'}>NFTs for this event:</Heading>
+						{data && (data as Event)?.TransactionHash ? (
+							<ListOfNFTsForEvent
+								Title={(data as Event)?.Name}
+								EventDatetime={(data as Event)?.EventDatetime}
+								ID={(data as Event)?.ID}
+							/>
+						) : (
+							<Text>
+								You have not minted NFTs for this event yet.
+							</Text>
+						)}
 					</Card>
 				</Box>
 			)}
 
-			{shouldShowModal &&
+			{shouldShowEditModal &&
 				(typestring === 'event' ? (
 					<EditEventModal
 						pk={data?.Pk ?? 0}
-						onClose={() => setShouldShowModal(false)}
+						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				) : (
 					<EditVenueModal
 						pk={data?.Pk ?? 0}
-						onClose={() => setShouldShowModal(false)}
+						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				))}
+
+			{shouldShowMintModal && typestring === 'event' && (
+				<MintTicketsModal
+					onClose={() => setShouldShowMintModal(false)}
+					Basecost={(data as Event)?.Basecost}
+					NumGa={(data as Event)?.NumGa}
+					NumUnique={(data as Event)?.NumUnique}
+					Title={(data as Event)?.Name}
+					EventDatetime={(data as Event)?.EventDatetime}
+					ID={(data as Event)?.ID}
+					Pk={(data as Event)?.Pk}
+				/>
+			)}
 		</>
 	);
 }

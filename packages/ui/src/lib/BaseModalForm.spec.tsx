@@ -29,7 +29,7 @@ describe('BaseModalForm', () => {
 		expect(screen.getByTestId('child')).toBeInTheDocument();
 	});
 
-	it('calls onSubmit when the Add button is clicked', () => {
+	it('calls onSubmit when the Submit button is clicked', () => {
 		render(
 			<BaseModalForm
 				title={titleText}
@@ -41,7 +41,7 @@ describe('BaseModalForm', () => {
 			</BaseModalForm>
 		);
 
-		const addButton = screen.getByRole('button', { name: /add/i });
+		const addButton = screen.getByRole('button', { name: /submit/i });
 		fireEvent.click(addButton);
 		expect(onSubmitMock).toHaveBeenCalledTimes(1);
 	});
