@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jackc/pgx/v5"
 
-	"backend/query"
+	//"backend/query"
 	"backend/shared"
 )
 
@@ -26,7 +26,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 		panic(err)
 	}
 	defer conn.Close(ctx)
-	queries := query.New(conn)
+	//queries := query.New(conn)
 
 
 	for _, record := range sqsEvent.Records {
