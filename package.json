@@ -108,5 +108,8 @@
 		"typescript": "5.7.3",
 		"typescript-eslint": "8.24.1",
 		"webpack-cli": "^5.1.4"
+	},
+	"overrides": {
+		"eciesjs": "0.4.14"
 	}
 }
