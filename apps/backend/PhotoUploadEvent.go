@@ -94,7 +94,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 			var imageType, uuid_string string
 			// e.g. filename-venue/event-uuid.png
-			parts := strings.SplitN(objectKey, "-", 2)
+			parts := strings.SplitN(objectKey, "-", 3)
 			if len(parts) == 3 {
 				imageType = parts[1]
 				uuid_string = parts[2]
