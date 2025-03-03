@@ -207,3 +207,28 @@ where event.id = $1
 and event.venue = venue.pk
 and event.vendor = vendor.pk
 limit 1;
+
+
+-- name: InsecureUpdateVenuePhoto :one
+update app.venue
+set photo = $2
+where venue.id = $1
+returning *;
+
+-- name: InsecureUpdateEventPhoto :one
+update app.event
+set photo = $2
+where event.id = $1
+returning *;
+
+-- name: InsecureRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+returning *;
+
+-- name: InsecureRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+returning *;

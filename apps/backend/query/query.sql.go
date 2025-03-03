@@ -217,6 +217,132 @@ func (q *Queries) GetVendorByWallet(ctx context.Context, wallet string) (AppVend
 	return i, err
 }
 
+const insecureRemoveEventPhoto = `-- name: InsecureRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+returning pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash
+`
+
+func (q *Queries) InsecureRemoveEventPhoto(ctx context.Context, id uuid.UUID) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, insecureRemoveEventPhoto, id)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
+const insecureRemoveVenuePhoto = `-- name: InsecureRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+returning pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo
+`
+
+func (q *Queries) InsecureRemoveVenuePhoto(ctx context.Context, id uuid.UUID) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, insecureRemoveVenuePhoto, id)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
+const insecureUpdateEventPhoto = `-- name: InsecureUpdateEventPhoto :one
+update app.event
+set photo = $2
+where event.id = $1
+returning pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash
+`
+
+type InsecureUpdateEventPhotoParams struct {
+	ID    uuid.UUID
+	Photo pgtype.Text
+}
+
+func (q *Queries) InsecureUpdateEventPhoto(ctx context.Context, arg InsecureUpdateEventPhotoParams) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, insecureUpdateEventPhoto, arg.ID, arg.Photo)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
+const insecureUpdateVenuePhoto = `-- name: InsecureUpdateVenuePhoto :one
+update app.venue
+set photo = $2
+where venue.id = $1
+returning pk, id, vendor, name, street_address, zip, city, state_code, state_name, country_code, country_name, num_unique, num_ga, photo
+`
+
+type InsecureUpdateVenuePhotoParams struct {
+	ID    uuid.UUID
+	Photo pgtype.Text
+}
+
+func (q *Queries) InsecureUpdateVenuePhoto(ctx context.Context, arg InsecureUpdateVenuePhotoParams) (AppVenue, error) {
+	row := q.db.QueryRow(ctx, insecureUpdateVenuePhoto, arg.ID, arg.Photo)
+	var i AppVenue
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Name,
+		&i.StreetAddress,
+		&i.Zip,
+		&i.City,
+		&i.StateCode,
+		&i.StateName,
+		&i.CountryCode,
+		&i.CountryName,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+	)
+	return i, err
+}
+
 const updateVendorName = `-- name: UpdateVendorName :one
 update app.vendor set name = $2 where wallet = $1 returning pk, id, wallet, name
 `

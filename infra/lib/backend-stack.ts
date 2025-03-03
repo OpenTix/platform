@@ -404,7 +404,16 @@ export class BackendStack extends cdk.Stack {
 			'PhotoUploadEventLambda',
 			{
 				entry: `${basePath}/PhotoUploadEvent.go`,
-				...LambdaDBAccessProps
+				role: PhotoBucketRole,
+				vpc: vpc,
+				securityGroups: [dbSecurityGroup],
+				environment: {
+					DB_ADDRESS: dbAddress,
+					DB_PORT: dbPort,
+					DB_NAME: dbInternalName,
+					DB_SECRET_ARN: dbSecretArn,
+					PHOTO_BUCKET: photoBucket
+				}
 			}
 		);
 
