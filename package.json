@@ -34,10 +34,6 @@
 		"@react-native-community/cli-platform-ios": "15.0.1",
 		"@tanstack/react-query": "^5.66.9",
 		"aws-cdk-lib": "^2.177.0",
-		"eas-cli": "^15.0.12",
-		"expo": "~52.0.11",
-		"expo-splash-screen": "~0.29.13",
-		"expo-status-bar": "~2.0.0",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
 		"react-native": "0.76.7",
@@ -122,6 +118,7 @@
 	"overrides": {
 		"eciesjs": "0.4.14",
 		"koa": ">=2.15.4",
-		"cross-spawn": ">=6.0.6"
+		"cross-spawn": ">=6.0.6",
+		"react": "18.3.1"
 	}
 }
