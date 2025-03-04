@@ -1,23 +1,15 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import {
-	Box,
-	Container,
-	Flex,
-	Text,
-	TextField,
-	Card,
-	Inset
-} from '@radix-ui/themes';
+import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Avatar, Toolbar } from 'radix-ui';
+import { Toolbar } from 'radix-ui';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { EventCard } from '../components/EventCard';
 
 const queryClient = new QueryClient();
 
@@ -81,76 +73,17 @@ export default function Home() {
 		}
 
 		return (
-			data?.map((data: UserEventResponse, idx: number) => {
-				const keys = Object.keys(data);
-				console.log(keys);
-				const photo_uri = data?.Photo;
-				return (
-					<Card asChild key={idx} size={'3'} variant="classic">
-						<Link
-							to={`/event/${data.ID}`}
-							style={{ display: 'inline-flex' }}
-						>
-							<Box style={{ display: 'inline-flex' }}>
-								<Inset
-									side="left"
-									style={{ paddingRight: '10px' }}
-								>
-									<Avatar.Root>
-										<Avatar.Image
-											style={{
-												maxWidth: '200px',
-												height: '100%'
-											}}
-											src={photo_uri}
-											alt="Image of venue"
-										/>
-										<Avatar.Fallback delayMs={1500}>
-											{/* No Image */}
-										</Avatar.Fallback>
-									</Avatar.Root>
-								</Inset>
-								<Flex
-									direction="column"
-									style={{ paddingLeft: '5px' }}
-								>
-									{Object.values(data)?.map(
-										(
-											value: string | number,
-											idx: number
-										) => {
-											if (keys[idx] === 'Photo') {
-												// photo_uri = value as string;
-												return null;
-											} else if (keys[idx] === 'ID') {
-												return null;
-											}
-											return (
-												<Text key={idx} color="violet">
-													{keys[idx]}:{' '}
-													{keys[idx] ===
-													'EventDatetime'
-														? new Date(
-																value
-															).toLocaleString()
-														: keys[idx] ===
-															  'Basecost'
-															? `$${value}`
-															: value}
-												</Text>
-											);
-										}
-									)}
-								</Flex>
-							</Box>
-						</Link>
+			<Flex gap="3" direction="column">
+				{data && data.length > 0 ? (
+					data.map((data: UserEventResponse, idx: number) => (
+						<EventCard key={idx} event={data} />
+					))
+				) : (
+					<Card>
+						<Text>There are no results for page {page}</Text>
 					</Card>
-				);
-			}) ?? (
-				<Card>
-					<Text>There are no results for page {page}</Text>
-				</Card>
-			)
+				)}
+			</Flex>
 		);
 	}
 

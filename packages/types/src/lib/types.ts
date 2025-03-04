@@ -36,7 +36,9 @@ export type UserEventResponse = Pick<
 	Event,
 	'Name' | 'Type' | 'EventDatetime' | 'Photo' | 'ID'
 > &
-	Pick<Venue, 'StateCode' | 'CountryCode'>;
+	Pick<Venue, 'StateCode' | 'CountryCode'> & {
+		Venuename: string;
+	};
 
 export type UserEventDetailsResponse = Omit<
 	Event,
