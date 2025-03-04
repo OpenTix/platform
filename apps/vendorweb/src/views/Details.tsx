@@ -183,7 +183,7 @@ export default function Details({ typestring }: DetailsProps) {
 			}
 			setTimeout(() => {
 				fetchData();
-			}, 2000);
+			}, 1000);
 			setShouldShowError(false);
 		} catch (error) {
 			console.error(error);
@@ -257,72 +257,74 @@ export default function Details({ typestring }: DetailsProps) {
 							<Card>
 								<Heading size={'4'}>Photo</Heading>
 								<Flex direction="column" gap="3" align="center">
-									{data?.Photo ? (
-										<img
-											src={data.Photo}
-											alt="Venue"
-											style={{ maxWidth: '80%' }}
-										/>
-									) : (
-										<Box
-											style={{
-												width: '90%'
-											}}
-										>
-											<Dropzone
-												onDrop={(files) =>
-													handleFileUpload(files)
-												}
-												onReject={(files) =>
-													console.log(
-														'rejected files',
-														files
-													)
-												}
-												maxSize={5 * 1024 ** 2}
-												accept={IMAGE_MIME_TYPE}
-												loading={isImageUploading}
+									{data &&
+										(data?.Photo ? (
+											<img
+												src={data.Photo}
+												alt="Venue"
+												style={{ maxWidth: '80%' }}
+											/>
+										) : (
+											<Box
+												style={{
+													width: '90%'
+												}}
 											>
-												<Group
-													justify="center"
-													gap="xl"
-													mih={220}
-													style={{
-														pointerEvents: 'none'
-													}}
+												<Dropzone
+													onDrop={(files) =>
+														handleFileUpload(files)
+													}
+													onReject={(files) =>
+														console.log(
+															'rejected files',
+															files
+														)
+													}
+													maxSize={5 * 1024 ** 2}
+													accept={IMAGE_MIME_TYPE}
+													loading={isImageUploading}
 												>
-													<Dropzone.Accept>
-														<IconUpload
-															size={52}
-															color="#00c7b7"
-															stroke={1.5}
-														/>
-													</Dropzone.Accept>
-													<Dropzone.Reject>
-														<IconX
-															size={52}
-															color="#ff5252"
-															stroke={1.5}
-														/>
-													</Dropzone.Reject>
-													<Dropzone.Idle>
-														<IconPhoto
-															size={52}
-															color="#666"
-															stroke={1.5}
-														/>
-													</Dropzone.Idle>
+													<Group
+														justify="center"
+														gap="xl"
+														mih={220}
+														style={{
+															pointerEvents:
+																'none'
+														}}
+													>
+														<Dropzone.Accept>
+															<IconUpload
+																size={52}
+																color="#00c7b7"
+																stroke={1.5}
+															/>
+														</Dropzone.Accept>
+														<Dropzone.Reject>
+															<IconX
+																size={52}
+																color="#ff5252"
+																stroke={1.5}
+															/>
+														</Dropzone.Reject>
+														<Dropzone.Idle>
+															<IconPhoto
+																size={52}
+																color="#666"
+																stroke={1.5}
+															/>
+														</Dropzone.Idle>
 
-													<div>
-														<Text>
-															Drag an image here
-															or click.
-														</Text>
-													</div>
-												</Group>
-											</Dropzone>
-										</Box>
-									)}
+														<div>
+															<Text>
+																Drag an image
+																here or click.
+															</Text>
+														</div>
+													</Group>
+												</Dropzone>
+											</Box>
+										))}
 								</Flex>
 							</Card>
 							<Card>
