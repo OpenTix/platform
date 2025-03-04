@@ -1,6 +1,14 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
+import {
+	Box,
+	Container,
+	Flex,
+	Text,
+	TextField,
+	Card,
+	Inset
+} from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
@@ -76,43 +84,65 @@ export default function Home() {
 			data?.map((data: UserEventResponse, idx: number) => {
 				const keys = Object.keys(data);
 				console.log(keys);
-				let photo_uri = '';
+				const photo_uri = data?.Photo;
 				return (
 					<Card asChild key={idx} size={'3'} variant="classic">
-						<Link to={`/event/${data.ID}`}>
-							<Flex direction="column">
-								{Object.values(data)?.map(
-									(value: string | number, idx: number) => {
-										if (keys[idx] === 'Photo') {
-											photo_uri = value as string;
-											return null;
-										} else if (keys[idx] === 'ID') {
-											return null;
+						<Link
+							to={`/event/${data.ID}`}
+							style={{ display: 'inline-flex' }}
+						>
+							<Box style={{ display: 'inline-flex' }}>
+								<Inset
+									side="left"
+									style={{ paddingRight: '10px' }}
+								>
+									<Avatar.Root>
+										<Avatar.Image
+											style={{
+												maxWidth: '200px',
+												height: '100%'
+											}}
+											src={photo_uri}
+											alt="Image of venue"
+										/>
+										<Avatar.Fallback delayMs={1500}>
+											{/* No Image */}
+										</Avatar.Fallback>
+									</Avatar.Root>
+								</Inset>
+								<Flex
+									direction="column"
+									style={{ paddingLeft: '5px' }}
+								>
+									{Object.values(data)?.map(
+										(
+											value: string | number,
+											idx: number
+										) => {
+											if (keys[idx] === 'Photo') {
+												// photo_uri = value as string;
+												return null;
+											} else if (keys[idx] === 'ID') {
+												return null;
+											}
+											return (
+												<Text key={idx} color="violet">
+													{keys[idx]}:{' '}
+													{keys[idx] ===
+													'EventDatetime'
+														? new Date(
+																value
+															).toLocaleString()
+														: keys[idx] ===
+															  'Basecost'
+															? `$${value}`
+															: value}
+												</Text>
+											);
 										}
-										return (
-											<Text key={idx} color="violet">
-												{keys[idx]}:{' '}
-												{keys[idx] === 'EventDatetime'
-													? new Date(
-															value
-														).toLocaleString()
-													: keys[idx] === 'Basecost'
-														? `$${value}`
-														: value}
-											</Text>
-										);
-									}
-								)}
-								<Avatar.Root>
-									<Avatar.Image
-										src={photo_uri}
-										alt="Image of venue"
-									/>
-									{/* <Avatar.Fallback delayMs={600}>
-                            No Image
-                        </Avatar.Fallback> */}
-								</Avatar.Root>
-							</Flex>
+									)}
+								</Flex>
+							</Box>
 						</Link>
 					</Card>
 				);
