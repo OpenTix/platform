@@ -1,3 +1,5 @@
 {
-	"expo": {}
+	"expo": {
+		"plugins": ["expo-secure-store"]
+	}
 }
