@@ -1,4 +1,6 @@
 @import '@radix-ui/themes/styles.css';
+@import '@mantine/dropzone/styles.css';
+@import '@mantine/core/styles.css';
 
 html,
 body,

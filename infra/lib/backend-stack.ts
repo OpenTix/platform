@@ -295,13 +295,6 @@ export class BackendStack extends cdk.Stack {
 		const vendorVenuesPhotosResource =
 			vendorVenuesResource.addResource('photos');
 		vendorVenuesPhotosResource.addMethod(
-			'GET',
-			new LambdaIntegration(VendorPhotosLambda),
-			{
-				authorizer: auth
-			}
-		);
-		vendorVenuesPhotosResource.addMethod(
 			'POST',
 			new LambdaIntegration(VendorPhotosLambda),
 			{
