@@ -182,7 +182,7 @@ insert into app.venue (
 
 -- name: UserGetEventsPaginated :many
 select event.name, event.type, event.event_datetime,
-venue.state_code, venue.country_code, event.photo,
+venue.name Venuename, venue.state_code, venue.country_code, event.photo,
 event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk

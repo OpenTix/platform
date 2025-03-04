@@ -429,7 +429,7 @@ func (q *Queries) UserGetEventByUuid(ctx context.Context, id uuid.UUID) (UserGet
 
 const userGetEventsPaginated = `-- name: UserGetEventsPaginated :many
 select event.name, event.type, event.event_datetime,
-venue.state_code, venue.country_code, event.photo,
+venue.name Venuename, venue.state_code, venue.country_code, event.photo,
 event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
@@ -456,6 +456,7 @@ type UserGetEventsPaginatedRow struct {
 	Name          string
 	Type          string
 	EventDatetime pgtype.Timestamp
+	Venuename     string
 	StateCode     string
 	CountryCode   string
 	Photo         pgtype.Text
@@ -482,6 +483,7 @@ func (q *Queries) UserGetEventsPaginated(ctx context.Context, arg UserGetEventsP
 			&i.Name,
 			&i.Type,
 			&i.EventDatetime,
+			&i.Venuename,
 			&i.StateCode,
 			&i.CountryCode,
 			&i.Photo,
