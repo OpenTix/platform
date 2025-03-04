@@ -182,7 +182,7 @@ insert into app.venue (
 
 -- name: UserGetEventsPaginated :many
 select event.name, event.type, event.event_datetime,
-venue.state_code, venue.country_code, event.photo,
+venue.name Venuename, venue.state_code, venue.country_code, event.photo,
 event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
@@ -207,3 +207,48 @@ where event.id = $1
 and event.venue = venue.pk
 and event.vendor = vendor.pk
 limit 1;
+
+
+-- name: InsecureUpdateVenuePhoto :one
+update app.venue
+set photo = $2
+where venue.id = $1
+returning *;
+
+-- name: InsecureUpdateEventPhoto :one
+update app.event
+set photo = $2
+where event.id = $1
+returning *;
+
+-- name: InsecureRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+returning *;
+
+-- name: InsecureRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+returning *;
+
+-- name: VendorRemoveVenuePhoto :one
+update app.venue
+set photo = null
+where venue.id = $1
+and venue.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning *;
+
+-- name: VendorRemoveEventPhoto :one
+update app.event
+set photo = null
+where event.id = $1
+and event.vendor = (
+    select pk from app.vendor
+    where wallet = $2
+)
+returning *;
