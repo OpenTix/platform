@@ -11,20 +11,25 @@ export function EventCard({ event }: EventCardProps) {
 	const date = new Date(event.EventDatetime);
 	const month = date.toLocaleString('default', { month: 'short' });
 	const day = date.getDate();
+	const dayOfWeek = date.toLocaleString('default', { weekday: 'short' });
 	const time = date.toLocaleString('default', {
 		hour: 'numeric',
 		minute: '2-digit',
 		hour12: true
 	});
 
-	const dateToDisplay =
-		day === new Date().getDate() ? time : `${month} ${day}`;
+	const dateUpper =
+		new Date().getFullYear() === date.getFullYear()
+			? `${dayOfWeek}, ${month} ${day}`
+			: `${dayOfWeek}, ${month} ${day}, ${date.getFullYear()}`;
+	const dateLower = `${time}`;
+
 	return (
 		<Card
 			asChild
 			size={'3'}
 			variant="classic"
-			style={{ maxWidth: '250px' }}
+			style={{ maxWidth: '300px' }}
 		>
 			<Link
 				to={`/event/${event.ID}`}
@@ -36,17 +41,19 @@ export function EventCard({ event }: EventCardProps) {
 							style={{
 								display: 'block',
 								objectFit: 'cover',
-								width: '100%'
+								width: '100%',
+								maxHeight: '200px'
 							}}
 							src={event.Photo}
 							alt="Image of venue"
 						/>
-						<Avatar.Fallback delayMs={1500}>
+						<Avatar.Fallback>
 							<img
 								style={{
 									display: 'block',
 									objectFit: 'cover',
-									width: '100%'
+									width: '100%',
+									maxHeight: '200px'
 								}}
 								src={
 									'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
@@ -68,7 +75,12 @@ export function EventCard({ event }: EventCardProps) {
 					</Text>
 					<Flex justify="between">
 						<Text>{event.Venuename}</Text>
-						<Text>{dateToDisplay}</Text>
+						<Flex direction="column" align="end">
+							<Text>{dateUpper}</Text>
+							<Text size="2" weight="light">
+								{dateLower}
+							</Text>
+						</Flex>
 					</Flex>
 				</Box>
 			</Link>
