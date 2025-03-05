@@ -6,10 +6,10 @@ import {
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Avatar, Toolbar } from 'radix-ui';
+import { Toolbar } from 'radix-ui';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { EventCard } from '../components/EventCard';
 
 const queryClient = new QueryClient();
 
@@ -73,54 +73,17 @@ export default function Home() {
 		}
 
 		return (
-			data?.map((data: UserEventResponse, idx: number) => {
-				const keys = Object.keys(data);
-				console.log(keys);
-				let photo_uri = '';
-				return (
-					<Card asChild key={idx} size={'3'} variant="classic">
-						<Link to={`/event/${data.ID}`}>
-							<Flex direction="column">
-								{Object.values(data)?.map(
-									(value: string | number, idx: number) => {
-										if (keys[idx] === 'Photo') {
-											photo_uri = value as string;
-											return null;
-										} else if (keys[idx] === 'ID') {
-											return null;
-										}
-										return (
-											<Text key={idx} color="violet">
-												{keys[idx]}:{' '}
-												{keys[idx] === 'EventDatetime'
-													? new Date(
-															value
-														).toLocaleString()
-													: keys[idx] === 'Basecost'
-														? `$${value}`
-														: value}
-											</Text>
-										);
-									}
-								)}
-								<Avatar.Root>
-									<Avatar.Image
-										src={photo_uri}
-										alt="Image of venue"
-									/>
-									{/* <Avatar.Fallback delayMs={600}>
-                            No Image
-                        </Avatar.Fallback> */}
-								</Avatar.Root>
-							</Flex>
-						</Link>
+			<Flex gap="3" direction="column">
+				{data && data.length > 0 ? (
+					data.map((data: UserEventResponse, idx: number) => (
+						<EventCard key={idx} event={data} />
+					))
+				) : (
+					<Card>
+						<Text>There are no results for page {page}</Text>
 					</Card>
-				);
-			}) ?? (
-				<Card>
-					<Text>There are no results for page {page}</Text>
-				</Card>
-			)
+				)}
+			</Flex>
 		);
 	}
 
