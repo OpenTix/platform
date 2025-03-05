@@ -13,6 +13,10 @@ permissions:
 jobs:
     define-matrix:
         runs-on: self-hosted
+        outputs:
+            lint-tasks: ${{ steps.matrix.outputs.lint-tasks }}
+            test-tasks: ${{ steps.matrix.outputs.test-tasks }}
+            build-tasks: ${{ steps.matrix.outputs.build-tasks }}
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
