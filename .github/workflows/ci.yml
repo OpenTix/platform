@@ -35,7 +35,7 @@ jobs:
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run-many -t lint --verbose
+            - run: npx nx run-many -t lint
 
 
     test:
