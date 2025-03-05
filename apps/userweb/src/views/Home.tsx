@@ -89,7 +89,7 @@ export default function Home() {
 	}
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		switch (name) {
 			case 'Type':
 				setType(value);
