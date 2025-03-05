@@ -31,9 +31,9 @@ jobs:
                 lint=${arr[0]}
                 test=${arr[1]}
                 build=${arr[2]}
-                echo "::set-output name=lint-tasks::$lint"
-                echo "::set-output name=test-tasks::$test"
-                echo "::set-output name=build-tasks::$build"
+                echo "lint-tasks=$lint" >> $GITHUB_OUTPUT
+                echo "test-tasks=$test" >> $GITHUB_OUTPUT
+                echo "build-tasks=$build" >> $GITHUB_OUTPUT
                 
     prettier:
         runs-on: self-hosted
