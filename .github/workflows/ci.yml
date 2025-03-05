@@ -11,11 +11,32 @@ permissions:
     contents: read
 
 jobs:
+    define-matrix:
+        runs-on: self-hosted
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - run: npm ci --legacy-peer-deps
+            - run: |
+                arr=()
+                while IFS= read -r line; do
+                    arr+=("$line")
+                done < <(./scripts/CreateJobMatrix.sh)
+                lint=${arr[0]}
+                test=${arr[1]}
+                build=${arr[2]}
+                echo "lint-tasks=$lint" >> $GITHUB_ENV
+                echo "test-tasks=$test" >> $GITHUB_ENV
+                echo "build-tasks=$build" >> $GITHUB_ENV
+                
     prettier:
         runs-on: self-hosted
         steps:
             - uses: actions/checkout@v4
-
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
@@ -26,35 +47,57 @@ jobs:
 
     lint:
         runs-on: self-hosted
+        needs: [define-matrix]
+        strategy:
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
         steps:
             - uses: actions/checkout@v4
-
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run-many -t lint
+            - run: npx nx run ${{ matrix.tasks }}:lint
 
 
     test:
         runs-on: self-hosted
+        needs: [define-matrix]
+        strategy:
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.test-tasks) }}
         steps:
             - uses: actions/checkout@v4
-
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run-many -t test
+            - run: npx nx run ${{ matrix.tasks }}:test
 
-
-    build-and-deploy:
+    build:
         runs-on: self-hosted
-        needs: [test]
+        needs: [define-matrix]
+        strategy:
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.build-tasks) }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - run: npm ci --legacy-peer-deps
+            - run: npx nx run ${{ matrix.tasks }}:build
+
+
+    deploy:
+        runs-on: self-hosted
+        needs: [test, build]
         steps:
             - uses: actions/checkout@v4
 
