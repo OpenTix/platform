@@ -59,7 +59,11 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		panic(err)
+		connStr = shared.InitLambda()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			panic("Failed to connect to database: " + err.Error())
+		}
 	}
 	defer conn.Close(ctx)
 	queries := query.New(conn)

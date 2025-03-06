@@ -47,7 +47,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		connStr = shared.InitLambda()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		}
 	}
 	defer conn.Close(ctx)
 
@@ -97,7 +101,11 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		connStr = shared.InitLambda()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		}
 	}
 	defer conn.Close(ctx)
 
@@ -155,7 +163,11 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		connStr = shared.InitLambda()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+		}
 	}
 	defer conn.Close(ctx)
 
