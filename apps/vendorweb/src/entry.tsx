@@ -3,6 +3,7 @@ import {
 	DynamicContextProps,
 	DynamicContextProvider
 } from '@dynamic-labs/sdk-react-core';
+import { MantineProvider } from '@mantine/core';
 import { Theme } from '@radix-ui/themes';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -25,9 +26,11 @@ const dynamicSettings: DynamicContextProps['settings'] = {
 root.render(
 	<StrictMode>
 		<Theme accentColor="purple">
-			<DynamicContextProvider settings={dynamicSettings}>
-				<AppRouter />
-			</DynamicContextProvider>
+			<MantineProvider>
+				<DynamicContextProvider settings={dynamicSettings}>
+					<AppRouter />
+				</DynamicContextProvider>
+			</MantineProvider>
 		</Theme>
 	</StrictMode>
 );

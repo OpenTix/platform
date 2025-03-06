@@ -1,9 +1,22 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { Group } from '@mantine/core';
+import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { Event, Venue } from '@platform/types';
-import { Box, Card, DataList, Flex, Heading, Text } from '@radix-ui/themes';
+import { InfoCircledIcon } from '@radix-ui/react-icons';
+import {
+	Box,
+	Callout,
+	Card,
+	DataList,
+	Flex,
+	Heading,
+	Text
+} from '@radix-ui/themes';
+import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { SuccessAlert } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
@@ -44,6 +57,11 @@ export default function Details({ typestring }: DetailsProps) {
 		useState<boolean>(false);
 	const [shouldShowMintModal, setShouldShowMintModal] =
 		useState<boolean>(false);
+	const [wasUpdateSuccessful, setWasUpdateSuccessful] =
+		useState<boolean>(false);
+	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string>('');
+	const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
 
 	const validateUUID = () => {
 		if (
@@ -80,6 +98,106 @@ export default function Details({ typestring }: DetailsProps) {
 		}
 	};
 
+	const handleFileUpload = async (files: FileWithPath[]) => {
+		setIsImageUploading(true);
+		const file = files[0];
+		try {
+			const token = getAuthToken();
+			const res = await fetch(
+				process.env.NX_PUBLIC_API_BASEURL +
+					`/vendor/${typestring}s/photos`,
+				{
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						ID: id,
+						Filename: file.name
+					})
+				}
+			);
+
+			if (!res.ok) {
+				console.error(res);
+				setErrorMessage('Failed to upload photo');
+				setShouldShowError(true);
+				setIsImageUploading(false);
+				return;
+			}
+
+			const data = await res.json();
+			const signedUrl = data.Request.URL;
+			const res2 = await fetch(signedUrl, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': file.type || 'application/octet-stream'
+				},
+				body: file
+			});
+
+			if (!res2.ok) {
+				console.error(res2);
+				setErrorMessage('Failed to upload photo');
+				setShouldShowError(true);
+				setIsImageUploading(false);
+				return;
+			}
+
+			setTimeout(() => {
+				setIsImageUploading(false);
+				setShouldShowError(false);
+				fetchData();
+			}, 2000);
+		} catch (error) {
+			console.error(error);
+			setErrorMessage('Failed to upload photo');
+			setShouldShowError(true);
+			setIsImageUploading(false);
+		}
+	};
+
+	const handleDeletePhoto = async () => {
+		try {
+			const token = getAuthToken();
+			const res = await fetch(
+				process.env.NX_PUBLIC_API_BASEURL +
+					`/vendor/${typestring}s/photos`,
+				{
+					method: 'DELETE',
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						ID: id
+					})
+				}
+			);
+			if (!res.ok) {
+				console.error(res);
+				setErrorMessage('Failed to delete photo');
+				setShouldShowError(true);
+				return;
+			}
+			setTimeout(() => {
+				fetchData();
+			}, 1000);
+			setShouldShowError(false);
+		} catch (error) {
+			console.error(error);
+			setErrorMessage('Failed to delete photo');
+			setShouldShowError(true);
+		}
+	};
+
+	useEffect(() => {
+		if (!shouldShowEditModal && validateUUID()) {
+			fetchData();
+		}
+	}, [shouldShowEditModal]);
+
 	useEffect(() => {
 		if (validateUUID()) {
 			fetchData();
@@ -94,6 +212,17 @@ export default function Details({ typestring }: DetailsProps) {
 					Details - {data?.Name}
 				</Heading>
 			</Box>
+			{wasUpdateSuccessful && (
+				<SuccessAlert message="Updated Successfully" />
+			)}
+			{shouldShowError && (
+				<Callout.Root color="red">
+					<Callout.Icon>
+						<InfoCircledIcon />
+					</Callout.Icon>
+					<Callout.Text>{errorMessage}</Callout.Text>
+				</Callout.Root>
+			)}
 			<Flex gap="5" py={'5'}>
 				<LeftColumn>
 					<Box width="100%">
@@ -127,12 +256,75 @@ export default function Details({ typestring }: DetailsProps) {
 						<Flex direction="column" gap="3">
 							<Card>
 								<Heading size={'4'}>Photo</Heading>
-								<Flex direction="column" gap="3">
-									{data?.Photo ? (
-										<Text>photo</Text>
-									) : (
-										<Text>No photo</Text>
-									)}
+								<Flex direction="column" gap="3" align="center">
+									{data &&
+										(data?.Photo ? (
+											<img
+												src={data.Photo}
+												alt="Venue"
+												style={{ maxWidth: '80%' }}
+											/>
+										) : (
+											<Box
+												style={{
+													width: '90%'
+												}}
+											>
+												<Dropzone
+													onDrop={(files) =>
+														handleFileUpload(files)
+													}
+													onReject={(files) =>
+														console.log(
+															'rejected files',
+															files
+														)
+													}
+													maxSize={5 * 1024 ** 2}
+													accept={IMAGE_MIME_TYPE}
+													loading={isImageUploading}
+												>
+													<Group
+														justify="center"
+														gap="xl"
+														mih={220}
+														style={{
+															pointerEvents:
+																'none'
+														}}
+													>
+														<Dropzone.Accept>
+															<IconUpload
+																size={52}
+																color="#00c7b7"
+																stroke={1.5}
+															/>
+														</Dropzone.Accept>
+														<Dropzone.Reject>
+															<IconX
+																size={52}
+																color="#ff5252"
+																stroke={1.5}
+															/>
+														</Dropzone.Reject>
+														<Dropzone.Idle>
+															<IconPhoto
+																size={52}
+																color="#666"
+																stroke={1.5}
+															/>
+														</Dropzone.Idle>
+
+														<div>
+															<Text>
+																Drag an image
+																here or click.
+															</Text>
+														</div>
+													</Group>
+												</Dropzone>
+											</Box>
+										))}
 								</Flex>
 							</Card>
 							<Card>
@@ -157,6 +349,14 @@ export default function Details({ typestring }: DetailsProps) {
 												Mint
 											</ActionsText>
 										)}
+									{data?.Photo && (
+										<ActionsText
+											onClick={handleDeletePhoto}
+											color="red"
+										>
+											Delete Photo
+										</ActionsText>
+									)}
 								</Flex>
 							</Card>
 						</Flex>
@@ -187,11 +387,13 @@ export default function Details({ typestring }: DetailsProps) {
 					<EditEventModal
 						pk={data?.Pk ?? 0}
 						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				) : (
 					<EditVenueModal
 						pk={data?.Pk ?? 0}
 						onClose={() => setShouldShowEditModal(false)}
+						onSuccess={() => setWasUpdateSuccessful(true)}
 					/>
 				))}
 

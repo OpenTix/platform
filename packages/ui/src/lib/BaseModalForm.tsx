@@ -41,12 +41,12 @@ export function BaseModalForm({
 							<Callout.Text>{errorMessage}</Callout.Text>
 						</Callout.Root>
 					)}
-					<Flex gap="1" style={{ justifyContent: 'center' }}>
-						<Button onClick={onSubmit} loading={isSubmitting}>
-							Add
-						</Button>
+					<Flex gap="1" style={{ justifyContent: 'end' }}>
 						<Button onClick={onClose} variant="soft">
 							Cancel
+						</Button>
+						<Button onClick={onSubmit} loading={isSubmitting}>
+							Submit
 						</Button>
 					</Flex>
 				</Flex>

@@ -1,14 +1,15 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
-import { Event } from '@platform/types';
+import { UserEventResponse } from '@platform/types';
 import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Avatar, Toolbar } from 'radix-ui';
-import { useState } from 'react';
+import { Toolbar } from 'radix-ui';
 import styled from 'styled-components';
+import { useSessionStorage } from 'usehooks-ts';
+import { EventCard } from '../components/EventCard';
 
 const queryClient = new QueryClient();
 
@@ -45,12 +46,13 @@ const Label = styled.label`
 `;
 
 export default function Home() {
-	const [page, setPage] = useState<number>(1);
-	const [zip, setZip] = useState<string>('');
-	const [type, setType] = useState<string>('');
-	const [ename, setEname] = useState<string>('');
-	const [cost, setCost] = useState<number>(1000000);
-	const [eventDate, setEventDate] = useState<string>(
+	const [page, setPage] = useSessionStorage('Page', 1);
+	const [zip, setZip] = useSessionStorage('Zip', '');
+	const [type, setType] = useSessionStorage('Type', '');
+	const [ename, setEname] = useSessionStorage('Name', '');
+	const [cost, setCost] = useSessionStorage('Cost', 1000000);
+	const [eventDate, setEventDate] = useSessionStorage(
+		'Date',
 		new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
 			.toISOString()
 			.slice(0, 16)
@@ -72,54 +74,22 @@ export default function Home() {
 		}
 
 		return (
-			data?.map((data: Event, idx: number) => {
-				const keys = Object.keys(data);
-				let photo_uri = '';
-				return (
-					<Card key={idx} size={'3'} variant="classic">
-						<Flex direction="column">
-							{Object.values(data)?.map(
-								(value: string | number, idx: number) => {
-									if (keys[idx] === 'Photo') {
-										photo_uri = value as string;
-										return null;
-									}
-									return (
-										<Text color="violet">
-											{keys[idx]}:{' '}
-											{keys[idx] === 'EventDatetime'
-												? new Date(
-														value
-													).toLocaleString()
-												: keys[idx] === 'Basecost'
-													? `$${value}`
-													: value}
-										</Text>
-									);
-								}
-							)}
-							<Avatar.Root>
-								<Avatar.Image
-									src={photo_uri}
-									alt="Image of venue"
-								/>
-								{/* <Avatar.Fallback delayMs={600}>
-                            No Image
-                        </Avatar.Fallback> */}
-							</Avatar.Root>
-						</Flex>
+			<Flex gap="3" direction="column">
+				{data && data.length > 0 ? (
+					data.map((data: UserEventResponse, idx: number) => (
+						<EventCard key={idx} event={data} />
+					))
+				) : (
+					<Card>
+						<Text>There are no results for page {page}</Text>
 					</Card>
-				);
-			}) ?? (
-				<Card>
-					<Text>There are no results for page {page}</Text>
-				</Card>
-			)
+				)}
+			</Flex>
 		);
 	}
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value, type } = e.target;
+		const { name, value } = e.target;
 		switch (name) {
 			case 'Type':
 				setType(value);
@@ -143,8 +113,19 @@ export default function Home() {
 
 	async function getEvents() {
 		const authToken = getAuthToken();
+		let date;
+		try {
+			date = new Date(eventDate).toISOString();
+		} catch {
+			date = new Date().toISOString();
+			await setEventDate(
+				new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+					.toISOString()
+					.slice(0, 16)
+			);
+		}
 		const resp = await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${ename}&Basecost=${cost}&EventDatetime=${new Date(eventDate).toISOString()}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${ename}&Basecost=${cost}&EventDatetime=${date}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }

@@ -1,7 +1,7 @@
 import { isEthereumWallet } from '@dynamic-labs/ethereum';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ContractABI, ContractAddress } from '@platform/blockchain';
-import { Badge, DataList } from '@radix-ui/themes';
+import { Badge, DataList, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 
 type ReturnedMetadata = {
@@ -14,12 +14,16 @@ export interface ListOfNFTsForEventProps {
 	Title: string;
 	EventDatetime: string;
 	ID: string;
+	setTicketId: (num: bigint) => void;
+	setShouldShowBuyModal: (bool: boolean) => void;
 }
 
 export default function ListOfNFTsForEvent({
 	Title,
 	EventDatetime,
-	ID
+	ID,
+	setTicketId,
+	setShouldShowBuyModal
 }: ListOfNFTsForEventProps) {
 	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
 	const { primaryWallet } = useDynamicContext();
@@ -57,6 +61,9 @@ export default function ListOfNFTsForEvent({
 
 	return (
 		<div>
+			{NFTs.length === 0 && (
+				<Text>There are no tickets created for this event yet.</Text>
+			)}
 			{NFTs.length > 0 && (
 				<DataList.Root>
 					{metadata &&
@@ -76,12 +83,29 @@ export default function ListOfNFTsForEvent({
 										</DataList.Label>
 										<DataList.Value>
 											{NFTs.includes(current) ? (
-												<Badge color="crimson">
+												<Badge color="green">
 													Available
 												</Badge>
 											) : (
-												<Badge color="green">
+												<Badge color="crimson">
 													Sold
+												</Badge>
+											)}
+											{NFTs.includes(current) && (
+												<Badge
+													style={{
+														cursor: 'pointer'
+													}}
+													color="sky"
+													variant="surface"
+													onClick={() => {
+														setTicketId(current);
+														setShouldShowBuyModal(
+															true
+														);
+													}}
+												>
+													Buy Now
 												</Badge>
 											)}
 										</DataList.Value>
