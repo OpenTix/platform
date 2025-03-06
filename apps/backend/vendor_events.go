@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -48,18 +47,14 @@ type EventPatchBodyParams struct {
 }
 
 func init() {
-	connStr = shared.InitLambda()
+	connStr = shared.BuildDatabaseConnectionString()
 }
 
 func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, pk int32, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -87,13 +82,9 @@ func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, p
 
 func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest, id string, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -181,13 +172,9 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -266,13 +253,9 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -354,15 +337,11 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
     }
 
     // Connect to the database
-    conn, err := pgx.Connect(ctx, connStr)
-    if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+    conn, err := shared.ConnectToDatabase(ctx, connStr)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
-    defer conn.Close(ctx)
+	defer conn.Close(ctx)
     queries := query.New(conn)
 
 

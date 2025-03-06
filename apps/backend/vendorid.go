@@ -10,8 +10,6 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
 
-	"github.com/jackc/pgx/v5"
-
 	"backend/query"
 	"backend/shared"
 )
@@ -27,7 +25,7 @@ type PostPatchVendorIdRequestBody struct {
 
 func init() {
 	walletRegex = regexp.MustCompile("^[0-9A-Fa-f]{40}$")
-	connStr = shared.InitLambda()
+	connStr = shared.BuildDatabaseConnectionString()
 }
 
 // This gets the current vendor's info based off the authorization token
@@ -45,13 +43,9 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -99,13 +93,9 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
@@ -161,13 +151,9 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	// Connect to the database
-	conn, err := pgx.Connect(ctx, connStr)
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		connStr = shared.InitLambda()
-		conn, err = pgx.Connect(ctx, connStr)
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-		}
+		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
 
