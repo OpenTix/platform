@@ -26,8 +26,10 @@ interface queryParams {
 const queryClient = new QueryClient();
 
 export default function Home() {
-	const [page, setPage] = useState<number>(1);
-	const [numPages, setNumPages] = useState<number>(5);
+	const [eventsPage, setEventsPage] = useState<number>(1);
+	const [venuesPage, setVenuesPage] = useState<number>(1);
+	const [numEventsPages, setNumEventsPages] = useState<number>(5);
+	const [numVenuesPages, setNumVenuesPages] = useState<number>(5);
 	const [eventData, setEventData] = useState<Event[]>([]);
 	const [venueData, setVenueData] = useState<Venue[]>([]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
@@ -42,6 +44,26 @@ export default function Home() {
 	const addRow = () => {
 		setModalType(activeTab);
 		setShowModal(true);
+	};
+
+	const prevPage = () => {
+		if (activeTab === 'events') {
+			setEventsPage(eventsPage !== 1 ? eventsPage - 1 : eventsPage);
+		} else if (activeTab === 'venues') {
+			setVenuesPage(venuesPage !== 1 ? venuesPage - 1 : venuesPage);
+		}
+	};
+
+	const nextPage = () => {
+		if (activeTab === 'events') {
+			setEventsPage(
+				eventsPage !== numEventsPages ? eventsPage + 1 : eventsPage
+			);
+		} else if (activeTab === 'venues') {
+			setVenuesPage(
+				venuesPage !== numVenuesPages ? venuesPage + 1 : venuesPage
+			);
+		}
 	};
 
 	const filterData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,29 +118,17 @@ export default function Home() {
 					<Box>
 						<Tabs.Content value="events">
 							<QueryClientProvider client={queryClient}>
-								<Events page={page} />
+								<Events page={eventsPage} />
 							</QueryClientProvider>
 						</Tabs.Content>
 						<Tabs.Content value="venues">
 							<QueryClientProvider client={queryClient}>
-								<Venues page={page} />
+								<Venues page={venuesPage} />
 							</QueryClientProvider>
 						</Tabs.Content>
 						<Flex justify="between" width="100px">
-							<Button
-								onClick={() =>
-									setPage(page !== 1 ? page - 1 : page)
-								}
-							>
-								{'<'}
-							</Button>
-							<Button
-								onClick={() =>
-									setPage(page !== numPages ? page + 1 : page)
-								}
-							>
-								{'>'}
-							</Button>
+							<Button onClick={prevPage}>{'<'}</Button>
+							<Button onClick={nextPage}>{'>'}</Button>
 						</Flex>
 					</Box>
 				</Tabs.Root>
@@ -173,7 +183,6 @@ function Events({ page }: queryParams) {
 async function fetchVenues({ queryKey }: { queryKey: [string, queryParams] }) {
 	const [_key, { page }] = queryKey;
 	const authToken = getAuthToken();
-	console.log(_key, page);
 	return await fetch(
 		`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues?Page=${page}`,
 		{
@@ -189,7 +198,6 @@ async function fetchVenues({ queryKey }: { queryKey: [string, queryParams] }) {
 async function fetchEvents({ queryKey }: { queryKey: [string, queryParams] }) {
 	const [_key, { page }] = queryKey;
 	const authToken = getAuthToken();
-	console.log(_key, page);
 	return await fetch(
 		`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}`,
 		{
