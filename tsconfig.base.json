@@ -15,6 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"@platform/blockchain": ["packages/blockchain/src/index.ts"],
 			"@platform/types": ["packages/types/src/index.ts"],
 			"@platform/ui": ["packages/ui/src/index.ts"]
 		}

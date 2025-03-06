@@ -1,20 +1,21 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
-import { VenueCreationFormData } from '@platform/types';
+import { VenueEditableFields } from '@platform/types';
 import { TextField, Text } from '@radix-ui/themes';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BaseModalForm } from '@platform/ui';
 
-type AddVenueModalProps = {
+type EditVenueModalProps = {
 	onClose: () => void;
+	pk: number;
 };
 
-export default function AddVenueModal({ onClose }: AddVenueModalProps) {
+export default function EditVenueModal({ pk, onClose }: EditVenueModalProps) {
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
-	const [formData, setFormData] = useState<VenueCreationFormData>({
+	const [formData, setFormData] = useState<VenueEditableFields>({
 		Name: '',
 		StreetAddress: '',
 		Zip: '',
@@ -22,9 +23,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 		StateCode: '',
 		StateName: '',
 		CountryCode: '',
-		CountryName: '',
-		NumUnique: 0,
-		NumGa: 0
+		CountryName: ''
 	});
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,33 +34,26 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 		});
 	};
 
-	const validate = () => {
-		if (
-			formData.Name === '' ||
-			formData.StreetAddress === '' ||
-			!/^\d{5}$/.test(formData.Zip.toString()) ||
-			formData.City === '' ||
-			!/^[A-Z]{2}-[A-Z]{2}$/.test(formData.StateCode) ||
-			formData.StateCode === '' ||
-			!/^[A-Z]{2}$/.test(formData.CountryCode) ||
-			formData.CountryName === '' ||
-			(formData.NumUnique === 0 && formData.NumGa === 0) ||
-			formData.NumUnique < 0 ||
-			formData.NumGa < 0
-		) {
-			setErrorMessage(
-				'You are either missing a field or have an invalid input'
-			);
-			return false;
+	const convertToBody = (event: VenueEditableFields): object => {
+		let returnObject = {};
+		for (const key in event) {
+			const value = event[key as keyof VenueEditableFields];
+			if (value !== '') {
+				returnObject = { ...returnObject, [key]: value };
+			}
 		}
-		return true;
+		return returnObject;
 	};
 
 	const handleSubmit = async () => {
-		if (!validate()) {
+		let body = convertToBody(formData);
+		if (Object.keys(body).length === 0) {
+			setErrorMessage('No fields were changed');
 			setShouldShowError(true);
 			return;
 		}
+		body = { ...body, Pk: pk };
+		console.log(body);
 		setShouldShowError(false);
 		setIsSubmitting(true);
 		try {
@@ -69,12 +61,12 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 			const res = await fetch(
 				process.env.NX_PUBLIC_API_BASEURL + '/vendor/venues',
 				{
-					method: 'POST',
+					method: 'PATCH',
 					headers: {
 						'Content-Type': 'application/json',
 						Authorization: `Bearer ${authToken}`
 					},
-					body: JSON.stringify(formData)
+					body: JSON.stringify(body)
 				}
 			);
 			const data = await res.json();
@@ -86,7 +78,7 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 			}
 		} catch (error) {
 			console.error(error);
-			setErrorMessage('Failed to add venue');
+			setErrorMessage('An Error Occurred');
 			setShouldShowError(true);
 			setIsSubmitting(false);
 			return;
@@ -98,13 +90,15 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 
 	return (
 		<BaseModalForm
-			title="Add a New Venue"
+			title="Update a Venue."
 			isSubmitting={isSubmitting}
 			errorMessage={errorMessage}
 			showError={shouldShowError}
 			onSubmit={handleSubmit}
 			onClose={onClose}
 		>
+			<Text>Only fields edited here will be changed.</Text>
+
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
 					Name
@@ -193,30 +187,6 @@ export default function AddVenueModal({ onClose }: AddVenueModalProps) {
 					placeholder="United States"
 					value={formData.CountryName}
 					onChange={handleChange}
-				/>
-			</label>
-			<label>
-				<Text as="div" size="2" mb="1" weight="bold">
-					Unique Seats Quantity
-				</Text>
-				<TextField.Root
-					name="NumUnique"
-					placeholder="Unique Seats Quantity"
-					value={formData.NumUnique}
-					onChange={handleChange}
-					type="number"
-				/>
-			</label>
-			<label>
-				<Text as="div" size="2" mb="1" weight="bold">
-					General Admission Quantity
-				</Text>
-				<TextField.Root
-					name="NumGa"
-					placeholder="General Admission Quantity"
-					value={formData.NumGa}
-					onChange={handleChange}
-					type="number"
 				/>
 			</label>
 		</BaseModalForm>

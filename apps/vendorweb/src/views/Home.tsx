@@ -19,9 +19,17 @@ import AddEventModal from '../components/AddEventModal';
 import AddVenueModal from '../components/AddVenueModal';
 import VendorTable from '../components/VendorTable';
 
+interface queryParams {
+	page: number;
+}
+
 const queryClient = new QueryClient();
 
 export default function Home() {
+	const [eventsPage, setEventsPage] = useState<number>(1);
+	const [venuesPage, setVenuesPage] = useState<number>(1);
+	const [numEventsPages, setNumEventsPages] = useState<number>(5);
+	const [numVenuesPages, setNumVenuesPages] = useState<number>(5);
 	const [eventData, setEventData] = useState<Event[]>([]);
 	const [venueData, setVenueData] = useState<Venue[]>([]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
@@ -36,6 +44,26 @@ export default function Home() {
 	const addRow = () => {
 		setModalType(activeTab);
 		setShowModal(true);
+	};
+
+	const prevPage = () => {
+		if (activeTab === 'events') {
+			setEventsPage(eventsPage !== 1 ? eventsPage - 1 : eventsPage);
+		} else if (activeTab === 'venues') {
+			setVenuesPage(venuesPage !== 1 ? venuesPage - 1 : venuesPage);
+		}
+	};
+
+	const nextPage = () => {
+		if (activeTab === 'events') {
+			setEventsPage(
+				eventsPage !== numEventsPages ? eventsPage + 1 : eventsPage
+			);
+		} else if (activeTab === 'venues') {
+			setVenuesPage(
+				venuesPage !== numVenuesPages ? venuesPage + 1 : venuesPage
+			);
+		}
 	};
 
 	const filterData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,14 +118,18 @@ export default function Home() {
 					<Box>
 						<Tabs.Content value="events">
 							<QueryClientProvider client={queryClient}>
-								<Events />
+								<Events page={eventsPage} />
 							</QueryClientProvider>
 						</Tabs.Content>
 						<Tabs.Content value="venues">
 							<QueryClientProvider client={queryClient}>
-								<Venues />
+								<Venues page={venuesPage} />
 							</QueryClientProvider>
 						</Tabs.Content>
+						<Flex justify="between" width="100px">
+							<Button onClick={prevPage}>{'<'}</Button>
+							<Button onClick={nextPage}>{'>'}</Button>
+						</Flex>
 					</Box>
 				</Tabs.Root>
 				{showModal &&
@@ -112,9 +144,9 @@ export default function Home() {
 	);
 }
 
-function Venues() {
+function Venues({ page }: queryParams) {
 	const { isPending, isError, data, error } = useQuery({
-		queryKey: ['venues'],
+		queryKey: ['venues', { page }],
 		queryFn: fetchVenues
 	});
 
@@ -130,9 +162,9 @@ function Venues() {
 	return <VendorTable rowData={data} tableType="venue" />;
 }
 
-function Events() {
+function Events({ page }: queryParams) {
 	const { isPending, isError, data, error } = useQuery({
-		queryKey: ['events'],
+		queryKey: ['events', { page }],
 		queryFn: fetchEvents
 	});
 
@@ -142,29 +174,37 @@ function Events() {
 
 	if (isError) {
 		console.error(error.message);
-		return <Text>Error: {error.message}</Text>;
+		return <Text> Error: {error.message} </Text>;
 	}
 
 	return <VendorTable rowData={data} tableType="event" />;
 }
 
-async function fetchVenues() {
+async function fetchVenues({ queryKey }: { queryKey: [string, queryParams] }) {
+	const [_key, { page }] = queryKey;
 	const authToken = getAuthToken();
-	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues`, {
-		method: 'GET',
-		headers: { Authorization: `Bearer ${authToken}` }
-	})
+	return await fetch(
+		`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues?Page=${page}`,
+		{
+			method: 'GET',
+			headers: { Authorization: `Bearer ${authToken}` }
+		}
+	)
 		.then((resp) => resp.json())
 		.then((data) => data)
 		.catch((error) => error);
 }
 
-async function fetchEvents() {
+async function fetchEvents({ queryKey }: { queryKey: [string, queryParams] }) {
+	const [_key, { page }] = queryKey;
 	const authToken = getAuthToken();
-	return await fetch(`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events`, {
-		method: 'GET',
-		headers: { Authorization: `Bearer ${authToken}` }
-	})
+	return await fetch(
+		`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}`,
+		{
+			method: 'GET',
+			headers: { Authorization: `Bearer ${authToken}` }
+		}
+	)
 		.then((resp) => resp.json())
 		.then((data) => data)
 		.catch((error) => error);

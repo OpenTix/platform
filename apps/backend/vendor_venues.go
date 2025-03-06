@@ -31,6 +31,19 @@ type VenuePostBodyParams struct {
 	Vendor      int32
 }
 
+type VenuePatchBodyParams struct {
+	Pk 		int32  `json:"Pk"`
+	Name        string `json:"Name"`
+	StreetAddress  string `json:"StreetAddress"`
+	Zip         string `json:"Zip"`
+	City        string `json:"City"`
+	StateCode   string `json:"StateCode"`
+	StateName   string `json:"StateName"`
+	CountryCode string `json:"CountryCode"`
+	CountryName string `json:"CountryName"`
+	Photo	   string `json:"Photo"`
+}
+
 func init() {
 	connStr = shared.InitLambda()
 }
@@ -256,18 +269,76 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}, nil
 }
 
+func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    // Grab auth token
+    tk, err := shared.GetTokenFromRequest(request)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+    }
+
+    // Grab wallet address from token
+    vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+    }
+
+    // Unmarshal body into VenuePatchBodyParams
+    var params VenuePatchBodyParams
+    err = json.Unmarshal([]byte(request.Body), &params)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
+    }
+
+    // Connect to the database
+    conn, err := pgx.Connect(ctx, connStr)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
+    }
+    defer conn.Close(ctx)
+    queries := query.New(conn)
+
+
+    // Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
+    arg := query.VendorPatchVenueParams{
+        Pk:       params.Pk,
+        Wallet:   vendorinfo.Wallet,
+        Column3:  params.Name,
+        Column4:  params.StreetAddress,
+        Column5:  params.Zip,
+        Column6:  params.City,
+        Column7:  params.StateCode,
+        Column8:  params.StateName,
+        Column9:  params.CountryCode,
+        Column10: params.CountryName,
+        Column11: params.Photo,
+    }
+
+    updatedVenue, err := queries.VendorPatchVenue(ctx, arg)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
+    }
+
+    responseBody, err := json.Marshal(updatedVenue)
+    if err != nil {
+        return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
+    }
+
+    return events.APIGatewayProxyResponse{
+        StatusCode: 200,
+        Body:       string(responseBody),
+        Headers:    shared.GetResponseHeaders(request.Headers),
+    }, nil
+}
+
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if request.HTTPMethod == "GET" {
 		return handleGet(ctx, request)
 	} else if request.HTTPMethod == "POST" {
 		return handlePost(ctx, request)
+	} else if request.HTTPMethod == "PATCH" {
+		return handlePatch(ctx, request)
 	} else {
-		body, _ := json.Marshal(map[string]string{"message": "Method Not Allowed."})
-		return events.APIGatewayProxyResponse{
-			StatusCode: 405,
-			Body:       string(body),
-			Headers:    shared.GetResponseHeaders(request.Headers),
-		}, nil
+		return shared.CreateErrorResponse(405, "Method Not Allowed", request.Headers)
 	}
 }
 

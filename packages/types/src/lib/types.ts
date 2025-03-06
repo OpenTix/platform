@@ -12,6 +12,7 @@ export type Event = {
 	NumUnique: number;
 	NumGa: number;
 	Photo: string;
+	TransactionHash: string;
 };
 
 export type Venue = {
@@ -58,6 +59,23 @@ export type VenueCreationFormData = Pick<
 	| 'NumGa'
 >;
 
+export type EventEditableFields = Pick<
+	Event,
+	'Type' | 'Description' | 'Disclaimer'
+>;
+
+export type VenueEditableFields = Pick<
+	Venue,
+	| 'Name'
+	| 'StreetAddress'
+	| 'Zip'
+	| 'City'
+	| 'StateCode'
+	| 'StateName'
+	| 'CountryCode'
+	| 'CountryName'
+>;
+
 export type AllVenuesListSimplifiedResponse = Pick<Venue, 'Pk' | 'ID' | 'Name'>;
 
 const EVENT_DEFAULT_DO_NOT_USE: Event = {
@@ -73,7 +91,8 @@ const EVENT_DEFAULT_DO_NOT_USE: Event = {
 	Basecost: 0,
 	NumUnique: 0,
 	NumGa: 0,
-	Photo: ''
+	Photo: '',
+	TransactionHash: ''
 };
 
 const VENUE_DEFAULT_DO_NOT_USE: Venue = {
