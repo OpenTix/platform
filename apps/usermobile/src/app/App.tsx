@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { dynamicClient } from '../../components/DynamicSetup';
 import { Home } from '../../components/Home';
+import ScreenLayout from '../../components/ScreenLayout';
+import Stack from '../../components/Stack';
 
 export default function App() {
 	const [isLoggedIn, setisLoggedIn] = useState<boolean>(
@@ -24,25 +26,27 @@ export default function App() {
 		dynamicClient.ui.auth.show();
 	};
 
-	return (
-		<NavigationContainer>
-			<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
-				<dynamicClient.reactNative.WebView />
-				<StatusBar />
-				<SafeAreaView>
-					<ScrollView>
-						{isLoggedIn ? (
-							<>
-								<Home onClose={() => setisLoggedIn(false)} />
-							</>
-						) : (
-							<>
-								<Button title="Login" onPress={() => login()} />
-							</>
-						)}
-					</ScrollView>
-				</SafeAreaView>
-			</View>
-		</NavigationContainer>
-	);
+	return <NavigationContainer>{<ScreenLayout />}</NavigationContainer>;
+
+	// return (
+	// 	<NavigationContainer>
+	// 		<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
+	// 			<dynamicClient.reactNative.WebView />
+	// 			<StatusBar />
+	// 			<SafeAreaView>
+	// 				<ScrollView>
+	// 					{isLoggedIn ? (
+	// 						<>
+	// 							<Home onClose={() => setisLoggedIn(false)} />
+	// 						</>
+	// 					) : (
+	// 						<>
+	// 							<Button title="Login" onPress={() => login()} />
+	// 						</>
+	// 					)}
+	// 				</ScrollView>
+	// 			</SafeAreaView>
+	// 		</View>
+	// 	</NavigationContainer>
+	// );
 }

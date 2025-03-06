@@ -25,12 +25,12 @@
 	},
 	"private": true,
 	"dependencies": {
-		"@dynamic-labs/client": "4.6.1",
-		"@dynamic-labs/ethereum": "4.6.1",
-		"@dynamic-labs/react-hooks": "4.6.1",
-		"@dynamic-labs/react-native-extension": "4.6.1",
-		"@dynamic-labs/sdk-react-core": "4.6.1",
-		"@dynamic-labs/viem-extension": "4.6.1",
+		"@dynamic-labs/client": "4.8.4",
+		"@dynamic-labs/ethereum": "4.8.4",
+		"@dynamic-labs/react-hooks": "4.8.4",
+		"@dynamic-labs/react-native-extension": "4.8.4",
+		"@dynamic-labs/sdk-react-core": "4.8.4",
+		"@dynamic-labs/viem-extension": "4.8.4",
 		"@expo/metro-config": "~0.19.4",
 		"@expo/metro-runtime": "~4.0.0",
 		"@mantine/core": "^7.17.1",
@@ -52,8 +52,8 @@
 		"expo-splash-screen": "~0.29.22",
 		"expo-status-bar": "~2.0.1",
 		"expo-web-browser": "^13.0.0",
-		"react": "18.3.1",
-		"react-dom": "18.3.1",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
 		"react-native": "^0.74.0",
 		"react-native-elements": "^3.4.3",
 		"react-native-paper": "^5.13.1",
@@ -65,7 +65,8 @@
 		"styled-components": "5.3.6",
 		"tanstack": "^1.0.0",
 		"usehooks-ts": "^3.1.1",
-		"viem": "^2.23.2"
+		"viem": "^2.23.2",
+		"expo-router": "~4.0.17"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.5",
@@ -97,13 +98,13 @@
 		"@swc/helpers": "~0.5.11",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/jest-native": "~5.4.3",
-		"@testing-library/react": "16.1.0",
+		"@testing-library/react": "^16.1.0",
 		"@testing-library/react-native": "12.9.0",
 		"@trivago/prettier-plugin-sort-imports": "^5.2.1",
 		"@types/jest": "29.5.14",
 		"@types/node": "18.16.9",
 		"@types/react": "18.3.18",
-		"@types/react-dom": "18.3.5",
+		"@types/react-dom": "18.3.1",
 		"@types/react-is": "18.3.0",
 		"@types/styled-components": "5.1.26",
 		"aws-cdk": "^2.173.2",
@@ -148,6 +149,7 @@
 		"eciesjs": "0.4.14",
 		"koa": ">=2.15.4",
 		"cross-spawn": ">=6.0.6",
-		"react": "18.3.1"
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0"
 	}
 }
