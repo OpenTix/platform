@@ -8,37 +8,11 @@ permissions:
     contents: read
 
 jobs:
-    define-matrix:
-        runs-on: self-hosted
-        outputs:
-            lint-tasks: ${{ steps.matrix.outputs.lint-tasks }}
-            test-tasks: ${{ steps.matrix.outputs.test-tasks }}
-            build-tasks: ${{ steps.matrix.outputs.build-tasks }}
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: 'npm'
-
-            - run: npm ci --legacy-peer-deps
-            - id: matrix
-              run: |
-                arr=()
-                while IFS= read -r line; do
-                    arr+=("$line")
-                done < <(./scripts/CreateJobMatrix.sh)
-                lint=${arr[0]}
-                test=${arr[1]}
-                build=${arr[2]}
-                echo "lint-tasks=$lint" >> $GITHUB_OUTPUT
-                echo "test-tasks=$test" >> $GITHUB_OUTPUT
-                echo "build-tasks=$build" >> $GITHUB_OUTPUT
-                
     prettier:
         runs-on: self-hosted
         steps:
             - uses: actions/checkout@v4
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
@@ -49,52 +23,47 @@ jobs:
 
     lint:
         runs-on: self-hosted
-        needs: [define-matrix]
-        strategy:
-            fail-fast: false
-            matrix:
-                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
         steps:
             - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run ${{ matrix.tasks }}:lint
-
+            - uses: nrwl/nx-set-shas@v4
+            - run: npx nx affected -t lint
 
     test:
         runs-on: self-hosted
-        needs: [define-matrix]
-        strategy:
-            fail-fast: false
-            matrix:
-                tasks: ${{ fromJSON(needs.define-matrix.outputs.test-tasks) }}
         steps:
             - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run ${{ matrix.tasks }}:test
-
+            - uses: nrwl/nx-set-shas@v4
+            - run: npx nx affected -t test
     build:
         runs-on: self-hosted
-        needs: [define-matrix]
-        strategy:
-            fail-fast: false
-            matrix:
-                tasks: ${{ fromJSON(needs.define-matrix.outputs.build-tasks) }}
         steps:
             - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   cache: 'npm'
 
             - run: npm ci --legacy-peer-deps
-            - run: npx nx run ${{ matrix.tasks }}:build
+            - uses: nrwl/nx-set-shas@v4
+            - run: npx nx affected -t build 
