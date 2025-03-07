@@ -11,6 +11,33 @@ permissions:
     contents: read
 
 jobs:
+    define-matrix:
+        runs-on: self-hosted
+        outputs:
+            lint-tasks: ${{ steps.matrix.outputs.lint-tasks }}
+            test-tasks: ${{ steps.matrix.outputs.test-tasks }}
+            build-tasks: ${{ steps.matrix.outputs.build-tasks }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'npm'
+
+            - run: npm ci --legacy-peer-deps
+            - id: matrix
+              run: |
+                arr=()
+                while IFS= read -r line; do
+                    arr+=("$line")
+                done < <(./scripts/CreateJobMatrix.sh)
+                lint=${arr[0]}
+                test=${arr[1]}
+                build=${arr[2]}
+                echo "lint-tasks=$lint" >> $GITHUB_OUTPUT
+                echo "test-tasks=$test" >> $GITHUB_OUTPUT
+                echo "build-tasks=$build" >> $GITHUB_OUTPUT
+
     prettier:
         runs-on: self-hosted
         steps:
@@ -35,6 +62,11 @@ jobs:
 
     lint:
         runs-on: self-hosted
+        needs: [define-matrix]
+        strategy:
+            fail-fast: false
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
         steps:
             - uses: actions/checkout@v4
 
@@ -51,13 +83,18 @@ jobs:
             - run: npm i
               if: steps.local-cache.outputs.cache-hit != 'true'
 
-            - run: npx nx run-many -t lint
+            - run: npx nx run ${{ matrix.tasks }}:lint
               env:
                 NODE_OPTIONS: "--max_old_space_size=4096"
 
 
     test:
         runs-on: self-hosted
+        needs: [define-matrix]
+        strategy:
+            fail-fast: false
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
         steps:
             - uses: actions/checkout@v4
 
@@ -74,14 +111,41 @@ jobs:
             - run: npm i
               if: steps.local-cache.outputs.cache-hit != 'true'
 
-            - run: npx nx run-many -t test
+            - run: npx nx run ${{ matrix.tasks }}:test
+              env:
+                NODE_OPTIONS: "--max_old_space_size=4096"
+
+    build:
+        runs-on: self-hosted
+        needs: [define-matrix]
+        strategy:
+            fail-fast: false
+            matrix:
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+              
+            - uses: MasterworksIO/action-local-cache@2
+              id: local-cache
+              with:
+                path: node_modules
+                key: ${{ hashFiles('package-lock.json') }}
+
+            - run: npm i
+              if: steps.local-cache.outputs.cache-hit != 'true'
+
+            - run: npx nx run ${{ matrix.tasks }}:build
               env:
                 NODE_OPTIONS: "--max_old_space_size=4096"
 
 
-    build-and-deploy:
+    deploy:
         runs-on: self-hosted
-        needs: [test]
+        needs: [test, build]
         steps:
             - uses: actions/checkout@v4
 
