@@ -32,7 +32,7 @@ jobs:
               with:
                   path: node_modules
                   key: ${{ hashFiles('package-lock.json') }}
-                  base: /home/docker/.cache
+                  base: /home/docker/actions-runner/_work/_tool/.cache
             
             - uses: actions/setup-node@v4
               with:
