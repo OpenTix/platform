@@ -28,9 +28,6 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: "Just do it"
-              run: export NODE_OPTIONS="--max_old_space_size=4096"
-
             - uses: actions/setup-node@v4
               with:
                     node-version: 20
@@ -47,6 +44,8 @@ jobs:
 
             - uses: nrwl/nx-set-shas@v4
             - run: npx nx affected -t lint
+              env:
+                NODE_OPTIONS: "--max_old_space_size=4096"
 
     test:
         runs-on: self-hosted
@@ -69,9 +68,6 @@ jobs:
             - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
-            
-            - name: "Just do it"
-              run: export NODE_OPTIONS="--max_old_space_size=4096"
 
             - uses: actions/setup-node@v4
               with:
@@ -86,6 +82,8 @@ jobs:
 
             - run: npm i
               if: steps.local-cache.outputs.cache-hit != 'true'
+              env:
+                NODE_OPTIONS: "--max_old_space_size=4096"
 
             - uses: nrwl/nx-set-shas@v4
             - run: npx nx run-many -t build 
