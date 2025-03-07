@@ -19,9 +19,16 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: 'npm'
+                  
+            - uses: MasterworksIO/action-local-cache@2
+              id: local-cache
+              with:
+                path: node_modules
+                key: ${{ hashFiles('package-lock.json') }}
 
-            - run: npm ci --legacy-peer-deps
+            - run: npm i
+              if: steps.local-cache.outputs.cache-hit != 'true'
+
             - id: matrix
               run: |
                 arr=()
@@ -66,7 +73,7 @@ jobs:
                 tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
         steps:
             - uses: actions/checkout@v4
-            
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
