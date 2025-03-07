@@ -22,22 +22,21 @@ jobs:
             - run: npx prettier --check .
 
     lint:
-        runs-on: self-hosted
+        runs-on: test
         steps:
             - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
             
+            - uses: actions/cache@v4
+              with:
+                path: node_modules
+                key: ${{ hashFiles('package-lock.json') }}
+            
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                 #   cache: 'npm'
-
-            - uses: corca-ai/local-cache@v3
-              with:
-                    path: node_modules/**
-                    key: ${{ hashFiles('package-lock.json') }}
-                    base: /home/docker/actions-runner/_work/_tool/.cache
 
             - run: npm ci --legacy-peer-deps
             - uses: nrwl/nx-set-shas@v4
