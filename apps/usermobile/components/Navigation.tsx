@@ -1,13 +1,49 @@
-import { createClient } from '@dynamic-labs/client';
-import { useReactiveClient } from '@dynamic-labs/react-hooks';
-import { ReactNativeExtension } from '@dynamic-labs/react-native-extension';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text, PlatformPressable } from '@react-navigation/elements';
+import {
+	createStaticNavigation,
+	useNavigation,
+	useLinkBuilder,
+	useTheme
+} from '@react-navigation/native';
+import { View, Platform, Button } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import { Touchable } from 'react-native';
+import { Avatar } from 'react-native-paper';
+import { dynamicClient } from './DynamicSetup';
+import HomeScreen from './Home2';
+import ProfileScreen from './Profile';
+import TransferScreen from './TicketTransfer';
 
-if (!process.env.EXPO_PUBLIC_DYNAMIC_ENVIRONMENT_ID) {
-	throw new Error('Missing Dynamic Environment ID');
-}
+const logUserOut = () => {
+	console.log('LOGGED OUT');
+	dynamicClient.auth.logout();
+};
 
-export const dynamicClient = createClient({
-	environmentId: process.env.EXPO_PUBLIC_DYNAMIC_ENVIRONMENT_ID
-}).extend(ReactNativeExtension());
+const showProfile = () => {
+	console.log('showing profile');
+	dynamicClient.ui.userProfile.show();
+};
 
-export const useDynamic = () => useReactiveClient(dynamicClient);
+const MyTabs = createBottomTabNavigator({
+	screens: {
+		Home: HomeScreen,
+		Transfer: TransferScreen,
+		Profile: ProfileScreen
+	},
+	screenOptions: {
+		headerRight: () => (
+			// <TouchableOpacity>
+			// 	{
+			// 	<Avatar.Icon size={30} icon="login" />
+			//     }
+			// </TouchableOpacity>
+			<Button title="logout" onPress={logUserOut} />
+		),
+		headerLeft: () => <Button title="profile" onPress={showProfile} />
+	}
+});
+
+const Navigation = createStaticNavigation(MyTabs);
+
+export default Navigation;

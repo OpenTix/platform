@@ -1,52 +1,51 @@
-import { NavigationContainer } from '@react-navigation/native';
-import React, { useState } from 'react';
+// import { NavigationContainer } from '@react-navigation/native';
 import {
-	SafeAreaView,
-	ScrollView,
-	View,
-	Button,
-	StatusBar
-} from 'react-native';
-import { dynamicClient } from '../../components/DynamicSetup';
-import { Home } from '../../components/Home';
-import ScreenLayout from '../../components/ScreenLayout';
-import Stack from '../../components/Stack';
+	createStaticNavigation,
+	NavigationContainer
+} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as React from 'react';
+import { StatusBar } from 'react-native';
+// import { dynamicClient } from '../../components/DynamicSetup';
+// import { Home } from '../../components/Home';
+// import ScreenLayout from '../../components/ScreenLayout';
+// import Stack from '../../components/Stack';
+import { View } from 'react-native';
+// import { useLinkBuilder, useTheme } from '@react-navigation/native';
+// import { Text, PlatformPressable } from '@react-navigation/elements';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
+import { useDynamic } from '../../components/DynamicSetup';
+import Navigation from '../../components/Navigation';
 
 export default function App() {
-	const [isLoggedIn, setisLoggedIn] = useState<boolean>(
-		dynamicClient.auth.email ? true : false
-	);
+	const client = useDynamic();
 
-	dynamicClient.auth.on('authSuccess', (user) => {
+	if (client.auth.token === null) client.ui.auth.show();
+
+	client.auth.on('authFailed', () => {
+		console.log('User failed to login');
+	});
+	client.auth.on('authSuccess', (user) => {
 		console.log('User logged in', user);
-		setisLoggedIn(true);
+	});
+	client.ui.on('authFlowCancelled', () => {
+		console.log('User cancelled the flow not cool');
+		client.ui.auth.show();
 	});
 
-	const login = () => {
-		dynamicClient.ui.auth.show();
-	};
-
-	return <NavigationContainer>{<ScreenLayout />}</NavigationContainer>;
-
-	// return (
-	// 	<NavigationContainer>
-	// 		<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
-	// 			<dynamicClient.reactNative.WebView />
-	// 			<StatusBar />
-	// 			<SafeAreaView>
-	// 				<ScrollView>
-	// 					{isLoggedIn ? (
-	// 						<>
-	// 							<Home onClose={() => setisLoggedIn(false)} />
-	// 						</>
-	// 					) : (
-	// 						<>
-	// 							<Button title="Login" onPress={() => login()} />
-	// 						</>
-	// 					)}
-	// 				</ScrollView>
-	// 			</SafeAreaView>
-	// 		</View>
-	// 	</NavigationContainer>
-	// );
+	return (
+		<>
+			<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
+				<client.reactNative.WebView />
+				<StatusBar
+					backgroundColor={'white'}
+					barStyle={'dark-content'}
+					translucent={false}
+					hidden={false}
+				/>
+				{client.auth.token != null ? <Navigation /> : <Text></Text>}
+			</View>
+		</>
+	);
 }
