@@ -82,8 +82,8 @@ jobs:
 
             - run: npm i
               if: steps.local-cache.outputs.cache-hit != 'true'
-              env:
-                NODE_OPTIONS: "--max_old_space_size=4096"
 
             - uses: nrwl/nx-set-shas@v4
-            - run: npx nx run-many -t build 
+            - run: npx nx run-many -t build
+              env:
+                NODE_OPTIONS: "--max_old_space_size=4096"
