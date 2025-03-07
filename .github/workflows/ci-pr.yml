@@ -28,10 +28,15 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - uses: MasterworksIO/action-local-cache@2
+              with:
+                path: node_modules
+                key: ${{ hashFiles('package-lock.json') }}
+
             - uses: actions/setup-node@v4
               with:
                 node-version: 20
-                cache: 'npm'
+                # cache: 'npm'
             
             # - uses: actions/cache@v4
             #   with:
