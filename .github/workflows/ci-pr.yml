@@ -22,7 +22,7 @@ jobs:
             - run: npx prettier --check .
 
     lint:
-        runs-on: test
+        runs-on: [self-hosted, test]
         steps:
             - uses: actions/checkout@v4
               with:
