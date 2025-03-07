@@ -35,7 +35,7 @@ jobs:
 
             - uses: corca-ai/local-cache@v3
               with:
-                    path: node_modules
+                    path: node_modules/
                     key: ${{ hashFiles('package-lock.json') }}
                     base: /home/docker/actions-runner/_work/_tool/.cache
 
