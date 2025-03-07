@@ -101,7 +101,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.test-tasks) }}
         steps:
             - uses: actions/checkout@v4
 
@@ -128,7 +128,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                tasks: ${{ fromJSON(needs.define-matrix.outputs.lint-tasks) }}
+                tasks: ${{ fromJSON(needs.define-matrix.outputs.build-tasks) }}
         steps:
             - uses: actions/checkout@v4
 
