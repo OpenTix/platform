@@ -38,9 +38,8 @@ jobs:
               with:
                 path: node_modules
                 key: ${{ hashFiles('package-lock.json') }}
-                strategy: copy
 
-            - run: npm ci --legacy-peer-deps
+            - run: npm i --legacy-peer-deps
               if: steps.local-cache.outputs.cache-hit != 'true'
 
             - uses: nrwl/nx-set-shas@v4
@@ -78,9 +77,8 @@ jobs:
               with:
                     path: node_modules
                     key: ${{ hashFiles('package-lock.json') }}
-                    strategy: copy
 
-            - run: npm ci --legacy-peer-deps
+            - run: npm i --legacy-peer-deps
               if: steps.local-cache.outputs.cache-hit != 'true'
 
             - uses: nrwl/nx-set-shas@v4
