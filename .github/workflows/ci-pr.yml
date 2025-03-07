@@ -82,4 +82,4 @@ jobs:
               if: steps.local-cache.outputs.cache-hit != 'true'
 
             - uses: nrwl/nx-set-shas@v4
-            - run: npx nx all -t build 
+            - run: npx nx run-many -t build 
