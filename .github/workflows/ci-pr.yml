@@ -28,11 +28,9 @@ jobs:
               with:
                   fetch-depth: 0
               
-            - name: Cache Dependencies
-              id: cache
-              uses: corca-ai/local-cache@v3
+            - uses: corca-ai/local-cache@v3
               with:
-                  path: '**/node_modules'
+                  path: node_modules
                   key: ${{ hashFiles('package-lock.json') }}
                   base: /home/docker/.cache
             
