@@ -1,55 +1,109 @@
-export const ContractAddress = '0x578d05ef4BDC8Ee7f0d23b3130BE5F130f88ab29';
+export const ContractAddress = '0xE30e1f5c14310797CeA37be45C5E7445E506C021';
 
 export const ContractABI = [
-	{ inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
+	{
+		inputs: [],
+		stateMutability: 'nonpayable',
+		type: 'constructor'
+	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'sender', type: 'address' },
-			{ internalType: 'uint256', name: 'balance', type: 'uint256' },
-			{ internalType: 'uint256', name: 'needed', type: 'uint256' },
-			{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }
+			{
+				internalType: 'address',
+				name: 'sender',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256',
+				name: 'balance',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256',
+				name: 'needed',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256',
+				name: 'tokenId',
+				type: 'uint256'
+			}
 		],
 		name: 'ERC1155InsufficientBalance',
 		type: 'error'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'approver', type: 'address' }
+			{
+				internalType: 'address',
+				name: 'approver',
+				type: 'address'
+			}
 		],
 		name: 'ERC1155InvalidApprover',
 		type: 'error'
 	},
 	{
 		inputs: [
-			{ internalType: 'uint256', name: 'idsLength', type: 'uint256' },
-			{ internalType: 'uint256', name: 'valuesLength', type: 'uint256' }
+			{
+				internalType: 'uint256',
+				name: 'idsLength',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256',
+				name: 'valuesLength',
+				type: 'uint256'
+			}
 		],
 		name: 'ERC1155InvalidArrayLength',
 		type: 'error'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'operator', type: 'address' }
+			{
+				internalType: 'address',
+				name: 'operator',
+				type: 'address'
+			}
 		],
 		name: 'ERC1155InvalidOperator',
 		type: 'error'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'receiver', type: 'address' }
+			{
+				internalType: 'address',
+				name: 'receiver',
+				type: 'address'
+			}
 		],
 		name: 'ERC1155InvalidReceiver',
 		type: 'error'
 	},
 	{
-		inputs: [{ internalType: 'address', name: 'sender', type: 'address' }],
+		inputs: [
+			{
+				internalType: 'address',
+				name: 'sender',
+				type: 'address'
+			}
+		],
 		name: 'ERC1155InvalidSender',
 		type: 'error'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'operator', type: 'address' },
-			{ internalType: 'address', name: 'owner', type: 'address' }
+			{
+				internalType: 'address',
+				name: 'operator',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: 'owner',
+				type: 'address'
+			}
 		],
 		name: 'ERC1155MissingApprovalForAll',
 		type: 'error'
@@ -243,40 +297,92 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+			{
+				internalType: 'uint256',
+				name: 'ticketid',
+				type: 'uint256'
+			}
 		],
 		name: 'allow_user_to_user_ticket_transfer',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'account', type: 'address' },
-			{ internalType: 'uint256', name: 'id', type: 'uint256' }
+			{
+				internalType: 'address',
+				name: 'account',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256',
+				name: 'id',
+				type: 'uint256'
+			}
 		],
 		name: 'balanceOf',
-		outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+		outputs: [
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address[]', name: 'accounts', type: 'address[]' },
-			{ internalType: 'uint256[]', name: 'ids', type: 'uint256[]' }
+			{
+				internalType: 'address[]',
+				name: 'accounts',
+				type: 'address[]'
+			},
+			{
+				internalType: 'uint256[]',
+				name: 'ids',
+				type: 'uint256[]'
+			}
 		],
 		name: 'balanceOfBatch',
-		outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+		outputs: [
+			{
+				internalType: 'uint256[]',
+				name: '',
+				type: 'uint256[]'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'user', type: 'address' },
-			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+			{
+				internalType: 'address',
+				name: 'user',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256',
+				name: 'ticketid',
+				type: 'uint256'
+			}
 		],
 		name: 'buy_ticket_from_user',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'payable',
 		type: 'function'
 	},
@@ -287,30 +393,64 @@ export const ContractABI = [
 				name: 'event_description',
 				type: 'string'
 			},
-			{ internalType: 'uint256[]', name: 'ids', type: 'uint256[]' }
+			{
+				internalType: 'uint256[]',
+				name: 'ids',
+				type: 'uint256[]'
+			}
 		],
 		name: 'buy_tickets',
 		outputs: [
-			{ internalType: 'bool', name: '', type: 'bool' },
-			{ internalType: 'uint256', name: '', type: 'uint256' }
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			},
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			}
 		],
 		stateMutability: 'payable',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'string', name: 'description', type: 'string' },
-			{ internalType: 'string', name: 'vendor_url', type: 'string' },
+			{
+				internalType: 'string',
+				name: 'description',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'vendor_url',
+				type: 'string'
+			},
 			{
 				internalType: 'uint256',
 				name: 'general_admission',
 				type: 'uint256'
 			},
-			{ internalType: 'uint256', name: 'unique_seats', type: 'uint256' },
-			{ internalType: 'uint256[]', name: 'costs', type: 'uint256[]' }
+			{
+				internalType: 'uint256',
+				name: 'unique_seats',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256[]',
+				name: 'costs',
+				type: 'uint256[]'
+			}
 		],
 		name: 'create_new_event',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
@@ -323,16 +463,74 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{ internalType: 'string', name: 'description', type: 'string' }
+			{
+				internalType: 'uint256[]',
+				name: 'ids',
+				type: 'uint256[]'
+			}
+		],
+		name: 'get_cost_for_tickets',
+		outputs: [
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			}
+		],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{
+				internalType: 'uint256',
+				name: 'id',
+				type: 'uint256'
+			}
+		],
+		name: 'get_event_description',
+		outputs: [
+			{
+				internalType: 'string',
+				name: '',
+				type: 'string'
+			}
+		],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{
+				internalType: 'string',
+				name: 'description',
+				type: 'string'
+			}
 		],
 		name: 'get_event_ids',
 		outputs: [
-			{ internalType: 'uint256[]', name: '', type: 'uint256[]' },
+			{
+				internalType: 'uint256[]',
+				name: '',
+				type: 'uint256[]'
+			},
 			{
 				components: [
-					{ internalType: 'uint256', name: 'min', type: 'uint256' },
-					{ internalType: 'uint256', name: 'max', type: 'uint256' },
-					{ internalType: 'bool', name: 'exists', type: 'bool' }
+					{
+						internalType: 'uint256',
+						name: 'min',
+						type: 'uint256'
+					},
+					{
+						internalType: 'uint256',
+						name: 'max',
+						type: 'uint256'
+					},
+					{
+						internalType: 'bool',
+						name: 'exists',
+						type: 'bool'
+					}
 				],
 				internalType: 'struct Ids',
 				name: '',
@@ -345,62 +543,164 @@ export const ContractABI = [
 	{
 		inputs: [],
 		name: 'get_events',
-		outputs: [{ internalType: 'string[]', name: '', type: 'string[]' }],
+		outputs: [
+			{
+				internalType: 'string[]',
+				name: '',
+				type: 'string[]'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'account', type: 'address' },
-			{ internalType: 'address', name: 'operator', type: 'address' }
+			{
+				internalType: 'address',
+				name: 'account',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: 'operator',
+				type: 'address'
+			}
 		],
 		name: 'isApprovedForAll',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'string', name: 'description', type: 'string' }
+			{
+				internalType: 'string',
+				name: 'description',
+				type: 'string'
+			}
 		],
 		name: 'is_description_available',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: '', type: 'address' },
-			{ internalType: 'address', name: '', type: 'address' },
-			{ internalType: 'uint256[]', name: '', type: 'uint256[]' },
-			{ internalType: 'uint256[]', name: '', type: 'uint256[]' },
-			{ internalType: 'bytes', name: '', type: 'bytes' }
+			{
+				internalType: 'address',
+				name: '',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: '',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256[]',
+				name: '',
+				type: 'uint256[]'
+			},
+			{
+				internalType: 'uint256[]',
+				name: '',
+				type: 'uint256[]'
+			},
+			{
+				internalType: 'bytes',
+				name: '',
+				type: 'bytes'
+			}
 		],
 		name: 'onERC1155BatchReceived',
-		outputs: [{ internalType: 'bytes4', name: '', type: 'bytes4' }],
+		outputs: [
+			{
+				internalType: 'bytes4',
+				name: '',
+				type: 'bytes4'
+			}
+		],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: '', type: 'address' },
-			{ internalType: 'address', name: '', type: 'address' },
-			{ internalType: 'uint256', name: '', type: 'uint256' },
-			{ internalType: 'uint256', name: '', type: 'uint256' },
-			{ internalType: 'bytes', name: '', type: 'bytes' }
+			{
+				internalType: 'address',
+				name: '',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: '',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			},
+			{
+				internalType: 'bytes',
+				name: '',
+				type: 'bytes'
+			}
 		],
 		name: 'onERC1155Received',
-		outputs: [{ internalType: 'bytes4', name: '', type: 'bytes4' }],
+		outputs: [
+			{
+				internalType: 'bytes4',
+				name: '',
+				type: 'bytes4'
+			}
+		],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'from', type: 'address' },
-			{ internalType: 'address', name: 'to', type: 'address' },
-			{ internalType: 'uint256[]', name: 'ids', type: 'uint256[]' },
-			{ internalType: 'uint256[]', name: 'values', type: 'uint256[]' },
-			{ internalType: 'bytes', name: 'data', type: 'bytes' }
+			{
+				internalType: 'address',
+				name: 'from',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: 'to',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256[]',
+				name: 'ids',
+				type: 'uint256[]'
+			},
+			{
+				internalType: 'uint256[]',
+				name: 'values',
+				type: 'uint256[]'
+			},
+			{
+				internalType: 'bytes',
+				name: 'data',
+				type: 'bytes'
+			}
 		],
 		name: 'safeBatchTransferFrom',
 		outputs: [],
@@ -409,11 +709,31 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'from', type: 'address' },
-			{ internalType: 'address', name: 'to', type: 'address' },
-			{ internalType: 'uint256', name: 'id', type: 'uint256' },
-			{ internalType: 'uint256', name: 'value', type: 'uint256' },
-			{ internalType: 'bytes', name: 'data', type: 'bytes' }
+			{
+				internalType: 'address',
+				name: 'from',
+				type: 'address'
+			},
+			{
+				internalType: 'address',
+				name: 'to',
+				type: 'address'
+			},
+			{
+				internalType: 'uint256',
+				name: 'id',
+				type: 'uint256'
+			},
+			{
+				internalType: 'uint256',
+				name: 'value',
+				type: 'uint256'
+			},
+			{
+				internalType: 'bytes',
+				name: 'data',
+				type: 'bytes'
+			}
 		],
 		name: 'safeTransferFrom',
 		outputs: [],
@@ -422,8 +742,16 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{ internalType: 'address', name: 'operator', type: 'address' },
-			{ internalType: 'bool', name: 'approved', type: 'bool' }
+			{
+				internalType: 'address',
+				name: 'operator',
+				type: 'address'
+			},
+			{
+				internalType: 'bool',
+				name: 'approved',
+				type: 'bool'
+			}
 		],
 		name: 'setApprovalForAll',
 		outputs: [],
@@ -432,17 +760,39 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{ internalType: 'bytes4', name: 'interfaceId', type: 'bytes4' }
+			{
+				internalType: 'bytes4',
+				name: 'interfaceId',
+				type: 'bytes4'
+			}
 		],
 		name: 'supportsInterface',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [
+			{
+				internalType: 'bool',
+				name: '',
+				type: 'bool'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
-		inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+		inputs: [
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256'
+			}
+		],
 		name: 'uri',
-		outputs: [{ internalType: 'string', name: '', type: 'string' }],
+		outputs: [
+			{
+				internalType: 'string',
+				name: '',
+				type: 'string'
+			}
+		],
 		stateMutability: 'view',
 		type: 'function'
 	}
