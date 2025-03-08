@@ -30,7 +30,7 @@
 		"@dynamic-labs/react-hooks": "4.8.4",
 		"@dynamic-labs/react-native-extension": "4.8.4",
 		"@dynamic-labs/sdk-react-core": "4.8.4",
-		"@dynamic-labs/viem-extension": "4.8.4",
+		"@dynamic-labs/viem-extension": "^4.8.4",
 		"@expo/metro-config": "~0.19.4",
 		"@expo/metro-runtime": "~4.0.0",
 		"@mantine/core": "^7.17.1",
