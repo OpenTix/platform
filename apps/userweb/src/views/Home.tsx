@@ -121,8 +121,7 @@ export default function Home() {
 
 		function groupEventTypes(events: UserEventResponse[]) {
 			const groupTypes: UserEventResponse[][] = [];
-			const groupNames = ['Other', 'Sporting Event', 'Concert'];
-			groupNames.forEach((name) =>
+			eventTypes.forEach((name) =>
 				groupTypes.push(
 					events?.filter(
 						(event: UserEventResponse) => event.Type === name
@@ -134,42 +133,45 @@ export default function Home() {
 
 		return (
 			<Flex direction={'column'}>
-				{groupEventTypes(data).map(
-					(group: UserEventResponse[], idx: number) => {
-						return group && group.length > 0 ? (
-							<Flex direction={'column'} key={`${idx}`}>
-								<Heading key={`Heading ${idx}`}>
-									{' '}
-									{group[0].Type}{' '}
-								</Heading>
-								<Flex
-									key={`List ${idx}`}
-									gap="3"
-									direction="row"
-									style={{ overflowX: 'scroll' }}
-								>
-									{group.map(
-										(
-											event: UserEventResponse,
-											jdx: number
-										) => (
-											<EventCard
-												key={jdx}
-												event={event}
-											/>
-										)
-									)}
+				{data && data.length > 0 ? (
+					groupEventTypes(data).map(
+						(group: UserEventResponse[], idx: number) => {
+							return group && group.length > 0 ? (
+								<Flex direction={'column'} key={`${idx}`}>
+									<Heading key={`Heading ${idx}`}>
+										{' '}
+										{group[0].Type}{' '}
+									</Heading>
+									<Flex
+										key={`List ${idx}`}
+										gap="3"
+										direction="row"
+										style={{ overflowX: 'scroll' }}
+									>
+										{group.map(
+											(
+												event: UserEventResponse,
+												jdx: number
+											) => (
+												<EventCard
+													key={jdx}
+													event={event}
+												/>
+											)
+										)}
+									</Flex>
 								</Flex>
-							</Flex>
-						) : (
-							<Card key={'pageError'}>
-								<Text>
-									There are no results of this type for page{' '}
-									{page}
-								</Text>
-							</Card>
-						);
-					}
+							) : (
+								<></>
+							);
+						}
+					)
+				) : (
+					<Card key={'pageError'}>
+						<Text>
+							There are no results of this type for page {page}
+						</Text>
+					</Card>
 				)}
 			</Flex>
 		);
