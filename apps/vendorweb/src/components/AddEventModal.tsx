@@ -1,7 +1,8 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import {
 	AllVenuesListSimplifiedResponse,
-	EventCreationFormData
+	EventCreationFormData,
+	eventTypes
 } from '@platform/types';
 import { Select, TextField, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
@@ -171,6 +172,11 @@ export default function AddEventModal({
 			onSubmit={handleSubmit}
 			onClose={onClose}
 		>
+			<label>
+				<Text as="div" size="2" mb="1" weight="bold">
+					Venue
+				</Text>
+			</label>
 			<Select.Root
 				onValueChange={(val) =>
 					setFormData({
@@ -208,13 +214,24 @@ export default function AddEventModal({
 				<Text as="div" size="2" mb="1" weight="bold">
 					Type
 				</Text>
-				<TextField.Root
-					name="Type"
-					placeholder="Concert"
-					value={formData.Type}
-					onChange={handleChange}
-				/>
 			</label>
+			<Select.Root
+				onValueChange={(val) =>
+					setFormData({
+						...formData,
+						Type: val
+					})
+				}
+			>
+				<Select.Trigger placeholder="Type" />
+				<Select.Content>
+					{eventTypes.map((event) => (
+						<Select.Item key={event} value={event}>
+							{event}
+						</Select.Item>
+					))}
+				</Select.Content>
+			</Select.Root>
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
 					Event Date
