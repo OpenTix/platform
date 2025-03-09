@@ -111,12 +111,12 @@ export default function Home() {
 		});
 
 		if (isPending) {
-			return <Text> Loading... </Text>;
+			return <Text key="events loading"> Loading... </Text>;
 		}
 
 		if (isError) {
 			console.error(error.message);
-			return <Text>Error: {error.message}</Text>;
+			return <Text key="events error"> Error: {error.message} </Text>;
 		}
 
 		function groupEventTypes(events: UserEventResponse[]) {
@@ -132,18 +132,21 @@ export default function Home() {
 		}
 
 		return (
-			<Flex direction={'column'}>
+			<Flex key="event_card_root" direction={'column'}>
 				{data && data.length > 0 ? (
 					groupEventTypes(data).map(
 						(group: UserEventResponse[], idx: number) => {
 							return group && group.length > 0 ? (
-								<Flex direction={'column'} key={`${idx}`}>
-									<Heading key={`Heading ${idx}`}>
+								<Flex
+									key={`Row_Container_${idx}`}
+									direction={'column'}
+								>
+									<Heading key={`Row_Heading_${idx}`}>
 										{' '}
 										{group[0].Type}{' '}
 									</Heading>
 									<Flex
-										key={`List ${idx}`}
+										key={`Card_Row_${idx}`}
 										gap="3"
 										direction="row"
 										style={{ overflowX: 'scroll' }}
@@ -154,7 +157,7 @@ export default function Home() {
 												jdx: number
 											) => (
 												<EventCard
-													key={jdx}
+													key={`Card_${group[0].Type}_${jdx}`}
 													event={event}
 												/>
 											)
@@ -162,7 +165,7 @@ export default function Home() {
 									</Flex>
 								</Flex>
 							) : (
-								<></>
+								<Box key={`No_Data_${idx}`}></Box>
 							);
 						}
 					)
@@ -258,10 +261,14 @@ export default function Home() {
 						</Flex>
 					</form>
 					<Popover.Root>
-						<Popover.Trigger>
-							<Toolbar.Root>
-								<TBButton>Filter</TBButton>
-							</Toolbar.Root>
+						<Popover.Trigger
+							style={{
+								backgroundColor: 'var(--purple-12)',
+								borderRadius: '5px',
+								color: 'white'
+							}}
+						>
+							Filter
 						</Popover.Trigger>
 						<Flex gap="3" direction="column" width={'150px'}>
 							<Popover.Content
