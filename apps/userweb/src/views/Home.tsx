@@ -1,6 +1,14 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
+import {
+	Box,
+	Container,
+	Flex,
+	Text,
+	TextField,
+	Card,
+	Heading
+} from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
@@ -33,7 +41,7 @@ const TBRoot = styled(Toolbar.Root)`
 	min-width: max-content;
 	border-radius: 6px;
 	background-color: white;
-	box-shadow: 0 2px 10px black;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 	column-gap: 5px;
 	margin-top: 10px;
 `;
@@ -73,16 +81,57 @@ export default function Home() {
 			return <Text>Error: {error.message}</Text>;
 		}
 
+		function groupEventTypes(events: UserEventResponse[]) {
+			const groupTypes: UserEventResponse[][] = [];
+			const groupNames = ['Other', 'Sporting Event', 'Concert'];
+			groupNames.forEach((name) =>
+				groupTypes.push(
+					events?.filter(
+						(event: UserEventResponse) => event.Type === name
+					)
+				)
+			);
+			return groupTypes;
+		}
+
 		return (
-			<Flex gap="3" direction="column">
-				{data && data.length > 0 ? (
-					data.map((data: UserEventResponse, idx: number) => (
-						<EventCard key={idx} event={data} />
-					))
-				) : (
-					<Card>
-						<Text>There are no results for page {page}</Text>
-					</Card>
+			<Flex direction={'column'}>
+				{groupEventTypes(data).map(
+					(group: UserEventResponse[], idx: number) => {
+						return group && group.length > 0 ? (
+							<Flex direction={'column'} key={`${idx}`}>
+								<Heading key={`Heading ${idx}`}>
+									{' '}
+									{group[0].Type}{' '}
+								</Heading>
+								<Flex
+									key={`List ${idx}`}
+									gap="3"
+									direction="row"
+									style={{ overflowX: 'scroll' }}
+								>
+									{group.map(
+										(
+											event: UserEventResponse,
+											jdx: number
+										) => (
+											<EventCard
+												key={jdx}
+												event={event}
+											/>
+										)
+									)}
+								</Flex>
+							</Flex>
+						) : (
+							<Card key={'pageError'}>
+								<Text>
+									There are no results of this type for page{' '}
+									{page}
+								</Text>
+							</Card>
+						);
+					}
 				)}
 			</Flex>
 		);
