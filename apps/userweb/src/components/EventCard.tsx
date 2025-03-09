@@ -25,24 +25,23 @@ export function EventCard({ event }: EventCardProps) {
 	const dateLower = `${time}`;
 
 	return (
-		<Card
-			asChild
-			size={'3'}
-			variant="classic"
-			style={{ maxWidth: '300px' }}
-		>
+		<Card asChild size="3" variant="classic" style={{ width: '300px' }}>
 			<Link
 				to={`/event/${event.ID}`}
 				style={{ margin: '0', padding: '0' }}
 			>
-				<Inset clip="padding-box" side="top">
+				<Inset
+					clip="padding-box"
+					side="top"
+					style={{ height: '168.75px', alignContent: 'center' }}
+				>
 					<Avatar.Root>
 						<Avatar.Image
 							style={{
 								display: 'block',
 								objectFit: 'cover',
 								width: '100%',
-								maxHeight: '200px'
+								maxHeight: '168.75px'
 							}}
 							src={event.Photo}
 							alt="Image of venue"
@@ -53,12 +52,12 @@ export function EventCard({ event }: EventCardProps) {
 									display: 'block',
 									objectFit: 'cover',
 									width: '100%',
-									maxHeight: '200px'
+									maxHeight: '168.75px'
 								}}
 								src={
 									'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
 								}
-								alt=""
+								alt={event.Name}
 							/>
 						</Avatar.Fallback>
 					</Avatar.Root>
