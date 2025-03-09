@@ -1,12 +1,22 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { Box, Container, Flex, Text, TextField, Card } from '@radix-ui/themes';
+import { eventTypes } from '@platform/types';
+import {
+	Box,
+	Container,
+	Flex,
+	Text,
+	TextField,
+	Card,
+	Select
+} from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import { Toolbar } from 'radix-ui';
+import { Popover, Toolbar } from 'radix-ui';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { useSessionStorage } from 'usehooks-ts';
 import { EventCard } from '../components/EventCard';
@@ -51,12 +61,47 @@ export default function Home() {
 	const [type, setType] = useSessionStorage('Type', '');
 	const [ename, setEname] = useSessionStorage('Name', '');
 	const [cost, setCost] = useSessionStorage('Cost', 1000000);
+
 	const [eventDate, setEventDate] = useSessionStorage(
 		'Date',
 		new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
 			.toISOString()
 			.slice(0, 16)
 	);
+	const [tempType, setTempType] = useState(type);
+	const [tempCost, setTempCost] = useState(cost);
+	const [tempZip, setTempZip] = useState(zip);
+	const [tempEventDate, setTempEventDate] = useState(eventDate);
+	const [tempEname, setTempEname] = useState(ename);
+
+	const applyFilters = () => {
+		setType(tempType);
+		setCost(tempCost);
+		setZip(tempZip);
+		setEventDate(tempEventDate);
+		setEname(tempEname);
+	};
+
+	const resetFilters = () => {
+		setTempType('');
+		setTempCost(1000000);
+		setTempZip('');
+		setTempEventDate(
+			new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+				.toISOString()
+				.slice(0, 16)
+		);
+
+		setType('');
+		setCost(1000000);
+		setZip('');
+		setEventDate(
+			new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+				.toISOString()
+				.slice(0, 16)
+		);
+		setEname('');
+	};
 
 	function Events() {
 		const { isPending, isError, data, error } = useQuery({
@@ -139,48 +184,134 @@ export default function Home() {
 		<Flex>
 			<Box style={{ marginTop: '10px' }}>
 				<Flex gap="1" direction="column">
-					<Label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Type
-						</Text>
-						<TextField.Root
-							name="Type"
-							placeholder="Concert"
-							value={type}
-							onChange={handleChange}
-						/>
-					</Label>
-					<Label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Maximum Cost
-						</Text>
-						<TextField.Root
-							name="Cost"
-							placeholder="1000000"
-							value={cost}
-							onChange={handleChange}
-						/>
-					</Label>
-					<Label>
-						<Text as="div" size="2" mb="1" weight="bold">
-							Time
-						</Text>
-						<TextField.Root
-							name="Time"
-							value={eventDate}
-							onChange={handleChange}
-							type="datetime-local"
-						/>
-					</Label>
-					<Label>
-						<Text>Zip</Text>
-						<TextField.Root
-							name="Zip"
-							value={zip}
-							onChange={handleChange}
-							pattern={'{d}[5]'}
-						/>
-					</Label>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							setEname(tempEname);
+						}}
+					>
+						<Flex gap="2" align="center">
+							<Toolbar.Root>
+								<TBButton
+									type="submit"
+									style={{
+										backgroundColor: '#4e3282',
+										color: 'white'
+									}}
+								>
+									<span role="img" aria-label="Search">
+										🔍
+									</span>
+								</TBButton>
+							</Toolbar.Root>
+							<TextField.Root
+								placeholder="Search"
+								size="3"
+								name="Name"
+								value={tempEname}
+								onChange={(e) => setTempEname(e.target.value)}
+							/>
+						</Flex>
+					</form>
+					<Popover.Root>
+						<Popover.Trigger>
+							<Toolbar.Root>
+								<TBButton>Filter</TBButton>
+							</Toolbar.Root>
+						</Popover.Trigger>
+						<Flex gap="3" direction="column" width={'150px'}>
+							<Popover.Content
+								style={{ width: '150px', padding: '10px' }}
+							>
+								<label>
+									<Text
+										as="div"
+										size="2"
+										mb="1"
+										weight="bold"
+									>
+										Type
+									</Text>
+								</label>
+								<Select.Root
+									value={tempType}
+									onValueChange={setTempType}
+								>
+									<Select.Trigger placeholder="Select Event Type" />
+									<Select.Content>
+										<Select.Group>
+											{eventTypes.map((event) => (
+												<Select.Item
+													key={event}
+													value={event}
+												>
+													{event}
+												</Select.Item>
+											))}
+										</Select.Group>
+									</Select.Content>
+								</Select.Root>
+								<Label>
+									<Text
+										as="div"
+										size="2"
+										mb="1"
+										weight="bold"
+									>
+										Maximum Cost
+									</Text>
+									<TextField.Root
+										name="Cost"
+										placeholder="1000000"
+										value={tempCost}
+										onChange={(e) =>
+											setTempCost(Number(e.target.value))
+										}
+									/>
+								</Label>
+								<Label>
+									<Text
+										as="div"
+										size="2"
+										mb="1"
+										weight="bold"
+									>
+										Time
+									</Text>
+									<TextField.Root
+										name="Time"
+										value={tempEventDate}
+										onChange={(e) =>
+											setTempEventDate(e.target.value)
+										}
+										type="datetime-local"
+									/>
+								</Label>
+								<Label>
+									<Text>Zip</Text>
+									<TextField.Root
+										name="Zip"
+										value={tempZip}
+										onChange={(e) =>
+											setTempZip(e.target.value)
+										}
+										pattern={'{d}[5]'}
+									/>
+								</Label>
+								<Toolbar.Root>
+									<TBButton
+										onClick={resetFilters}
+										style={{ backgroundColor: 'red' }}
+									>
+										Clear Filters
+									</TBButton>
+									<TBButton onClick={applyFilters}>
+										Apply Filters
+									</TBButton>
+								</Toolbar.Root>
+							</Popover.Content>
+						</Flex>
+					</Popover.Root>
 				</Flex>
 			</Box>
 			<Container style={{ alignSelf: 'center' }} size={'4'}>
