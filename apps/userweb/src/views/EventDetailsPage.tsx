@@ -50,24 +50,26 @@ export default function EventDetailsPage() {
 								style={{
 									width: '20em',
 									height: '20em',
-									padding: 0
+									padding: 0,
+									textAlign: 'center',
+									alignContent: 'center'
 								}}
 							>
 								<Avatar.Root>
 									<Avatar.Image
 										src={data.Eventphoto}
 										style={{
-											objectPosition: 'center',
-											objectFit: 'cover',
-											height: '100%'
+											height: '20em',
+											width: '20em',
+											objectFit: 'cover'
 										}}
 									></Avatar.Image>
 									<Avatar.Fallback>
 										<img
 											style={{
-												objectPosition: 'center',
-												objectFit: 'cover',
-												height: '100%'
+												height: '20em',
+												width: '20em',
+												objectFit: 'cover'
 											}}
 											src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg"
 											alt="Event"
