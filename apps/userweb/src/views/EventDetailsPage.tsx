@@ -1,6 +1,7 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
 import { Box, Card, Flex, Heading, Text, DataList } from '@radix-ui/themes';
+import { Avatar } from 'radix-ui';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import BuyTicketsModal from '../components/BuyTicketsModal';
@@ -40,38 +41,138 @@ export default function EventDetailsPage() {
 			{data ? (
 				<Flex gap="5" py={'5'}>
 					<Box width="100%">
-						<Card>
-							<Flex direction="column" gap="3">
-								<Heading size={'4'}>Event Information</Heading>
-								<DataList.Root>
-									{data &&
-										Object.entries(data).map(
-											([key, value]) => (
-												<DataList.Item
-													align="center"
-													key={key}
+						<Flex
+							direction="row"
+							gap="5"
+							style={{ width: '80%', margin: '2em 10%' }}
+						>
+							<Card
+								style={{
+									width: '20em',
+									height: '20em',
+									padding: 0
+								}}
+							>
+								<Avatar.Root>
+									<Avatar.Image
+										src={data.Eventphoto}
+										style={{
+											objectPosition: 'center',
+											objectFit: 'cover',
+											height: '100%'
+										}}
+									></Avatar.Image>
+									<Avatar.Fallback>
+										<img
+											style={{
+												objectPosition: 'center',
+												objectFit: 'cover',
+												height: '100%'
+											}}
+											src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg"
+											alt="Event"
+										></img>
+									</Avatar.Fallback>
+								</Avatar.Root>
+							</Card>
+							<Flex direction="column" style={{ width: '70%' }}>
+								<Heading size="8">{data.Eventname}</Heading>
+								<Flex
+									direction="row"
+									gap="3"
+									style={{ justifyContent: 'space-between' }}
+								>
+									<Flex>
+										<DataList.Root size="3">
+											<DataList.Item align="center">
+												<DataList.Label minWidth="5em">
+													Venue
+												</DataList.Label>
+												<DataList.Value>
+													{String(data.Venuename)}
+												</DataList.Value>
+											</DataList.Item>
+											<DataList.Item align="center">
+												<DataList.Label minWidth="5em">
+													Date
+												</DataList.Label>
+												<DataList.Value>
+													{new Date(
+														data.EventDatetime
+													).getDay()}
+													/
+													{new Date(
+														data.EventDatetime
+													).getMonth()}
+													/
+													{new Date(
+														data.EventDatetime
+													).getFullYear()}
+												</DataList.Value>
+											</DataList.Item>
+											<DataList.Item>
+												<DataList.Label minWidth="5em">
+													Address
+												</DataList.Label>
+												<DataList.Value>
+													{String(data.StreetAddress)}
+													<br />
+													{String(data.City)},{' '}
+													{String(data.Zip)}
+												</DataList.Value>
+											</DataList.Item>
+										</DataList.Root>
+									</Flex>
+									<Flex style={{ width: '65%' }}>
+										<DataList.Root size="3">
+											<DataList.Item
+												style={{
+													maxHeight: '7em',
+													overflowY: 'hidden'
+												}}
+											>
+												<DataList.Label
+													minWidth="5em"
+													maxWidth="10em"
 												>
-													<DataList.Label minWidth="88px">
-														{key}
-													</DataList.Label>
-													<DataList.Value>
-														{String(value)}
-													</DataList.Value>
-												</DataList.Item>
-											)
-										)}
-								</DataList.Root>
+													Description
+												</DataList.Label>
+												<DataList.Value>
+													{String(data.Description)}
+												</DataList.Value>
+											</DataList.Item>
+											<DataList.Item
+												style={{
+													maxHeight: '7em',
+													overflowY: 'hidden'
+												}}
+											>
+												<DataList.Label
+													minWidth="5em"
+													maxWidth="10em"
+												>
+													Disclaimer
+												</DataList.Label>
+												<DataList.Value>
+													{String(data.Disclaimer)}
+												</DataList.Value>
+											</DataList.Item>
+											<DataList.Item></DataList.Item>
+										</DataList.Root>
+									</Flex>
+								</Flex>
 							</Flex>
-						</Card>
+						</Flex>
 					</Box>
 				</Flex>
 			) : (
-				// this is temporary
-				<div>No data :\</div>
+				<Card style={{ width: '80%', margin: '2em 10%' }}>
+					Loading ...
+				</Card>
 			)}
 			{
 				<Box width="100%">
-					<Card>
+					<Card style={{ width: '80%', margin: '2em 10%' }}>
 						<Heading size={'4'}>Tickets for this event:</Heading>
 						{data ? (
 							<ListOfNFTsForEvent
