@@ -8,11 +8,8 @@ const ProfileScreen = () => {
 	// const navigation = useNavigation();
 	const client = useDynamic();
 
-	// console.log(client.auth.token);
-
 	return (
 		<>
-			<client.reactNative.WebView />
 			<ScrollView>
 				<View
 					style={{
@@ -32,7 +29,6 @@ const ProfileScreen = () => {
 					) : (
 						<Text>Loading...</Text>
 					)}
-					{/* <Button title="Login" onPress={() => promptLogin()} /> */}
 				</View>
 			</ScrollView>
 		</>

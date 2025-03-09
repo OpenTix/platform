@@ -1,19 +1,6 @@
-// import { NavigationContainer } from '@react-navigation/native';
-import {
-	createStaticNavigation,
-	NavigationContainer
-} from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { StatusBar } from 'react-native';
-// import { dynamicClient } from '../../components/DynamicSetup';
-// import { Home } from '../../components/Home';
-// import ScreenLayout from '../../components/ScreenLayout';
-// import Stack from '../../components/Stack';
 import { View } from 'react-native';
-// import { useLinkBuilder, useTheme } from '@react-navigation/native';
-// import { Text, PlatformPressable } from '@react-navigation/elements';
-// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { useDynamic } from '../../components/DynamicSetup';
 import Navigation from '../../components/Navigation';

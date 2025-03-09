@@ -41,7 +41,8 @@ const MyTabs = createBottomTabNavigator({
 			<Button title="logout" onPress={logUserOut} />
 		),
 		headerLeft: () => <Button title="profile" onPress={showProfile} />
-	}
+	},
+	initialRouteName: 'Home'
 });
 
 const Navigation = createStaticNavigation(MyTabs);

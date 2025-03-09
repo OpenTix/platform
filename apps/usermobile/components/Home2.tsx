@@ -1,19 +1,35 @@
-import { createAccountAbstractionModule } from '@dynamic-labs/client/src/modules/walletsModule/accountAbstractionModule';
-import { isEthereumWallet } from '@dynamic-labs/ethereum';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
-import { useNavigation } from '@react-navigation/native';
-import { lookup } from 'dns';
-import { tmpdir } from 'os';
-import { View, Button, Text } from 'react-native';
+import { UserEventResponse } from '@platform/types';
+import {
+	useQuery,
+	QueryClient,
+	QueryClientProvider
+} from '@tanstack/react-query';
+import React from 'react';
+import { View, Text, RefreshControl, ScrollView } from 'react-native';
+import { Card, Avatar } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from './DynamicSetup';
 
-// import EventHandler from './EventHandler';
+const queryClient = new QueryClient();
 
 const HomeScreen = () => {
-	// const navigation = useNavigation();
 	const client = useDynamic();
+	const [refreshing, setRefreshing] = React.useState(false);
 
+	// handle scroll up page refresh
+	const onRefresh = React.useCallback(() => {
+		setRefreshing(true);
+		setTimeout(() => {
+			setRefreshing(false);
+		}, 2000);
+	}, []);
+
+	// fetchs from oklinks api to see what tickets an account owns
+	// this is set to amoy_testnet and is not an environment variable because I am lazy
+	// also yes that is my api key I do not care I get 1 mil requests per year and they don't have my payment info 😁
+	// this only handles up to 100 tickets so thats an issue for full deployment but not a real issue for our project
+	// api doc here: https://www.oklink.com/docs/en/#fundamental-blockchain-data-address-data-get-token-balance-details-by-address
 	async function getNFTsInWallet() {
 		const url = `https://www.oklink.com/api/v5/explorer/nft/address-balance-fills?chainShortName=amoy_testnet&address=${client.auth.authenticatedUser?.verifiedCredentials[0].address}&tokenContractAddress=${ContractAddress}&limit=100&protocolType=token_1155`;
 		const resp = await fetch(url, {
@@ -23,10 +39,12 @@ const HomeScreen = () => {
 
 		if (!resp.ok) return Error('There was an error fetching data');
 
+		// this is nasty but it gives us what we want
 		return (await resp.json())['data'][0]['tokenList'];
 	}
 
-	const getOwnedTicketIds = async () => {
+	// Return an array of owned ticket ids
+	async function getOwnedTicketIds() {
 		const tmp = await getNFTsInWallet();
 
 		try {
@@ -44,28 +62,16 @@ const HomeScreen = () => {
 			// sort for easy reading
 			owned_ids = owned_ids.sort();
 
-			// remove later
-			console.log(owned_ids);
-
 			return owned_ids;
 		} catch (error) {
 			// pls never go here
-			console.log('oh no...', error);
+			console.error('oh no...', error);
 			return null;
 		}
-	};
+	}
 
-	// TODO:
-	// We need to show what tickets someone has. Currently there is no nice ticketid to event function in the smart contract.
-	// Although one may be added in the future we have to make a work around for now.
-	// So, the plan is to first query our server for events.
-	// Then, filter to only events with a transaction hash.
-	// Then, we will get the valid ids from the contract for all of those events.
-	// Then, we will corellate the ids we already have (getOwnedTicketIds) and figure out what events they apply to.
-	// From there we will display that event and also every ticket that we own for that event.
-	// what the hell have I got myself into
-
-	const getEventNameFromId = async (id: bigint) => {
+	// query the contract (not on network) for the event name for an id
+	async function getEventNameFromId(id: bigint) {
 		const publicViemClient = client.viem.createPublicClient({
 			chain: polygonAmoy
 		});
@@ -83,9 +89,10 @@ const HomeScreen = () => {
 			console.log('if you see this something bad happened');
 			return '';
 		}
-	};
+	}
 
-	const getEventByUUID = async (UUID: string) => {
+	// query our backend for the event data using the uuid
+	async function getEventByUUID(UUID: string) {
 		const resp = await fetch(
 			`${process.env.EXPO_PUBLIC_API_BASEURL}/user/events?ID=${UUID}`,
 			{
@@ -95,68 +102,131 @@ const HomeScreen = () => {
 		);
 
 		if (!resp.ok) {
-			console.log('BAD RESP');
-			return 'There was an error fetching data';
+			return Error('There was an error fetching data');
 		}
 		return await resp.json();
-	};
+	}
 
-	async function tmp() {
-		const tmp = await getOwnedTicketIds();
+	// return a dict of our owned ticket ids and event data for each
+	async function getAllOwnedEvents() {
+		const ids = (await getOwnedTicketIds()) as bigint[];
 
-		const ids = tmp as bigint[];
-
-		console.log('woah');
-
+		// get all the event names from the ids (calls contract)
 		const event_names = Array(ids.length).fill('') as string[];
 		let iterator = 0;
-		for (const id in ids) {
+		for (let i = 0; i < event_names.length; i++) {
+			const id = ids[i];
 			event_names[iterator] = await getEventNameFromId(BigInt(id));
 			iterator += 1;
 		}
 
-		// console.log(event_names);
-
-		const event_data: string[] = [];
-
+		// get the event data for all the events we have
+		const event_data = Array(ids.length) as UserEventResponse[];
 		for (let i = 0; i < event_names.length; i++) {
-			// console.log(event_names[i]);
-			const uuid = event_names[i].split(' ')[5];
-			// console.log('uuid',uuid);
-			event_data.push(await getEventByUUID(uuid));
+			// minimize the number of calls to the backend api
+			if (i != 0 && event_names[i] === event_names[i - 1]) {
+				event_data[i] = event_data[i - 1];
+				continue;
+			}
+
+			// grab the event data
+			const split = event_names[i].split(' ');
+			const uuid = split[split.length - 1];
+			event_data[i] = await getEventByUUID(uuid);
 		}
 
-		// for (const event in event_names) {
-		// 	console.log('event', event)
-		// 	const uuid = event.split(" ");
-		// 	console.log('uuid',uuid);
-		// 	// event_data.push(await getEventByUUID(uuid))
-		// }
-
-		console.log(event_data);
-
-		return <Button title="hello world" />;
+		return { ids, event_data };
 	}
 
-	// function EventHandler() {
+	// display events we own tickets to
+	// will display multiple cards for the same event if you own multiple tickets to that event
+	function Events() {
+		// grab all our owned events
+		const { isPending, isError, data, error } = useQuery({
+			queryKey: ['getAllOwnedEvents'],
+			queryFn: getAllOwnedEvents
+		});
 
-	// 	tmp().then(result => {
-	// 		set = true;
-	// 		return result;
-	// 	})
+		if (isPending) {
+			return <Text> Loading ... </Text>;
+		}
 
-	// 	return <Text>yay</Text>
-	// };
+		if (isError) {
+			console.error(error.message);
+			return <Text>Error: {error.message}</Text>;
+		}
+
+		// grab our ticket ids and event data
+		const ids = data['ids'];
+		const event_data = data['event_data'];
+
+		return (
+			event_data?.map((data: UserEventResponse, idx: number) => {
+				// this should never happen but keeps the app from blowing up if it does
+				if (data == undefined) {
+					return null;
+				}
+
+				// these make the code read better
+				const keys = Object.keys(data);
+				const values = Object.values(data);
+				let photo_uri = '';
+				const ticketid = ids[idx].toString();
+
+				return (
+					<Card key={idx}>
+						{values?.map((value: string | number, idx2: number) => {
+							if (keys[idx2] === 'Eventphoto') {
+								photo_uri = value as string;
+								return null;
+							} else if (keys[idx2] === 'ID') {
+								return null;
+							}
+							return (
+								<Text key={idx2}>
+									{keys[idx2]}:{' '}
+									{keys[idx2] === 'EventDatetime'
+										? new Date(value).toLocaleString()
+										: keys[idx2] === 'Basecost'
+											? `$${value}`
+											: value}
+								</Text>
+							);
+						})}
+						<Avatar.Image source={{ uri: photo_uri }} />
+						<Text>Ticket id = {ticketid}</Text>
+					</Card>
+				);
+			}) ?? (
+				<Card>
+					<Text>You don't own any tickets :\</Text>
+				</Card>
+			)
+		);
+	}
 
 	return (
-		<View
-			style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+		<ScrollView
+			refreshControl={
+				<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+			}
 		>
-			{/* <Text>Home Screen</Text> */}
-			{/* <Button title="Go to Profile" onPress={() => navigation.navigate("Profile" as never)}/> */}
-			<Button title="test" onPress={tmp} />
-			{/* <EventHandler /> */}
-		</View>
+			<View
+				style={{
+					flex: 1,
+					justifyContent: 'center',
+					alignItems: 'center'
+				}}
+			>
+				{client.auth.authenticatedUser != null ? (
+					<QueryClientProvider client={queryClient}>
+						<Events />
+					</QueryClientProvider>
+				) : (
+					<></>
+				)}
+			</View>
+		</ScrollView>
 	);
 };
 
