@@ -106,6 +106,21 @@ export type VenueEditableFields = Pick<
 
 export type AllVenuesListSimplifiedResponse = Pick<Venue, 'Pk' | 'ID' | 'Name'>;
 
+export type EventType =
+	| 'Concert'
+	| 'Sporting Event'
+	| 'Festival'
+	| 'Conference/Seminar'
+	| 'Other';
+
+export const eventTypes: EventType[] = [
+	'Concert',
+	'Sporting Event',
+	'Festival',
+	'Conference/Seminar',
+	'Other'
+];
+
 const EVENT_DEFAULT_DO_NOT_USE: Event = {
 	Pk: 0,
 	ID: '',
