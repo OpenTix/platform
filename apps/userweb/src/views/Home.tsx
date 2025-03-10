@@ -1,6 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { eventTypes } from '@platform/types';
+import { AllEventTypesArray } from '@platform/types';
 import {
 	Box,
 	Container,
@@ -169,22 +169,11 @@ export default function Home() {
 						onSubmit={(e) => {
 							e.preventDefault();
 							setEname(ename);
+							setDataChanged(true);
+							applyFilters();
 						}}
 					>
 						<Flex gap="2" align="center">
-							<Toolbar.Root>
-								<TBButton
-									type="submit"
-									style={{
-										backgroundColor: '#4e3282',
-										color: 'white'
-									}}
-								>
-									<span role="img" aria-label="Search">
-										🔍
-									</span>
-								</TBButton>
-							</Toolbar.Root>
 							<TextField.Root
 								placeholder="Search"
 								size="3"
@@ -192,7 +181,6 @@ export default function Home() {
 								value={ename}
 								onChange={(e) => {
 									setEname(e.target.value);
-									setDataChanged(true);
 								}}
 							/>
 						</Flex>
@@ -228,7 +216,7 @@ export default function Home() {
 									<Select.Trigger placeholder="Select Event Type" />
 									<Select.Content>
 										<Select.Group>
-											{eventTypes.map((event) => (
+											{AllEventTypesArray.map((event) => (
 												<Select.Item
 													key={event}
 													value={event}
