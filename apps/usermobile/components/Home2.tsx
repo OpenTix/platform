@@ -6,7 +6,7 @@ import {
 	QueryClientProvider
 } from '@tanstack/react-query';
 import React from 'react';
-import { View, Text, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, RefreshControl, ScrollView, Image } from 'react-native';
 import { Card, Avatar } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from './DynamicSetup';
@@ -159,6 +159,19 @@ const HomeScreen = () => {
 		// grab our ticket ids and event data
 		const ids = data['ids'];
 		const event_data = data['event_data'];
+
+		if (event_data.length === 0) {
+			return (
+				<>
+					<Image
+						source={{
+							uri: 'https://i.imgur.com/qoh1EKk.jpeg'
+						}}
+						style={{ width: 400, height: 600 }}
+					/>
+				</>
+			);
+		}
 
 		return (
 			event_data?.map((data: UserEventResponse, idx: number) => {
