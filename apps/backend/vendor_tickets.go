@@ -61,7 +61,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(400, "Error parsing UUID", request.Headers, err)
 	}
-	event, err := queries.VendorGetEventByUuid(ctx, query.VendorGetEventByUuidParams{Wallet: vendorinfo.UUID, ID: u})
+	event, err := queries.VendorGetEventByUuid(ctx, query.VendorGetEventByUuidParams{Wallet: vendorinfo.Wallet, ID: u})
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Error querying database or vendor does not own event.", request.Headers, err)
 	}
