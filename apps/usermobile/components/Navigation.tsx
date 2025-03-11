@@ -27,7 +27,7 @@ const showProfile = () => {
 
 const MyTabs = createBottomTabNavigator({
 	screens: {
-		Home: HomeScreen,
+		Tickets: HomeScreen,
 		Transfer: TransferScreen,
 		Profile: ProfileScreen
 	},
@@ -42,7 +42,7 @@ const MyTabs = createBottomTabNavigator({
 		),
 		headerLeft: () => <Button title="profile" onPress={showProfile} />
 	},
-	initialRouteName: 'Home'
+	initialRouteName: 'Tickets'
 });
 
 const Navigation = createStaticNavigation(MyTabs);
