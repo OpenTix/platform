@@ -1,18 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, PlatformPressable } from '@react-navigation/elements';
-import {
-	createStaticNavigation,
-	useNavigation,
-	useLinkBuilder,
-	useTheme
-} from '@react-navigation/native';
-import { View, Platform, Button } from 'react-native';
-import { TouchableOpacity } from 'react-native';
-import { Touchable } from 'react-native';
-import { Avatar } from 'react-native-paper';
+import { createStaticNavigation } from '@react-navigation/native';
+import { Button } from 'react-native';
 import { dynamicClient } from './DynamicSetup';
-import HomeScreen from './Home2';
 import ProfileScreen from './Profile';
+import HomeScreen from './TicketListing';
 import TransferScreen from './TicketTransfer';
 
 const logUserOut = () => {

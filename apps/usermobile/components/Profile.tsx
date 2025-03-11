@@ -1,7 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, Button } from 'react-native';
 import { ScrollView } from 'react-native';
-// import { getAuthToken } from '@dynamic-labs/react-native-extension'
 import { useDynamic } from './DynamicSetup';
 
 const ProfileScreen = () => {

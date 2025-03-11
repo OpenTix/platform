@@ -1,12 +1,24 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventResponse } from '@platform/types';
+import { ScrollArea } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
 import React from 'react';
-import { View, Text, RefreshControl, ScrollView, Image } from 'react-native';
+import {
+	View,
+	Text,
+	RefreshControl,
+	ScrollView,
+	Image,
+	Modal,
+	Alert,
+	Pressable,
+	StyleSheet,
+	TouchableOpacity
+} from 'react-native';
 import { Card, Avatar } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from './DynamicSetup';
@@ -16,6 +28,61 @@ const queryClient = new QueryClient();
 const HomeScreen = () => {
 	const client = useDynamic();
 	const [refreshing, setRefreshing] = React.useState(false);
+	const [modalVisible, setModalVisible] = React.useState(false);
+	const [gData, setgData] = React.useState({
+		ids: Array(0) as bigint[],
+		event_data: Array(0) as UserEventResponse[]
+	});
+	const [modalData, setmodalData] = React.useState(<></>);
+
+	function checkin() {
+		console.log('The checkin code should go here :)');
+	}
+
+	function setupModal(index: number) {
+		const ids = gData['ids'];
+		const events_data = gData['event_data'];
+
+		const id = ids[index];
+		const event_data = events_data[index];
+
+		const keys = Object.keys(event_data);
+		const values = Object.values(event_data);
+
+		let photo_uri = '';
+
+		setmodalData(
+			<>
+				{values?.map((value: string | number, idx2: number) => {
+					if (keys[idx2] === 'Eventphoto') {
+						photo_uri = value as string;
+						return null;
+					} else if (keys[idx2] === 'ID') {
+						return null;
+					}
+					return (
+						<Text key={idx2} style={{ textAlign: 'center' }}>
+							{keys[idx2]}:{' '}
+							{keys[idx2] === 'EventDatetime'
+								? new Date(value).toLocaleString()
+								: keys[idx2] === 'Basecost'
+									? `$${value}`
+									: value}
+						</Text>
+					);
+				})}
+				<Avatar.Image
+					style={{ alignSelf: 'center' }}
+					source={{ uri: photo_uri }}
+				/>
+				<Text style={{ textAlign: 'center' }}>
+					Ticket id = {id.toString()}
+				</Text>
+			</>
+		);
+
+		// console.log(modalData);
+	}
 
 	// handle scroll up page refresh
 	const onRefresh = React.useCallback(() => {
@@ -160,6 +227,9 @@ const HomeScreen = () => {
 		const ids = data['ids'];
 		const event_data = data['event_data'];
 
+		// set the data globally so the modal can access it
+		setgData(data);
+
 		if (event_data.length === 0) {
 			return (
 				<>
@@ -174,47 +244,116 @@ const HomeScreen = () => {
 		}
 
 		return (
-			event_data?.map((data: UserEventResponse, idx: number) => {
-				// this should never happen but keeps the app from blowing up if it does
-				if (data == undefined) {
-					return null;
-				}
+			<>
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={modalVisible}
+					onRequestClose={() => {
+						Alert.alert('Modal has been closed.');
+						setModalVisible(!modalVisible);
+					}}
+				>
+					<TouchableOpacity
+						activeOpacity={1}
+						style={styles.centeredView}
+						onPress={() => setModalVisible(!modalVisible)}
+					>
+						<View style={styles.centeredView}>
+							<View style={styles.modalView}>
+								<ScrollView>
+									<TouchableOpacity activeOpacity={1}>
+										{modalData}
+									</TouchableOpacity>
+								</ScrollView>
+								<TouchableOpacity activeOpacity={1}>
+									<Pressable
+										style={[
+											styles.button,
+											styles.buttonClose
+										]}
+										onPress={() => {
+											checkin();
+										}}
+									>
+										<Text style={styles.textStyle}>
+											Check In
+										</Text>
+									</Pressable>
+								</TouchableOpacity>
+							</View>
+						</View>
+					</TouchableOpacity>
+				</Modal>
+				{event_data?.map((data: UserEventResponse, idx: number) => {
+					// this should never happen but keeps the app from blowing up if it does
+					if (data == undefined) {
+						return null;
+					}
 
-				// these make the code read better
-				const keys = Object.keys(data);
-				const values = Object.values(data);
-				let photo_uri = '';
-				const ticketid = ids[idx].toString();
+					// these make the code read better
+					const keys = Object.keys(data);
+					const values = Object.values(data);
+					let photo_uri = '';
+					const ticketid = ids[idx].toString();
 
-				return (
-					<Card key={idx}>
-						{values?.map((value: string | number, idx2: number) => {
-							if (keys[idx2] === 'Eventphoto') {
-								photo_uri = value as string;
-								return null;
-							} else if (keys[idx2] === 'ID') {
-								return null;
-							}
-							return (
-								<Text key={idx2}>
-									{keys[idx2]}:{' '}
-									{keys[idx2] === 'EventDatetime'
-										? new Date(value).toLocaleString()
-										: keys[idx2] === 'Basecost'
-											? `$${value}`
-											: value}
-								</Text>
-							);
-						})}
-						<Avatar.Image source={{ uri: photo_uri }} />
-						<Text>Ticket id = {ticketid}</Text>
+					return (
+						<Pressable
+							// style={[
+							// 	styles.button,
+							// 	styles.buttonClose
+							// ]}
+							onPress={() => {
+								setupModal(idx);
+								setModalVisible(!modalVisible);
+							}}
+						>
+							<Card key={idx} style={{ display: 'flex' }}>
+								{values?.map(
+									(value: string | number, idx2: number) => {
+										if (keys[idx2] === 'Eventphoto') {
+											photo_uri = value as string;
+											return null;
+										} else if (keys[idx2] === 'ID') {
+											return null;
+										}
+										return (
+											<Text key={idx2}>
+												{keys[idx2]}:{' '}
+												{keys[idx2] === 'EventDatetime'
+													? new Date(
+															value
+														).toLocaleString()
+													: keys[idx2] === 'Basecost'
+														? `$${value}`
+														: value}
+											</Text>
+										);
+									}
+								)}
+								<Image
+									source={{
+										uri: photo_uri
+									}}
+									style={{
+										height: undefined,
+										width: '100%',
+										aspectRatio: 1,
+										maxHeight: 200,
+										alignSelf: 'center'
+									}}
+								/>
+								{/* <Avatar.Image source={{ uri: photo_uri }} /> */}
+								<Text>Ticket id = {ticketid}</Text>
+							</Card>
+						</Pressable>
+					);
+				}) ?? (
+					<Card>
+						<Text>You don't own any tickets :\</Text>
 					</Card>
-				);
-			}) ?? (
-				<Card>
-					<Text>You don't own any tickets :\</Text>
-				</Card>
-			)
+				)}
+			</>
 		);
 	}
 
@@ -226,9 +365,12 @@ const HomeScreen = () => {
 		>
 			<View
 				style={{
-					flex: 1,
+					// flex: 1,
 					justifyContent: 'center',
-					alignItems: 'center'
+					alignItems: 'center',
+					display: 'flex',
+					flexDirection: 'column',
+					rowGap: 10
 				}}
 			>
 				{client.auth.authenticatedUser != null ? (
@@ -242,5 +384,50 @@ const HomeScreen = () => {
 		</ScrollView>
 	);
 };
+
+const styles = StyleSheet.create({
+	centeredView: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	modalView: {
+		margin: 20,
+		backgroundColor: 'white',
+		borderRadius: 20,
+		padding: 35,
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 4,
+		elevation: 5,
+		width: '80%',
+		maxHeight: '75%'
+	},
+	button: {
+		borderRadius: 20,
+		padding: 10,
+		elevation: 2
+	},
+	buttonOpen: {
+		backgroundColor: '#F194FF'
+	},
+	buttonClose: {
+		backgroundColor: '#2196F3'
+	},
+	textStyle: {
+		color: 'white',
+		fontWeight: 'bold',
+		textAlign: 'center'
+	},
+	modalText: {
+		marginBottom: 15,
+		textAlign: 'center'
+	}
+});
 
 export default HomeScreen;

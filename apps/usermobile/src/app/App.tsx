@@ -21,6 +21,10 @@ export default function App() {
 		client.ui.auth.show();
 	});
 
+	React.useEffect(() => {
+		return;
+	}, [client.auth.token]);
+
 	return (
 		<>
 			<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
