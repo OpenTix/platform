@@ -1,14 +1,12 @@
 import { isEthereumWallet } from '@dynamic-labs/ethereum';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { ContractABI, ContractAddress } from '@platform/blockchain';
+import {
+	ContractABI,
+	ContractAddress,
+	ContractGetEventIdsReturnedMetadata
+} from '@platform/blockchain';
 import { Badge, DataList } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
-
-type ReturnedMetadata = {
-	min: bigint;
-	max: bigint;
-	exists: boolean;
-};
 
 export interface ListOfNFTsForEventProps {
 	Title: string;
@@ -24,7 +22,8 @@ export default function ListOfNFTsForEvent({
 	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
 	const { primaryWallet } = useDynamicContext();
 	const [NFTs, setNFTs] = useState<bigint[]>([]);
-	const [metadata, setMetadata] = useState<ReturnedMetadata>();
+	const [metadata, setMetadata] =
+		useState<ContractGetEventIdsReturnedMetadata>();
 
 	const GetNFTs = async () => {
 		if (primaryWallet && isEthereumWallet(primaryWallet)) {
@@ -38,7 +37,7 @@ export default function ListOfNFTsForEvent({
 						address: ContractAddress,
 						functionName: 'get_event_ids',
 						args: [NFTMintingDescription]
-					})) as [bigint[], ReturnedMetadata];
+					})) as [bigint[], ContractGetEventIdsReturnedMetadata];
 
 					setNFTs(data[0] as bigint[]);
 					setMetadata(data[1]);
