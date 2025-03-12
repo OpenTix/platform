@@ -1,6 +1,5 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventResponse } from '@platform/types';
-import { ScrollArea } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
@@ -35,10 +34,13 @@ const HomeScreen = () => {
 	});
 	const [modalData, setmodalData] = React.useState(<></>);
 
+	// check the user in with the vendor
 	function checkin() {
 		console.log('The checkin code should go here :)');
 	}
 
+	// call this before setting the modal visibility
+	// this loads the proper data based on the index in the page
 	function setupModal(index: number) {
 		const ids = gData['ids'];
 		const events_data = gData['event_data'];
@@ -59,6 +61,8 @@ const HomeScreen = () => {
 						return null;
 					} else if (keys[idx2] === 'ID') {
 						return null;
+					} else if (keys[idx2] === 'Venuephoto') {
+						return null;
 					}
 					return (
 						<Text key={idx2} style={{ textAlign: 'center' }}>
@@ -72,7 +76,8 @@ const HomeScreen = () => {
 					);
 				})}
 				<Avatar.Image
-					style={{ alignSelf: 'center' }}
+					key={2}
+					style={{ alignSelf: 'center', backgroundColor: 'white' }}
 					source={{ uri: photo_uri }}
 				/>
 				<Text style={{ textAlign: 'center' }}>
@@ -80,8 +85,6 @@ const HomeScreen = () => {
 				</Text>
 			</>
 		);
-
-		// console.log(modalData);
 	}
 
 	// handle scroll up page refresh
@@ -104,7 +107,8 @@ const HomeScreen = () => {
 			headers: { 'Ok-Access-Key': '4dc070a9-44a6-474c-afc2-e8976eae75b7' }
 		});
 
-		if (!resp.ok) return Error('There was an error fetching data');
+		if (!resp.ok)
+			return Error('There was an error fetching data from oklink');
 
 		// this is nasty but it gives us what we want
 		return (await resp.json())['data'][0]['tokenList'];
@@ -132,7 +136,10 @@ const HomeScreen = () => {
 			return owned_ids;
 		} catch (error) {
 			// pls never go here
-			console.error('oh no...', error);
+			console.error(
+				'Failed to parse the JSON response from the oklink api: ',
+				error
+			);
 			return null;
 		}
 	}
@@ -143,6 +150,7 @@ const HomeScreen = () => {
 			chain: polygonAmoy
 		});
 
+		// get the events description from the id
 		if (publicViemClient) {
 			const data = (await publicViemClient.readContract({
 				abi: ContractABI,
@@ -153,7 +161,9 @@ const HomeScreen = () => {
 
 			return data;
 		} else {
-			console.log('if you see this something bad happened');
+			console.log(
+				'Failed to create the public viem client when trying to get the event description.'
+			);
 			return '';
 		}
 	}
@@ -169,7 +179,7 @@ const HomeScreen = () => {
 		);
 
 		if (!resp.ok) {
-			return Error('There was an error fetching data');
+			return Error('There was an error fetching event data by UUID');
 		}
 		return await resp.json();
 	}
@@ -230,6 +240,7 @@ const HomeScreen = () => {
 		// set the data globally so the modal can access it
 		setgData(data);
 
+		// this happens when the user owns no tickets
 		if (event_data.length === 0) {
 			return (
 				<>
@@ -299,38 +310,45 @@ const HomeScreen = () => {
 
 					return (
 						<Pressable
-							// style={[
-							// 	styles.button,
-							// 	styles.buttonClose
-							// ]}
 							onPress={() => {
 								setupModal(idx);
 								setModalVisible(!modalVisible);
 							}}
+							style={{ width: '100%' }}
 						>
-							<Card key={idx} style={{ display: 'flex' }}>
+							<Card
+								key={idx}
+								style={{ display: 'flex', width: '100%' }}
+							>
 								{values?.map(
 									(value: string | number, idx2: number) => {
 										if (keys[idx2] === 'Eventphoto') {
 											photo_uri = value as string;
 											return null;
-										} else if (keys[idx2] === 'ID') {
-											return null;
+										} else if (keys[idx2] === 'Eventname') {
+											return (
+												<Card.Title
+													title={`${value}`}
+												/>
+											);
 										}
-										return (
-											<Text key={idx2}>
-												{keys[idx2]}:{' '}
-												{keys[idx2] === 'EventDatetime'
-													? new Date(
-															value
-														).toLocaleString()
-													: keys[idx2] === 'Basecost'
-														? `$${value}`
-														: value}
-											</Text>
-										);
+										// return (
+										// 	<Text key={idx2}>
+										// 		{keys[idx2]}:{' '}
+										// 		{keys[idx2] === 'EventDatetime'
+										// 			? new Date(
+										// 					value
+										// 				).toLocaleString()
+										// 			: keys[idx2] === 'Basecost'
+										// 				? `$${value}`
+										// 				: value}
+										// 	</Text>
+										// );
 									}
 								)}
+								<Text style={{ flex: 1 }}>
+									Ticket id: {ticketid}
+								</Text>
 								<Image
 									source={{
 										uri: photo_uri
@@ -340,11 +358,11 @@ const HomeScreen = () => {
 										width: '100%',
 										aspectRatio: 1,
 										maxHeight: 200,
-										alignSelf: 'center'
+										alignSelf: 'flex-end',
+										flex: 2
 									}}
 								/>
 								{/* <Avatar.Image source={{ uri: photo_uri }} /> */}
-								<Text>Ticket id = {ticketid}</Text>
 							</Card>
 						</Pressable>
 					);

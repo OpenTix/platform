@@ -6,7 +6,7 @@
 		"dev": "npx nx run userweb:serve",
 		"vendordev": "npx nx run vendorweb:serve",
 		"usermobiledev": "npx nx run usermobile:start --tunnel",
-		"vendormobiledev": "npx nx run vendormobile:start",
+		"vendormobiledev": "npx nx run vendormobile:start --tunnel",
 		"lint": "npx nx affected --target=lint --base=origin/main",
 		"test": "npx nx affected --target=test --base=origin/main",
 		"build": "npx nx affected --target=build --base=origin/main",

@@ -1,10 +1,8 @@
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, Button } from 'react-native';
+import { View, Text } from 'react-native';
 import { ScrollView } from 'react-native';
 import { useDynamic } from './DynamicSetup';
 
 const ProfileScreen = () => {
-	// const navigation = useNavigation();
 	const client = useDynamic();
 
 	return (
