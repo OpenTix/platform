@@ -15,18 +15,30 @@
 		},
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
-			"supportsTablet": true
+			"supportsTablet": true,
+			"bundleIdentifier": "com.ckornega.vendormobile",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#FFFFFF"
-			}
+			},
+			"package": "com.ckornega.vendormobile"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png",
 			"bundler": "metro"
 		},
-		"plugins": []
+		"plugins": [],
+		"extra": {
+			"eas": {
+				"projectId": "d55b9bab-7cae-4021-a54b-a35306ecd8d1"
+			}
+		},
+		"newArchEnabled": true,
+		"scheme": "opentixvendormobile"
 	}
 }
