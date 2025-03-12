@@ -21,7 +21,7 @@ var connStr string
 var PHOTO_BUCKET string
 
 func init() {
-	connStr = shared.InitLambda()
+	connStr = shared.BuildDatabaseConnectionString()
 	PHOTO_BUCKET = os.Getenv("PHOTO_BUCKET")
 	if PHOTO_BUCKET == "" {
 		panic("PHOTO_BUCKET must be set")
@@ -59,7 +59,11 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		panic(err)
+		connStr = shared.BuildDatabaseConnectionString()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			panic("Failed to connect to database: " + err.Error())
+		}
 	}
 	defer conn.Close(ctx)
 	queries := query.New(conn)

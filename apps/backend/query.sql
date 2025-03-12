@@ -252,3 +252,21 @@ and event.vendor = (
     where wallet = $2
 )
 returning *;
+
+-- name: AddTicket :one
+insert into app.ticket (
+    event,
+    contract,
+    ticket_id
+) values (
+    $1, $2, $3
+) returning *;
+
+-- name: GetTicket :one
+select * from app.ticket where event = $1 and ticket_id = $2 limit 1;
+
+-- name: GetTicketsByEvent :many
+select * from app.ticket where event = $1;
+
+-- name: UpdateCheckin :one
+update app.ticket set checked_in = $2 where pk = $1 returning *;

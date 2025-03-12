@@ -12,6 +12,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addTicket = `-- name: AddTicket :one
+insert into app.ticket (
+    event,
+    contract,
+    ticket_id
+) values (
+    $1, $2, $3
+) returning pk, contract, ticket_id, checked_in, event
+`
+
+type AddTicketParams struct {
+	Event    int32
+	Contract string
+	TicketID int32
+}
+
+func (q *Queries) AddTicket(ctx context.Context, arg AddTicketParams) (AppTicket, error) {
+	row := q.db.QueryRow(ctx, addTicket, arg.Event, arg.Contract, arg.TicketID)
+	var i AppTicket
+	err := row.Scan(
+		&i.Pk,
+		&i.Contract,
+		&i.TicketID,
+		&i.CheckedIn,
+		&i.Event,
+	)
+	return i, err
+}
+
 const checkVenueVendorStatus = `-- name: CheckVenueVendorStatus :one
 select vendor from app.venue
 where pk = $1::int
@@ -185,6 +214,58 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (inter
 	return column_1, err
 }
 
+const getTicket = `-- name: GetTicket :one
+select pk, contract, ticket_id, checked_in, event from app.ticket where event = $1 and ticket_id = $2 limit 1
+`
+
+type GetTicketParams struct {
+	Event    int32
+	TicketID int32
+}
+
+func (q *Queries) GetTicket(ctx context.Context, arg GetTicketParams) (AppTicket, error) {
+	row := q.db.QueryRow(ctx, getTicket, arg.Event, arg.TicketID)
+	var i AppTicket
+	err := row.Scan(
+		&i.Pk,
+		&i.Contract,
+		&i.TicketID,
+		&i.CheckedIn,
+		&i.Event,
+	)
+	return i, err
+}
+
+const getTicketsByEvent = `-- name: GetTicketsByEvent :many
+select pk, contract, ticket_id, checked_in, event from app.ticket where event = $1
+`
+
+func (q *Queries) GetTicketsByEvent(ctx context.Context, event int32) ([]AppTicket, error) {
+	rows, err := q.db.Query(ctx, getTicketsByEvent, event)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppTicket
+	for rows.Next() {
+		var i AppTicket
+		if err := rows.Scan(
+			&i.Pk,
+			&i.Contract,
+			&i.TicketID,
+			&i.CheckedIn,
+			&i.Event,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVendorByUuid = `-- name: GetVendorByUuid :one
 select pk, id, wallet, name from app.vendor where id = $1 limit 1
 `
@@ -339,6 +420,28 @@ func (q *Queries) InsecureUpdateVenuePhoto(ctx context.Context, arg InsecureUpda
 		&i.NumUnique,
 		&i.NumGa,
 		&i.Photo,
+	)
+	return i, err
+}
+
+const updateCheckin = `-- name: UpdateCheckin :one
+update app.ticket set checked_in = $2 where pk = $1 returning pk, contract, ticket_id, checked_in, event
+`
+
+type UpdateCheckinParams struct {
+	Pk        int32
+	CheckedIn bool
+}
+
+func (q *Queries) UpdateCheckin(ctx context.Context, arg UpdateCheckinParams) (AppTicket, error) {
+	row := q.db.QueryRow(ctx, updateCheckin, arg.Pk, arg.CheckedIn)
+	var i AppTicket
+	err := row.Scan(
+		&i.Pk,
+		&i.Contract,
+		&i.TicketID,
+		&i.CheckedIn,
+		&i.Event,
 	)
 	return i, err
 }

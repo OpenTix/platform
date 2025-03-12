@@ -1,12 +1,15 @@
 package shared
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func InitLambda() string {
+func BuildDatabaseConnectionString() string {
 	var (
 		dbAddress  string
 		dbPort     string
@@ -35,4 +38,16 @@ func InitLambda() string {
 	connStr = u.String()
 
 	return connStr
+}
+
+func ConnectToDatabase(ctx context.Context,connStr string) (*pgx.Conn, error) {
+	conn, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		connStr = BuildDatabaseConnectionString()
+		conn, err = pgx.Connect(ctx, connStr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return conn, nil
 }
