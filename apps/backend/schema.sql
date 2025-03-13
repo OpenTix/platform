@@ -80,3 +80,16 @@ create table app.event(
     transaction_hash text
 );
 
+create table app.ticket
+(
+    pk         integer generated always as identity
+        constraint ticket_pk
+            primary key,
+    contract   text                  not null,
+    ticket_id  integer               not null,
+    checked_in boolean default false not null,
+    event      integer               not null
+        constraint ticket_event_pk_fk
+            references event
+            on delete cascade
+);

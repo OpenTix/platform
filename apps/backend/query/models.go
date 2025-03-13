@@ -26,6 +26,14 @@ type AppEvent struct {
 	TransactionHash pgtype.Text
 }
 
+type AppTicket struct {
+	Pk        int32
+	Contract  string
+	TicketID  int32
+	CheckedIn bool
+	Event     int32
+}
+
 type AppUser struct {
 	Pk       int32
 	Wallet   string

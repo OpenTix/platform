@@ -183,6 +183,24 @@ export class BackendStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const VendorTicketsLambda = new GoFunction(
+			this,
+			'VendorTicketsLambda',
+			{
+				entry: `${basePath}/vendor_tickets.go`,
+				...LambdaDBAccessProps
+			}
+		);
+
+		const VendorTicketsCreationLambda = new GoFunction(
+			this,
+			'VendorTicketsCreationLambda',
+			{
+				entry: `${basePath}/vendor_tickets_create.go`,
+				...LambdaDBAccessProps
+			}
+		);
+
 		const VendorPhotosLambda = new GoFunction(this, 'VendorPhotosLambda', {
 			entry: `${basePath}/vendor_photos.go`,
 			role: PhotoBucketRole,
@@ -351,6 +369,28 @@ export class BackendStack extends cdk.Stack {
 			}
 		);
 		addDynamicOptions(vendorEventsPhotosResource);
+
+		const vendorEventsTicketsResource =
+			vendorEventsResource.addResource('tickets');
+		vendorEventsTicketsResource.addMethod(
+			'PATCH',
+			new LambdaIntegration(VendorTicketsLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorEventsTicketsResource);
+
+		const vendorEventsTicketsCreationResource =
+			vendorEventsTicketsResource.addResource('create');
+		vendorEventsTicketsCreationResource.addMethod(
+			'POST',
+			new LambdaIntegration(VendorTicketsCreationLambda),
+			{
+				authorizer: auth
+			}
+		);
+		addDynamicOptions(vendorEventsTicketsCreationResource);
 
 		const userResource = api.root.addResource('user');
 		const userEventsResource = userResource.addResource('events');
