@@ -9,9 +9,12 @@ const MobileContainer = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	background-color: white;
+	color: black;
 `;
 const MobileMessage = styled.div`
 	text-align: center;
+	text-color: black;
 	max-width: 400px;
 	padding: 0 20px;
 	h1 {
