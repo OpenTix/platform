@@ -63,7 +63,7 @@ export default function Home() {
 	const [cost, setCost] = useSessionStorage('Cost', 1000000);
 	const [eventDate, setEventDate] = useSessionStorage(
 		'Date',
-		new Date().toString()
+		new Date().toISOString()
 	);
 	const [displayedDate, setDisplayedDate] = useSessionStorage(
 		'DisplayedDate',

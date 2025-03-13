@@ -61,8 +61,13 @@ export default function ListOfNFTsForEvent({
 
 	return (
 		<div>
-			{NFTs.length === 0 && (
+			{primaryWallet && NFTs.length === 0 && (
 				<Text>There are no tickets created for this event yet.</Text>
+			)}
+			{!primaryWallet && (
+				<Text>
+					You are not logged in, please log in to view tickets.
+				</Text>
 			)}
 			{NFTs.length > 0 && (
 				<DataList.Root>
