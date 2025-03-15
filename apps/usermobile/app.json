@@ -16,7 +16,7 @@
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.ckornega.usermobile",
+			"bundleIdentifier": "com.opentix.usermobile",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false
 			}
@@ -26,7 +26,7 @@
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#FFFFFF"
 			},
-			"package": "com.ckornega.usermobile"
+			"package": "com.opentix.usermobile"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png",

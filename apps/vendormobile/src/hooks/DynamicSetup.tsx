@@ -12,7 +12,7 @@ export const dynamicClient = createClient({
 
 	// Optional:
 	// //   appLogoUrl: 'https://demo.dynamic.xyz/favicon-32x32.png',
-	appName: 'OpenTix User Mobile'
+	appName: 'OpenTix Vendor Mobile'
 })
 	.extend(ReactNativeExtension())
 	.extend(ViemExtension());

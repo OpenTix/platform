@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Events from '../screens/Events';
 import Home from '../screens/Home';
 
+global.TextEncoder = require('text-encoding').TextEncoder;
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
