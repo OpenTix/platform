@@ -1,4 +1,5 @@
 import { Event } from '@platform/types';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useCallback, useState } from 'react';
 import { ScrollView, Text, View, Image, RefreshControl } from 'react-native';
@@ -15,7 +16,8 @@ type Params = {
 export default function Events({
 	route
 }: NativeStackScreenProps<Params, 'Events'>) {
-	const { Venue, Name } = route.params;
+	const { Venue } = route.params;
+	const navigation = useNavigation();
 	const client = useDynamic();
 
 	const [cards, setCards] = useState<React.ReactNode>(null);
@@ -26,10 +28,10 @@ export default function Events({
 	// handle scroll up page refresh
 	const onRefresh = useCallback(() => {
 		setRefreshing(true);
+		setShouldFetch(true);
 		setTimeout(() => {
 			setRefreshing(false);
-			setShouldFetch(true);
-		}, 2000);
+		}, 1000);
 	}, []);
 
 	const getEvents = useCallback(async () => {
@@ -72,6 +74,11 @@ export default function Events({
 								backgroundColor: '#8030F0',
 								shadowColor: 'white'
 							}}
+							onPress={() => {
+								navigation.navigate('EventDetails', {
+									Event: event.ID
+								});
+							}}
 						>
 							{Object.keys(event).map((key: string) => {
 								if (
@@ -95,6 +102,50 @@ export default function Events({
 												alignSelf: 'center'
 											}}
 										/>
+									);
+								} else if (key === 'EventDatetime') {
+									const date = new Date(event.EventDatetime);
+									const month = date.toLocaleString(
+										'default',
+										{ month: 'short' }
+									);
+									const day = date.getDate();
+									const dayOfWeek = date.toLocaleString(
+										'default',
+										{ weekday: 'short' }
+									);
+									const time = date.toLocaleString(
+										'default',
+										{
+											hour: 'numeric',
+											minute: '2-digit',
+											hour12: true
+										}
+									);
+
+									const dateUpper =
+										new Date().getFullYear() ===
+										date.getFullYear()
+											? `${dayOfWeek}, ${month} ${day}`
+											: `${dayOfWeek}, ${month} ${day}, ${date.getFullYear()}`;
+									const dateLower = `${time}`;
+									return (
+										<View
+											key={key}
+											style={{
+												display: 'flex',
+												flexDirection: 'row',
+												justifyContent: 'center',
+												columnGap: 10
+											}}
+										>
+											<Text style={{ color: 'white' }}>
+												{dateUpper}
+											</Text>
+											<Text style={{ color: 'white' }}>
+												{dateLower}
+											</Text>
+										</View>
 									);
 								}
 								return (

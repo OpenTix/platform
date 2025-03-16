@@ -26,10 +26,10 @@ export default function Home() {
 	// handle scroll up page refresh
 	const onRefresh = useCallback(() => {
 		setRefreshing(true);
+		setShouldFetch(true);
 		setTimeout(() => {
 			setRefreshing(false);
-			setShouldFetch(true);
-		}, 2000);
+		}, 1000);
 	}, []);
 
 	if (client.auth.token === null) client.ui.auth.show();
