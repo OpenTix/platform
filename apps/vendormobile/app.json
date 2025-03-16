@@ -35,7 +35,7 @@
 		"plugins": ["expo-router", "expo-secure-store"],
 		"extra": {
 			"eas": {
-				"projectId": "d55b9bab-7cae-4021-a54b-a35306ecd8d1"
+				"projectId": "6eddb8fc-5502-4175-94b0-46e4e82f5416"
 			}
 		},
 		"newArchEnabled": true,

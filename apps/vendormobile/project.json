@@ -6,7 +6,7 @@
 	"tags": [],
 	"// targets": "to see all targets run: nx show project vendormobile --web",
 	"targets": {
-		"build": {
+		"ci": {
 			"executor": "@nx/expo:export"
 		}
 	}

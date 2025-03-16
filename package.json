@@ -18,7 +18,13 @@
 		"prepare": "husky || true",
 		"prettier": "prettier --check .",
 		"prettier-fix": "prettier --write .",
-		"jest": "npx jest"
+		"jest": "npx jest",
+		"vendormobileallprod": "npx nx build vendormobile --profile production --platform all",
+		"vendormobileandroidprod": "npx nx build vendormobile --profile production --platform android",
+		"vendormobileiosprod": "npx nx build vendormobile --profile production --platform ios",
+		"usermobileallprod": "npx nx build usermobile --profile production --platform all",
+		"usermobileandroidprod": "npx nx build usermobile --profile production --platform android",
+		"usermobileiosprod": "npx nx build usermobile --profile production --platform ios"
 	},
 	"lint-staged": {
 		"*": "prettier --ignore-unknown --write",
