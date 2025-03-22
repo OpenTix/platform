@@ -119,56 +119,42 @@ export default function Home() {
 			return <Text key="events error"> Error: {error.message} </Text>;
 		}
 
-		function groupEventTypes(events: UserEventResponse[]) {
-			const groupTypes: UserEventResponse[][] = [];
-			eventTypes.forEach((name) =>
-				groupTypes.push(
-					events?.filter(
-						(event: UserEventResponse) => event.Type === name
-					)
-				)
-			);
-			return groupTypes;
-		}
-
 		return (
 			<Flex key="event_card_root" direction={'column'}>
 				{data && data.length > 0 ? (
-					groupEventTypes(data).map(
-						(group: UserEventResponse[], idx: number) => {
-							return group && group.length > 0 ? (
+					data.map((group: UserEventResponse[], idx: number) => {
+						return group && group.length > 0 ? (
+							<Flex
+								key={`Row_Container_${idx}`}
+								direction={'column'}
+							>
+								<Heading key={`Row_Heading_${idx}`}>
+									{' '}
+									{group[0].Type}{' '}
+								</Heading>
 								<Flex
-									key={`Row_Container_${idx}`}
-									direction={'column'}
+									key={`Card_Row_${idx}`}
+									gap="3"
+									direction="row"
+									style={{ overflowX: 'scroll' }}
 								>
-									<Heading key={`Row_Heading_${idx}`}>
-										{' '}
-										{group[0].Type}{' '}
-									</Heading>
-									<Flex
-										key={`Card_Row_${idx}`}
-										gap="3"
-										direction="row"
-										style={{ overflowX: 'scroll' }}
-									>
-										{group.map(
-											(
-												event: UserEventResponse,
-												jdx: number
-											) => (
-												<EventCard
-													key={`Card_${group[0].Type}_${jdx}`}
-													event={event}
-												/>
-											)
-										)}
-									</Flex>
+									{group.map(
+										(
+											event: UserEventResponse,
+											jdx: number
+										) => (
+											<EventCard
+												key={`Card_${group[0].Type}_${jdx}`}
+												event={event}
+											/>
+										)
+									)}
 								</Flex>
-							) : (
-								<Box key={`No_Data_${idx}`}></Box>
-							);
-						}
-					)
+							</Flex>
+						) : (
+							<Box key={`No_Data_${idx}`}></Box>
+						);
+					})
 				) : (
 					<Card key={'pageError'}>
 						<Text>
@@ -206,6 +192,7 @@ export default function Home() {
 	async function getEvents() {
 		const authToken = getAuthToken();
 		let date;
+		let events: UserEventResponse[][] = [];
 		try {
 			date = new Date(eventDate).toISOString();
 		} catch {
@@ -216,15 +203,32 @@ export default function Home() {
 					.slice(0, 16)
 			);
 		}
-		const resp = await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${ename}&Basecost=${cost}&EventDatetime=${date}`,
-			{
-				method: 'GET',
-				headers: { Authorization: `Bearer ${authToken}` }
-			}
+
+		const requests = eventTypes.map((type) =>
+			fetch(
+				`${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${ename}&Basecost=${cost}&EventDatetime=${date}`,
+				{
+					method: 'GET',
+					headers: { Authorization: `Bearer ${authToken}` }
+				}
+			)
 		);
-		if (!resp.ok) return Error('There was an error fetching data');
-		return await resp.json();
+
+		await Promise.allSettled(requests).then(async (responses) => {
+			const data = await Promise.all(
+				responses.map(async (response) => {
+					if (response.status === 'fulfilled') {
+						return await response.value.json();
+					} else if (response.status === 'rejected') {
+						console.error(response.reason);
+					}
+					return null;
+				})
+			);
+			events = data;
+		});
+
+		return events;
 	}
 
 	return (
