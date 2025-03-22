@@ -8,9 +8,10 @@ import {
 	Text,
 	TextField,
 	Card,
-	Select
+	Select,
+	Button
 } from '@radix-ui/themes';
-import { Popover, Toolbar } from 'radix-ui';
+import { Toolbar } from 'radix-ui';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSessionStorage } from 'usehooks-ts';
@@ -56,6 +57,7 @@ function getTimestamp() {
 }
 
 export default function Home() {
+	const [showSidebar, setShowSidebar] = useState(false);
 	const [page, setPage] = useSessionStorage('Page', 1);
 	const [zip, setZip] = useSessionStorage('Zip', '');
 	const [type, setType] = useSessionStorage('Type', '');
@@ -70,8 +72,14 @@ export default function Home() {
 		getTimestamp()
 	);
 
-	const [shouldFetch, setShouldFetch] = useState<boolean>(true);
-	const [dataChanged, setDataChanged] = useState<boolean>(true);
+	const [shouldFetch, setShouldFetch] = useSessionStorage(
+		'ShouldFetch',
+		true
+	);
+	const [dataChanged, setDataChanged] = useSessionStorage(
+		'DataChanged',
+		true
+	);
 	const [pageChanged, setPageChanged] = useState<boolean>(false);
 	const [resetCalled, setResetCalled] = useState<boolean>(false);
 	const [cards, setCards] = useState<React.ReactNode>(null);
@@ -85,6 +93,11 @@ export default function Home() {
 		}
 		setShouldFetch(true);
 	};
+
+	useEffect(() => {
+		setShouldFetch(true);
+		setDataChanged(true);
+	}, []);
 
 	useEffect(() => {
 		const resetFilters = () => {
@@ -162,129 +175,115 @@ export default function Home() {
 	]);
 
 	return (
-		<Flex>
-			<Box style={{ marginTop: '10px' }}>
-				<Flex gap="1" direction="column">
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							setEname(ename);
-							setDataChanged(true);
-							applyFilters();
+		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
+			<Box
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					rowGap: '10px'
+				}}
+			>
+				<Button
+					onClick={() => setShowSidebar(!showSidebar)}
+					style={{ width: '100px', alignSelf: 'flex-start' }}
+				>
+					Filter
+				</Button>
+
+				{showSidebar && (
+					<Box
+						style={{
+							width: '275px',
+							padding: '10px',
+							display: 'flex',
+							flexDirection: 'column',
+							rowGap: '10px',
+							backgroundColor: 'white',
+							boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+							borderRadius: '6px'
 						}}
 					>
-						<Flex gap="2" align="center">
+						<PopoverLabel>
+							<Text as="div" size="2" mb="1" weight="bold">
+								Type
+							</Text>
+							<Select.Root
+								value={type}
+								onValueChange={(value) => {
+									setType(value);
+									setDataChanged(true);
+								}}
+							>
+								<Select.Trigger placeholder="Select Event Type" />
+								<Select.Content>
+									<Select.Group>
+										{AllEventTypesArray.map((event) => (
+											<Select.Item
+												key={event}
+												value={event}
+											>
+												{event}
+											</Select.Item>
+										))}
+									</Select.Group>
+								</Select.Content>
+							</Select.Root>
+						</PopoverLabel>
+
+						<PopoverLabel>
+							<Text as="div" size="2" mb="1" weight="bold">
+								Maximum Cost
+							</Text>
 							<TextField.Root
-								placeholder="Search"
-								size="3"
-								name="Name"
-								value={ename}
+								name="Cost"
+								placeholder="1000000"
+								value={cost}
 								onChange={(e) => {
-									setEname(e.target.value);
+									setCost(Number(e.target.value));
+									setDataChanged(true);
 								}}
 							/>
-						</Flex>
-					</form>
-					<Popover.Root>
-						<Popover.Trigger>
-							<Toolbar.Root>
-								<TBButton>Filter</TBButton>
-							</Toolbar.Root>
-						</Popover.Trigger>
-						<Popover.Content
-							style={{
-								width: '275px',
-								rowGap: '5px',
-								display: 'flex',
-								flexDirection: 'column',
-								paddingRight: '10px',
-								marginLeft: '5px',
-								marginTop: '10px'
-							}}
+						</PopoverLabel>
+
+						<PopoverLabel>
+							<Text as="div" size="2" mb="1" weight="bold">
+								Time
+							</Text>
+							<TextField.Root
+								name="Time"
+								value={displayedDate}
+								onChange={(e) => {
+									setDisplayedDate(e.target.value);
+									setDataChanged(true);
+								}}
+								type="datetime-local"
+							/>
+						</PopoverLabel>
+
+						<PopoverLabel>
+							<Text>Zip</Text>
+							<TextField.Root
+								name="Zip"
+								value={zip}
+								onChange={(e) => {
+									setZip(e.target.value);
+									setDataChanged(true);
+								}}
+								pattern={'d{5}'}
+							/>
+						</PopoverLabel>
+
+						<Button
+							onClick={() => setResetCalled(true)}
+							style={{ backgroundColor: 'red' }}
 						>
-							<PopoverLabel>
-								<Text as="div" size="2" mb="1" weight="bold">
-									Type
-								</Text>
-								<Select.Root
-									value={type}
-									onValueChange={(value) => {
-										setType(value);
-										setDataChanged(true);
-									}}
-								>
-									<Select.Trigger placeholder="Select Event Type" />
-									<Select.Content>
-										<Select.Group>
-											{AllEventTypesArray.map((event) => (
-												<Select.Item
-													key={event}
-													value={event}
-												>
-													{event}
-												</Select.Item>
-											))}
-										</Select.Group>
-									</Select.Content>
-								</Select.Root>
-							</PopoverLabel>
-							<PopoverLabel>
-								<Text as="div" size="2" mb="1" weight="bold">
-									Maximum Cost
-								</Text>
-								<TextField.Root
-									name="Cost"
-									placeholder="1000000"
-									value={cost}
-									onChange={(e) => {
-										setCost(Number(e.target.value));
-										setDataChanged(true);
-									}}
-								/>
-							</PopoverLabel>
-							<PopoverLabel>
-								<Text as="div" size="2" mb="1" weight="bold">
-									Time
-								</Text>
-								<TextField.Root
-									name="Time"
-									value={displayedDate}
-									onChange={(e) => {
-										setDisplayedDate(e.target.value);
-										setDataChanged(true);
-									}}
-									type="datetime-local"
-								/>
-							</PopoverLabel>
-							<PopoverLabel>
-								<Text>Zip</Text>
-								<TextField.Root
-									name="Zip"
-									value={zip}
-									onChange={(e) => {
-										setZip(e.target.value);
-										setDataChanged(true);
-									}}
-									pattern={'d{5}'}
-								/>
-							</PopoverLabel>
-							<Toolbar.Root
-								style={{ display: 'flex', columnGap: '5px' }}
-							>
-								<TBButton
-									onClick={() => setResetCalled(true)}
-									style={{ backgroundColor: 'red' }}
-								>
-									Clear Filters
-								</TBButton>
-								<TBButton onClick={applyFilters}>
-									Apply Filters
-								</TBButton>
-							</Toolbar.Root>
-						</Popover.Content>
-					</Popover.Root>
-				</Flex>
+							Clear Filters
+						</Button>
+						<Button onClick={applyFilters}>Apply Filters</Button>
+					</Box>
+				)}
 			</Box>
+
 			<Container style={{ alignSelf: 'center' }} size={'4'}>
 				<Box style={{ maxWidth: '90vw', padding: '16px 16px' }}>
 					{cards}
