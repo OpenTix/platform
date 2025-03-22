@@ -25,7 +25,7 @@ export function EventCard({ event }: EventCardProps) {
 	const dateLower = `${time}`;
 
 	return (
-		<Card asChild size="3" variant="classic" style={{ minWidth: '300px' }}>
+		<Card asChild size="3" variant="classic" style={{ minWidth: '20em' }}>
 			<Link
 				to={`/event/${event.ID}`}
 				style={{ margin: '0', padding: '0' }}
