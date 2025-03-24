@@ -30,8 +30,8 @@ export default function Home() {
 	const [venuesPage, setVenuesPage] = useState<number>(1);
 	const [eventsPage, setEventsPage] = useState<number>(1);
 	const [eventsHistoryPage, setEventsHistoryPage] = useState<number>(1);
-	const [filteredName, setFilteredName] = useState<string>('');
-	const tempName = useRef<string>('');
+	const [filter, setFilter] = useState<string>('');
+	const tempFilter = useRef<string>('');
 
 	const [activeTab, setActiveTab] = useState<
 		'events' | 'venues' | 'historical_events'
@@ -105,7 +105,7 @@ export default function Home() {
 		const authToken = getAuthToken();
 		console.log(_key, page);
 		return await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues?Page=${page}&Name=${filteredName}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/venues?Page=${page}&Filter=${filter}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }
@@ -125,7 +125,7 @@ export default function Home() {
 		const authToken = getAuthToken();
 		console.log(_key, page);
 		return await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}&EventDatetime=${new Date().toISOString()}&Name=${filteredName}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}&EventDatetime=${new Date().toISOString()}&Filter=${filter}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }
@@ -145,7 +145,7 @@ export default function Home() {
 		const authToken = getAuthToken();
 		console.log(_key, page);
 		return await fetch(
-			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}&Name=${filteredName}`,
+			`${process.env.NX_PUBLIC_API_BASEURL}/vendor/events?Page=${page}&Filter=${filter}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${authToken}` }
@@ -192,7 +192,7 @@ export default function Home() {
 	};
 
 	const filterData = (e: React.ChangeEvent<HTMLInputElement>) => {
-		tempName.current = e.target.value.toLowerCase();
+		tempFilter.current = e.target.value.toLowerCase();
 	};
 
 	const updateTab = (e: string) => {
@@ -215,8 +215,8 @@ export default function Home() {
 
 	// Doing this to handle ReactQuery requerying on state change but wanting to save filter value across page loads without requerying every time a key is pressed.
 	useEffect(() => {
-		tempName.current = filteredName;
-	}, [eventsPage, venuesPage, eventsHistoryPage, filteredName]);
+		tempFilter.current = filter;
+	}, [eventsPage, venuesPage, eventsHistoryPage, filter]);
 
 	return (
 		<Container size={'4'}>
@@ -240,12 +240,15 @@ export default function Home() {
 								placeholder="search"
 								size="3"
 								onChangeCapture={filterData}
+								onKeyDownCapture={(e) =>
+									e.key === 'Enter'
+										? setFilter(tempFilter.current)
+										: null
+								}
 								style={{ marginRight: '8px' }}
 							></TextField.Root>
 							<Button
-								onClick={() =>
-									setFilteredName(tempName.current)
-								}
+								onClick={() => setFilter(tempFilter.current)}
 								size="3"
 								style={{ marginRight: '4px' }}
 							>
