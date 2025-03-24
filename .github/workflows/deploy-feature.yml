@@ -10,7 +10,7 @@ on:
                 options:
                     - userweb
                     - vendorweb
-                    - backend
+                    - api
                 default: 'userweb'
             useprbackend:
                 description: 'Use deployed PR backend api. (userweb/vendorweb only)'
