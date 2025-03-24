@@ -32,7 +32,11 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 			default:
 				header.push(
 					<Table.ColumnHeaderCell>
-						<Text>{labels[label]}</Text>
+						<Text>
+							{labels[label] === 'TransactionHash'
+								? 'Minted'
+								: labels[label]}
+						</Text>
 					</Table.ColumnHeaderCell>
 				);
 		}
@@ -49,12 +53,25 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 				case 'Venue':
 				case 'Photo':
 					continue;
+				case 'TransactionHash': {
+					const val = row[label as keyof typeof row];
+					tableRow.push(
+						<Table.Cell>
+							<Text>
+								{val === '' || val === null || val === undefined
+									? '❌'
+									: '✅'}
+							</Text>
+						</Table.Cell>
+					);
+					break;
+				}
 				default:
 					tableRow.push(
 						<Table.Cell>
 							<Text>
 								{label === 'EventDatetime'
-									? `${new Date(row[label as keyof typeof row])}`
+									? `${new Date(row[label as keyof typeof row]).toDateString()}`
 									: row[label as keyof typeof row]}
 							</Text>
 						</Table.Cell>
