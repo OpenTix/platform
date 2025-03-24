@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
 
-	"backend/query"
-	"backend/shared"
+	"api/query"
+	"api/shared"
 )
 
 var (

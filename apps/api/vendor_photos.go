@@ -17,8 +17,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"backend/query"
-	"backend/shared"
+	"api/query"
+	"api/shared"
 )
 
 var connStr string
