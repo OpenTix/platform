@@ -1,76 +1,53 @@
 package main
 
 import (
-	"backend/query"
-	"backend/shared"
+	"api/query"
+	"api/shared"
 	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var connStr string
 
-// Type for POST request to unmarshal body
-type VenuePostBodyParams struct {
-	Name        string `json:"Name"`
-	StreetAddress  string `json:"StreetAddress"`
-	Zip         string `json:"Zip"`
-	City        string `json:"City"`
-	StateCode   string `json:"StateCode"`
-	StateName   string `json:"StateName"`
-	CountryCode string `json:"CountryCode"`
-	CountryName string `json:"CountryName"`
-	NumUnique   int32  `json:"NumUnique"`
-	NumGa       int32  `json:"NumGa"`
+// ISO 8601
+const time_layout string = "2006-01-02T15:04:05.999Z"
+
+type EventPostBodyParams struct {
 	Vendor      int32
+	Venue       int32   `json:"Venue"`
+	Name        string  `json:"Name"`
+	Type        string  `json:"Type"`
+	Time        string  `json:"EventDatetime"`
+	Description string  `json:"Description"`
+	Disclaimer  string  `json:"Disclaimer"`
+	Basecost    float64 `json:"Basecost"`
+	NumUnique   int32   `json:"NumUnique"`
+	NumGa       int32   `json:"NumGa"`
 }
 
-type VenuePatchBodyParams struct {
-	Pk 		int32  `json:"Pk"`
-	Name        string `json:"Name"`
-	StreetAddress  string `json:"StreetAddress"`
-	Zip         string `json:"Zip"`
-	City        string `json:"City"`
-	StateCode   string `json:"StateCode"`
-	StateName   string `json:"StateName"`
-	CountryCode string `json:"CountryCode"`
-	CountryName string `json:"CountryName"`
-	Photo	   string `json:"Photo"`
+type EventPatchBodyParams struct {
+	Pk            int32   `json:"Pk"`
+	Venue       int32   `json:"Venue"`
+	Name        string  `json:"Name"`
+	Type        string  `json:"Type"`
+	Time        string  `json:"EventDatetime"`
+	Description string  `json:"Description"`
+	Disclaimer  string  `json:"Disclaimer"`
+	Photo	   string  `json:"Photo"`
+	TransactionHash string `json:"TransactionHash"`
 }
 
 func init() {
 	connStr = shared.BuildDatabaseConnectionString()
-}
-
-func handleGetAll(ctx context.Context, request events.APIGatewayProxyRequest, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
-	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
-	}
-	defer conn.Close(ctx)
-	queries := query.New(conn)
-
-	// Get all venues for the vendor
-	dbResponse, err := queries.VendorGetAllVenues(ctx, vendorinfo.Wallet)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
-	}
-
-	responseBody, err := json.Marshal(dbResponse)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
-	}
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(responseBody),
-		Headers:    shared.GetResponseHeaders(request.Headers),
-	}, nil
 }
 
 func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, pk int32, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
@@ -80,15 +57,16 @@ func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, p
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
+
 	queries := query.New(conn)
 
-	// Get venue by pk
-	dbResponse, err := queries.VendorGetVenueByPk(ctx, query.VendorGetVenueByPkParams{
+	// Get events for current page
+	dbResponse, err := queries.VendorGetEventByPk(ctx, query.VendorGetEventByPkParams{
 		Pk:     pk,
 		Wallet: vendorinfo.Wallet,
 	})
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
@@ -109,19 +87,21 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
+
 	queries := query.New(conn)
 
 	u, err := uuid.Parse(id)
 	if err != nil {
-		return shared.CreateErrorResponse(400, "Invalid uuid", request.Headers)
+		return shared.CreateErrorResponseAndLogError(400, "Invalid UUID", request.Headers, err)
 	}
-	// Get venue by uuid
-	dbResponse, err := queries.VendorGetVenueByUuid(ctx, query.VendorGetVenueByUuidParams{
-		ID: u,
+
+	// Get events for current page
+	dbResponse, err := queries.VendorGetEventByUuid(ctx, query.VendorGetEventByUuidParams{
+		ID:    u,
 		Wallet: vendorinfo.Wallet,
 	})
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
@@ -135,7 +115,6 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 	}, nil
 }
 
-
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Grab auth token
 	tk, err := shared.GetTokenFromRequest(request)
@@ -143,23 +122,18 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
-	// Grab wallet address from token
+	// Grab vendor information from token
 	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
 	}
 
 	/* ---- Breakaway for different queries based on input params ---- */
-	tmp, ok := request.QueryStringParameters["all"]
-	if ok && tmp == "true" {
-		return handleGetAll(ctx, request, vendorinfo)
-	}
-
-	tmp, ok = request.QueryStringParameters["Pk"]
+	tmp, ok := request.QueryStringParameters["Pk"]
 	if ok {
 		pk, err := strconv.ParseInt(tmp, 10, 32)
 		if err != nil {
-			return shared.CreateErrorResponse(400, "Invalid Pk", request.Headers)
+			return shared.CreateErrorResponse(400, "Invalid pk", request.Headers)
 		}
 		return handleGetByPk(ctx, request, int32(pk), vendorinfo)
 	}
@@ -170,7 +144,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 	/* ---- End ---- */
 
-	// Return all venues as paginated response
+	// Return all events as paginated response
 
 	// Get query parameters and set defaults if not ok
 	tmp, ok = request.QueryStringParameters["Page"]
@@ -185,22 +159,35 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
+	tmp, ok = request.QueryStringParameters["Venue"]
+	var venue int32
+	if !ok {
+		venue = -1
+	} else {
+		p, err := strconv.ParseInt(tmp, 10, 32)
+		venue = int32(p)
+		if err != nil {
+			venue = -1
+		}
+	}
+
 	// Connect to the database
 	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
-	queries := query.New(conn)
 
 	// Get events for current page
-	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{
+	queries := query.New(conn)
+	dbResponse, err := queries.VendorGetEventsPaginated(ctx, query.VendorGetEventsPaginatedParams{
 		Column1: page,
 		Wallet:  vendorinfo.Wallet,
+		Column3: venue,
 	})
 
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(404, "Unable to get response from database or malformed query", request.Headers, err)
+		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
 	responseBody, err := json.Marshal(dbResponse)
@@ -221,10 +208,48 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
 	}
 
-	// Grab wallet address from token
-	userinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+	// Grab vendor information from token
+	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+	}
+
+	var params EventPostBodyParams = EventPostBodyParams{
+		Vendor:      -1,
+		Venue:       -1,
+		Name:        "",
+		Type:        "",
+		Time:        "",
+		Description: "",
+		Disclaimer:  "",
+		Basecost:    -1,
+		NumUnique:   -1,
+		NumGa:       -1,
+	}
+
+	err = json.Unmarshal([]byte(request.Body), &params)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Could not get Body Params", request.Headers, err)
+	}
+
+	if params.Venue == -1 || params.Name == "" || params.Type == "" || params.Time == "" || params.Description == "" || params.Disclaimer == "" || params.Basecost == -1 || params.NumUnique == -1 || params.NumGa == -1 {
+		return shared.CreateErrorResponseAndLogError(404, "One of the required fields is empty in body request", request.Headers, fmt.Errorf("params = %v\n", params))
+	}
+
+	// Parse the parameters that are not strings
+	var tstamp pgtype.Timestamp
+	var disclaimer pgtype.Text
+
+	// Set time to a really low value to show all events if not provided
+	tmps := strings.Trim(params.Time, "\x0d\x0a")
+	t, err := time.Parse(time_layout, tmps)
+	tstamp.Scan(t)
+	if err != nil || !tstamp.Valid {
+		return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
+	}
+
+	if disclaimer.Scan(params.Disclaimer) != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Unable to parse photo or disclaimer", request.Headers, err)
 	}
 
 	// Connect to the database
@@ -236,33 +261,56 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 
 	queries := query.New(conn)
 
-	resp, err := queries.GetVendorByWallet(ctx, userinfo.Wallet)
+	resp, err := queries.GetVendorByWallet(ctx, vendorinfo.Wallet)
 	if err != nil {
 		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
 	vendor := resp.Pk
 
-	var params VenuePostBodyParams = VenuePostBodyParams{
-		Vendor: vendor, // We can set the vendor since we got it from the token
-	}
-
-	err = json.Unmarshal([]byte(request.Body), &params)
+	dbVendor, err := queries.CheckVenueVendorStatus(ctx, params.Venue)
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to unmarshal body params", request.Headers, fmt.Errorf("err = %v\nparams = %v\n", err, params))
+		return shared.CreateErrorResponse(404, "Vendor does not exist", request.Headers)
 	}
 
-	// Insert the venue into the app.venue table
-	dbResp, err := queries.CreateVenue(ctx, query.CreateVenueParams(params))
+	if dbVendor != vendor {
+		return shared.CreateErrorResponse(401, "You are not authorized to create an event for that venue", request.Headers)
+	}
+
+	dbVenue, err := queries.VendorGetVenueByPk(ctx, query.VendorGetVenueByPkParams{
+		Pk:     params.Venue,
+		Wallet: vendorinfo.Wallet,
+	})
 	if err != nil {
-		return shared.CreateErrorResponseAndLogError(404, "Unable to insert into table or malformed query", request.Headers, err)
+		return shared.CreateErrorResponse(500, "Error retrieving venue from database.", request.Headers)
+	}
+	if (dbVenue.NumGa < params.NumGa) || (dbVenue.NumUnique < params.NumUnique) {
+		return shared.CreateErrorResponse(400, "Number of tickets exceeds venue capacity.", request.Headers)
+	}
+	
+	// Get events for current page
+	dbResponse, err := queries.CreateEvent(ctx, query.CreateEventParams{
+		Vendor:        vendor,
+		Venue:         params.Venue,
+		Name:          params.Name,
+		Type:          params.Type,
+		EventDatetime: tstamp,
+		Description:   params.Description,
+		Disclaimer:    disclaimer,
+		Basecost:      params.Basecost,
+		NumUnique:     params.NumUnique,
+		NumGa:         params.NumGa,
+	})
+
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
-	responseBody, err := json.Marshal(dbResp)
+	responseBody, err := json.Marshal(dbResponse)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
 	}
 	return events.APIGatewayProxyResponse{
-		StatusCode: 201,
+		StatusCode: 200,
 		Body:       string(responseBody),
 		Headers:    shared.GetResponseHeaders(request.Headers),
 	}, nil
@@ -281,8 +329,8 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
         return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
     }
 
-    // Unmarshal body into VenuePatchBodyParams
-    var params VenuePatchBodyParams
+    // Unmarshal body into EventPatchBodyParams
+    var params EventPatchBodyParams
     err = json.Unmarshal([]byte(request.Body), &params)
     if err != nil {
         return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
@@ -297,22 +345,32 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
     queries := query.New(conn)
 
 
-    // Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
-    arg := query.VendorPatchVenueParams{
-        Pk:       params.Pk,
-        Wallet:   vendorinfo.Wallet,
-        Column3:  params.Name,
-        Column4:  params.StreetAddress,
-        Column5:  params.Zip,
-        Column6:  params.City,
-        Column7:  params.StateCode,
-        Column8:  params.StateName,
-        Column9:  params.CountryCode,
-        Column10: params.CountryName,
-        Column11: params.Photo,
-    }
+	// Process timestamp conversion for Column5.
+	var eventTime pgtype.Timestamp
+	if params.Time != "" {
+		tmps := strings.Trim(params.Time, "\x0d\x0a")
+		t, err := time.Parse(time_layout, tmps)
+		eventTime.Scan(t)
+		if err != nil || !eventTime.Valid {
+			return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
+		}
+		
+	}
 
-    updatedVenue, err := queries.VendorPatchVenue(ctx, arg)
+	// Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
+	arg := query.VendorPatchEventParams{
+		Pk:       params.Pk,
+		Wallet:   vendorinfo.Wallet,
+		Column3:  params.Name,
+		Column4:  params.Type,
+		Column5:  eventTime,
+		Column6:  params.Description,
+		Column7:  params.Disclaimer,
+		Column8:  params.Photo,
+		Column9:  params.TransactionHash,
+	}
+
+    updatedVenue, err := queries.VendorPatchEvent(ctx, arg)
     if err != nil {
         return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
     }
