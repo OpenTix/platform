@@ -23,7 +23,7 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
-and ($3::text = '' or LOWER($3::text) like LOWER(venue.name))
+and ($3::text = '' or $3::text like LOWER(venue.name) or $3::text like LOWER(venue.zip) or $3::text like LOWER(venue.city))
 order by venue.name
 limit 25
 offset (($1::int - 1) * 25);
@@ -62,7 +62,7 @@ where event.vendor = (
 )
 and ($3::int = -1 or $3::int = event.venue)
 and ($4::timestamp <= event.event_datetime)
-and ($5::text = '' or LOWER($5::text) like LOWER(event.name))
+and ($5::text = '' or $5::text like LOWER(event.name) or $5::text like LOWER(event.type))
 order by event.event_datetime, event.name
 limit 25
 offset (($1::int - 1) * 25);

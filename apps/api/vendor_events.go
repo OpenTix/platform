@@ -161,10 +161,10 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
-	var name string = ""
-	tmp, ok = request.QueryStringParameters["Name"]
+	var filter string = ""
+	tmp, ok = request.QueryStringParameters["Filter"]
 	if ok && tmp != "" {
-		name = tmp
+		filter = tmp
 	}
 
 	// Get query parameters and set defaults if not ok
@@ -206,7 +206,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Wallet:  vendorinfo.Wallet,
 		Column3: venue,
 		Column4: tstamp,
-		Column5: name,
+		Column5: strings.ToLower(filter),
 	})
 
 	if err != nil {

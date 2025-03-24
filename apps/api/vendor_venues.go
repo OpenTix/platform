@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -184,10 +185,10 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
-	var name string = ""
-	tmp, ok = request.QueryStringParameters["Name"]
+	var filter string = ""
+	tmp, ok = request.QueryStringParameters["Filter"]
 	if ok && tmp != "" {
-		name = tmp
+		filter = tmp
 	}
 
 	// Connect to the database
@@ -202,7 +203,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{
 		Column1: page,
 		Wallet:  vendorinfo.Wallet,
-		Column3: name,
+		Column3: strings.ToLower(filter),
 	})
 
 	if err != nil {
