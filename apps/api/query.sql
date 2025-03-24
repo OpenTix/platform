@@ -23,7 +23,7 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
-and ($3::text = '' or LOWER($3::text) like LOWER(event.name))
+and ($3::text = '' or LOWER($3::text) like LOWER(venue.name))
 order by venue.name
 limit 25
 offset (($1::int - 1) * 25);
