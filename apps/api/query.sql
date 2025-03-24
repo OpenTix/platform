@@ -23,9 +23,10 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
+and ($3::text = '' or LOWER($3::text) like LOWER(event.name))
 order by venue.name
-limit 5
-offset (($1::int - 1) * 5);
+limit 25
+offset (($1::int - 1) * 25);
 
 -- name: VendorGetVenueByPk :one
 select * from app.venue 
@@ -60,9 +61,11 @@ where event.vendor = (
     where vendor.wallet = $2
 )
 and ($3::int = -1 or $3::int = event.venue)
+and ($4::timestamp <= event.event_datetime)
+and ($5::text = '' or LOWER($5::text) like LOWER(event.name))
 order by event.event_datetime, event.name
-limit 5
-offset (($1::int - 1) * 5);
+limit 25
+offset (($1::int - 1) * 25);
 
 -- name: VendorGetEventByPk :one
 select * from app.event event
