@@ -171,7 +171,7 @@ const HomeScreen = () => {
 	// query our backend for the event data using the uuid
 	async function getEventByUUID(UUID: string) {
 		const resp = await fetch(
-			`${process.env.EXPO_PUBLIC_API_BASEURL}/user/events?ID=${UUID}`,
+			`https://api.dev.opentix.co/user/events?ID=${UUID}`,
 			{
 				method: 'GET',
 				headers: { Authorization: `Bearer ${client.auth.token}` }

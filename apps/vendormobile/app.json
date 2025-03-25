@@ -16,23 +16,29 @@
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.ckornega.vendormobile",
+			"bundleIdentifier": "com.opentix.vendor",
 			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
-			}
+				"ITSAppUsesNonExemptEncryption": false,
+				"NFCReaderUsageDescription": "We need to use NFC to check in tickets."
+			},
+			"appleTeamId": "S726Z4H4Q3"
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/adaptive-icon.png",
 				"backgroundColor": "#FFFFFF"
 			},
-			"package": "com.ckornega.vendormobile"
+			"package": "com.opentix.vendor"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png",
 			"bundler": "metro"
 		},
-		"plugins": ["expo-router", "expo-secure-store"],
+		"plugins": [
+			"expo-router",
+			"expo-secure-store",
+			"react-native-nfc-manager"
+		],
 		"extra": {
 			"eas": {
 				"projectId": "6eddb8fc-5502-4175-94b0-46e4e82f5416"
