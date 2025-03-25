@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { BackendStack } from '../lib/backend-stack';
+import { APIStack } from '../lib/backend-stack';
 import { UserwebStack } from '../lib/userweb-stack';
 import { VendorwebStack } from '../lib/vendorweb-stack';
 
@@ -58,10 +58,10 @@ new VendorwebStack(
 	}
 );
 
-new BackendStack(
+new APIStack(
 	app,
-	PREFIX + '-BackendStack',
-	'../apps/backend',
+	PREFIX + '-APIStack',
+	'../apps/api',
 	process.env.HOSTEDZONENAME,
 	{
 		env: {
