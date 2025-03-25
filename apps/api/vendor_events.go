@@ -35,14 +35,14 @@ type EventPostBodyParams struct {
 }
 
 type EventPatchBodyParams struct {
-	Pk            int32   `json:"Pk"`
-	Venue       int32   `json:"Venue"`
-	Name        string  `json:"Name"`
-	Type        string  `json:"Type"`
-	Time        string  `json:"EventDatetime"`
-	Description string  `json:"Description"`
-	Disclaimer  string  `json:"Disclaimer"`
-	Photo	   string  `json:"Photo"`
+	Pk              int32  `json:"Pk"`
+	Venue           int32  `json:"Venue"`
+	Name            string `json:"Name"`
+	Type            string `json:"Type"`
+	Time            string `json:"EventDatetime"`
+	Description     string `json:"Description"`
+	Disclaimer      string `json:"Disclaimer"`
+	Photo           string `json:"Photo"`
 	TransactionHash string `json:"TransactionHash"`
 }
 
@@ -97,7 +97,7 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 
 	// Get events for current page
 	dbResponse, err := queries.VendorGetEventByUuid(ctx, query.VendorGetEventByUuidParams{
-		ID:    u,
+		ID:     u,
 		Wallet: vendorinfo.Wallet,
 	})
 	if err != nil {
@@ -142,9 +142,30 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	if ok {
 		return handleGetByUuid(ctx, request, tmp, vendorinfo)
 	}
+
 	/* ---- End ---- */
 
 	// Return all events as paginated response
+
+	tmp, ok = request.QueryStringParameters["EventDatetime"]
+	var tstamp pgtype.Timestamp
+	// Set time to a really low value to show all events if not provided
+	if !ok || tmp == "" {
+		tstamp.Scan(time.Time{})
+	} else {
+		tmp_time := strings.Trim(tmp, "\x0d\x0a")
+		t, err := time.Parse(time_layout, tmp_time)
+		tstamp.Scan(t)
+		if err != nil || !tstamp.Valid {
+			tstamp.Scan(time.Time{})
+		}
+	}
+
+	var filter string = ""
+	tmp, ok = request.QueryStringParameters["Filter"]
+	if ok && tmp != "" {
+		filter = tmp
+	}
 
 	// Get query parameters and set defaults if not ok
 	tmp, ok = request.QueryStringParameters["Page"]
@@ -184,6 +205,8 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		Column1: page,
 		Wallet:  vendorinfo.Wallet,
 		Column3: venue,
+		Column4: tstamp,
+		Column5: strings.ToLower(filter),
 	})
 
 	if err != nil {
@@ -286,7 +309,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	if (dbVenue.NumGa < params.NumGa) || (dbVenue.NumUnique < params.NumUnique) {
 		return shared.CreateErrorResponse(400, "Number of tickets exceeds venue capacity.", request.Headers)
 	}
-	
+
 	// Get events for current page
 	dbResponse, err := queries.CreateEvent(ctx, query.CreateEventParams{
 		Vendor:        vendor,
@@ -317,33 +340,32 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 }
 
 func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-    // Grab auth token
-    tk, err := shared.GetTokenFromRequest(request)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
-    }
+	// Grab auth token
+	tk, err := shared.GetTokenFromRequest(request)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+	}
 
-    // Grab wallet address from token
-    vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
-    }
+	// Grab wallet address from token
+	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+	}
 
-    // Unmarshal body into EventPatchBodyParams
-    var params EventPatchBodyParams
-    err = json.Unmarshal([]byte(request.Body), &params)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
-    }
+	// Unmarshal body into EventPatchBodyParams
+	var params EventPatchBodyParams
+	err = json.Unmarshal([]byte(request.Body), &params)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
+	}
 
-    // Connect to the database
-    conn, err := shared.ConnectToDatabase(ctx, connStr)
+	// Connect to the database
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
-    queries := query.New(conn)
-
+	queries := query.New(conn)
 
 	// Process timestamp conversion for Column5.
 	var eventTime pgtype.Timestamp
@@ -354,37 +376,37 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 		if err != nil || !eventTime.Valid {
 			return shared.CreateErrorResponseAndLogError(404, "Unable to parse timestamp for event_datetime", request.Headers, err)
 		}
-		
+
 	}
 
 	// Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
 	arg := query.VendorPatchEventParams{
-		Pk:       params.Pk,
-		Wallet:   vendorinfo.Wallet,
-		Column3:  params.Name,
-		Column4:  params.Type,
-		Column5:  eventTime,
-		Column6:  params.Description,
-		Column7:  params.Disclaimer,
-		Column8:  params.Photo,
-		Column9:  params.TransactionHash,
+		Pk:      params.Pk,
+		Wallet:  vendorinfo.Wallet,
+		Column3: params.Name,
+		Column4: params.Type,
+		Column5: eventTime,
+		Column6: params.Description,
+		Column7: params.Disclaimer,
+		Column8: params.Photo,
+		Column9: params.TransactionHash,
 	}
 
-    updatedVenue, err := queries.VendorPatchEvent(ctx, arg)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
-    }
+	updatedVenue, err := queries.VendorPatchEvent(ctx, arg)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
+	}
 
-    responseBody, err := json.Marshal(updatedVenue)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
-    }
+	responseBody, err := json.Marshal(updatedVenue)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
+	}
 
-    return events.APIGatewayProxyResponse{
-        StatusCode: 200,
-        Body:       string(responseBody),
-        Headers:    shared.GetResponseHeaders(request.Headers),
-    }, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(responseBody),
+		Headers:    shared.GetResponseHeaders(request.Headers),
+	}, nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
