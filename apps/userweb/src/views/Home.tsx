@@ -9,18 +9,20 @@ import {
 	TextField,
 	Card,
 	Select,
-	Heading
+	Heading,
+	Button
 } from '@radix-ui/themes';
 import {
 	useQuery,
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
+import { User } from 'aws-cdk-lib/aws-iam';
 import { Popover, Toolbar } from 'radix-ui';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useSessionStorage } from 'usehooks-ts';
-import { EventCard } from '../components/EventCard';
+import EventRow from '../components/EventRow';
 
 const queryClient = new QueryClient();
 
@@ -120,37 +122,14 @@ export default function Home() {
 		}
 
 		return (
-			<Flex key="event_card_root" direction={'column'}>
+			<Flex key="event_card_root" direction="column" gap="3">
 				{data && data.length > 0 ? (
 					data.map((group: UserEventResponse[], idx: number) => {
 						return group && group.length > 0 ? (
-							<Flex
-								key={`Row_Container_${idx}`}
-								direction={'column'}
-							>
-								<Heading key={`Row_Heading_${idx}`}>
-									{' '}
-									{group[0].Type}{' '}
-								</Heading>
-								<Flex
-									key={`Card_Row_${idx}`}
-									gap="3"
-									direction="row"
-									style={{ overflowX: 'scroll' }}
-								>
-									{group.map(
-										(
-											event: UserEventResponse,
-											jdx: number
-										) => (
-											<EventCard
-												key={`Card_${group[0].Type}_${jdx}`}
-												event={event}
-											/>
-										)
-									)}
-								</Flex>
-							</Flex>
+							<EventRow
+								key={`Event_Row_${idx}`}
+								group={group}
+							></EventRow>
 						) : (
 							<Box key={`No_Data_${idx}`}></Box>
 						);
