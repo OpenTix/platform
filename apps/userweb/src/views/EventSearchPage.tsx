@@ -38,7 +38,8 @@ export default function EventSearchPage() {
 	const [ename, setEname] = useSessionStorage('Name', '');
 	const [cost, setCost] = useSessionStorage('Cost', 1000000);
 	const [resetCalled, setResetCalled] = useState<boolean>(false);
-	const [eventCards, setEventCards] = useState<any>([]);
+	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
+	const [pageSize, setPageSize] = useState(5);
 
 	const [eventDate, setEventDate] = useSessionStorage(
 		'Date',
@@ -72,8 +73,17 @@ export default function EventSearchPage() {
 	useEffect(() => {
 		const requests = [];
 		const cards: JSX.Element[][] = [];
-		for (let i = 0; i < 5; i++) {
-			requests.push(getEvents(i, zip, type, ename, cost, eventDate));
+		for (let i = 0; i < pageSize; i++) {
+			requests.push(
+				getEvents(
+					i + (page - 1) * pageSize,
+					zip,
+					type,
+					ename,
+					cost,
+					eventDate
+				)
+			);
 		}
 		Promise.allSettled(requests).then((responses) => {
 			responses.map((response: PromiseSettledResult<JSX.Element[]>) =>
@@ -84,15 +94,16 @@ export default function EventSearchPage() {
 			setEventCards(cards);
 		});
 		return;
-	}, [zip, type, ename, cost, eventDate]);
+	}, [zip, type, ename, cost, eventDate, page, pageSize]);
 
 	return (
-		<Flex>
+		<Flex pt="3" justify={'center'} gap="3">
 			<Box
 				style={{
 					display: 'flex',
 					flexDirection: 'column',
-					rowGap: '10px'
+					rowGap: '10px',
+					width: '17.5em'
 				}}
 			>
 				<Button
@@ -195,10 +206,8 @@ export default function EventSearchPage() {
 					</Box>
 				)}
 			</Box>
-			<Flex direction={'column'}>
-				{eventCards.map((cards: JSX.Element[]) => (
-					<Flex>{cards}</Flex>
-				))}
+			<Flex width="66%" direction={'row'} wrap={'wrap'} gap="3">
+				{eventCards.map((cards: JSX.Element[]) => cards)}
 			</Flex>
 		</Flex>
 	);

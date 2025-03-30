@@ -1,13 +1,21 @@
 import { UserEventResponse } from '@platform/types';
 import { Box, Card, Flex, Inset, Text } from '@radix-ui/themes';
+import { title } from 'process';
 import { Avatar } from 'radix-ui';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { text } from 'stream/consumers';
 
 export interface EventCardProps {
 	event: UserEventResponse;
 }
 
 export function EventCard({ event }: EventCardProps) {
+	const titleRef = useRef<HTMLElement>(null);
+	const [titleSize, setTitleSize] = useState(1.2);
+	const venueRef = useRef<HTMLElement>(null);
+	const [venueSize, setVenueSize] = useState(1);
+
 	const date = new Date(event.EventDatetime);
 	const month = date.toLocaleString('default', { month: 'short' });
 	const day = date.getDate();
@@ -21,11 +29,31 @@ export function EventCard({ event }: EventCardProps) {
 	const dateUpper =
 		new Date().getFullYear() === date.getFullYear()
 			? `${dayOfWeek}, ${month} ${day}`
-			: `${dayOfWeek}, ${month} ${day}, ${date.getFullYear()}`;
+			: `${dayOfWeek}, ${month} ${day}`;
 	const dateLower = `${time}`;
 
+	useEffect(() => {
+		if (!titleRef.current) return;
+		if (titleRef.current.getClientRects().length > 1) {
+			setTitleSize(titleSize - 0.1);
+		}
+	}, [titleRef, titleSize]);
+
+	useEffect(() => {
+		if (!venueRef.current) return;
+		if (venueRef.current.getClientRects().length > 1) {
+			setVenueSize(venueSize - 0.1);
+		}
+		console.log(venueRef.current.getClientRects().length);
+	}, [venueRef, venueSize]);
+
 	return (
-		<Card asChild size="3" variant="classic" style={{ minWidth: '20em' }}>
+		<Card
+			asChild
+			size="3"
+			variant="classic"
+			style={{ width: '17.6em', height: '14.5em' }}
+		>
 			<Link
 				to={`/event/${event.ID}`}
 				style={{ margin: '0', padding: '0' }}
@@ -33,7 +61,7 @@ export function EventCard({ event }: EventCardProps) {
 				<Inset
 					clip="padding-box"
 					side="top"
-					style={{ height: '168.75px', alignContent: 'center' }}
+					style={{ height: '10em', alignContent: 'center' }}
 				>
 					<Avatar.Root>
 						<Avatar.Image
@@ -41,7 +69,7 @@ export function EventCard({ event }: EventCardProps) {
 								display: 'block',
 								objectFit: 'cover',
 								width: '100%',
-								maxHeight: '168.75px'
+								maxHeight: '10em'
 							}}
 							src={event.Photo}
 							alt="Image of venue"
@@ -52,7 +80,7 @@ export function EventCard({ event }: EventCardProps) {
 									display: 'block',
 									objectFit: 'cover',
 									width: '100%',
-									maxHeight: '168.75px'
+									maxHeight: '10em'
 								}}
 								src={
 									'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
@@ -66,19 +94,27 @@ export function EventCard({ event }: EventCardProps) {
 				<Box mx="2" mt="2" mb="4">
 					<Text
 						style={{
-							fontSize: '1.2em',
+							fontSize: `${titleSize}em`,
 							fontWeight: 'bold'
 						}}
+						ref={titleRef}
 					>
 						{event.Name}
 					</Text>
-					<Flex justify="between">
-						<Text>{event.Venuename}</Text>
+					<Flex
+						justify="between"
+						style={{ fontSize: `${venueSize}em` }}
+					>
+						<Box style={{ width: '60%' }}>
+							<Text>{event.Venuename}</Text>
+						</Box>
 						<Flex direction="column" align="end">
-							<Text>{dateUpper}</Text>
-							<Text size="2" weight="light">
-								{dateLower}
-							</Text>
+							<Box style={{ textAlign: 'right' }}>
+								<Text ref={venueRef}>{dateUpper}</Text>
+							</Box>
+							<Box style={{ textAlign: 'right' }}>
+								<Text weight="light">{dateLower}</Text>
+							</Box>
 						</Flex>
 					</Flex>
 				</Box>
