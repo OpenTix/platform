@@ -1,22 +1,58 @@
+import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { Box, Flex, Heading, Button } from '@radix-ui/themes';
-import { useRef } from 'react';
+import { Box, Flex, Heading, Button, Card, Text } from '@radix-ui/themes';
+import { useEffect, useState, useRef } from 'react';
 import { EventCard } from './EventCard';
 
-export default function EventRow({ group }: { group: UserEventResponse[] }) {
-	const flexRef = useRef(null);
+interface rowProps {
+	zip: string;
+	type: string;
+	name: string;
+	cost: string;
+	eventDate: string;
+}
 
-	const moveCards = (dist: number) => {
+export default function EventRow({
+	zip,
+	type,
+	name,
+	cost,
+	eventDate
+}: rowProps) {
+	const flexRef = useRef(null);
+	const [cards, setCards] = useState([]);
+	const [page, setPage] = useState(1);
+
+	const moveCards = (dist: number, pageDist: number) => {
 		if (!flexRef || !flexRef.current) return;
 		(flexRef.current as Element).scrollLeft += dist;
+		setPage(page + pageDist < 1 ? page : page + pageDist);
 	};
+
+	useEffect(() => {
+		Promise.resolve(
+			getEvents(
+				`Page=${page}&Zip=${zip}&Type=${type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
+			)
+		)
+			.then((resp) =>
+				resp !== undefined
+					? setCards(resp)
+					: page <= 1
+						? setPage(page)
+						: setPage(page - 1)
+			)
+			.catch((error) => console.error('EventRow: ', error));
+
+		return;
+	}, [page, zip, type, name, cost, eventDate]);
 
 	return (
 		<Box>
 			<Flex gap="1">
-				<Heading> {group[0].Type} </Heading>
+				<Heading> {type} </Heading>
 				<Button
-					onClick={() => moveCards(-1000)}
+					onClick={() => moveCards(0, -1)}
 					style={{
 						backgroundColor: 'rgba(0,0,0,0)',
 						color: 'darkgray'
@@ -25,7 +61,7 @@ export default function EventRow({ group }: { group: UserEventResponse[] }) {
 					{' <'}
 				</Button>
 				<Button
-					onClick={() => moveCards(1000)}
+					onClick={() => moveCards(0, 1)}
 					style={{
 						backgroundColor: 'rgba(0,0,0,0)',
 						color: 'darkgrey'
@@ -42,14 +78,36 @@ export default function EventRow({ group }: { group: UserEventResponse[] }) {
 					style={{ scrollBehavior: 'smooth' }}
 					ref={flexRef}
 				>
-					{group.map((event: UserEventResponse, jdx: number) => (
-						<EventCard
-							key={`Card_${group[0].Type}_${jdx}`}
-							event={event}
-						/>
-					))}
+					{cards}
 				</Flex>
 			</Flex>
 		</Box>
 	);
+}
+
+async function getEvents(pageRequest: string) {
+	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?${pageRequest}`;
+
+	const authToken = getAuthToken();
+	const resp = await fetch(url, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${authToken}` }
+	});
+
+	if (!resp.ok) {
+		console.error('There was an error fetching data');
+		return (
+			<Card>
+				<Text>There was an error fetching data</Text>
+			</Card>
+		);
+	}
+
+	const data = await resp.json();
+
+	return await (data && data.length !== 0
+		? data.map((event: UserEventResponse, idx: number) => (
+				<EventCard key={`${idx}:${event.Name}`} event={event} />
+			))
+		: undefined);
 }

@@ -1,7 +1,7 @@
 import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { Box } from '@radix-ui/themes';
 import { TextField } from '@radix-ui/themes';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSessionStorage } from 'usehooks-ts';
 import { NavLink, Navbar } from '@platform/ui';
 
@@ -13,13 +13,16 @@ export default function Navigation() {
 	const [ename, setEname] = useSessionStorage('Name', '');
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
+	const [searchParams, setSearchParams] = useSearchParams();
 	const location = useLocation();
+	const navigate = useNavigate();
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
 		setEname(ename);
 		setDataChanged(true);
 		setShouldFetch(true);
+		navigate(`/eventSearch`);
 	};
 
 	return (
@@ -28,7 +31,8 @@ export default function Navigation() {
 				<NavLink to="/">Home</NavLink>
 				<NavLink to="/profile">Profile</NavLink>
 			</Box>
-			{location.pathname === '/' && (
+			{(location.pathname === '/' ||
+				location.pathname === '/eventSearch') && (
 				<Box>
 					<form onSubmit={handleSearch}>
 						<TextField.Root
