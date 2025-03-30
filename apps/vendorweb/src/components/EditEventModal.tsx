@@ -1,6 +1,7 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { EventEditableFields } from '@platform/types';
-import { TextField, Text } from '@radix-ui/themes';
+import { AllEventTypesArray } from '@platform/types';
+import { TextField, Text, Select } from '@radix-ui/themes';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BaseModalForm } from '@platform/ui';
@@ -103,13 +104,24 @@ export default function EditEventModal({
 				<Text as="div" size="2" mb="1" weight="bold">
 					Type
 				</Text>
-				<TextField.Root
-					name="Type"
-					placeholder="Concert"
-					value={formData.Type}
-					onChange={handleChange}
-				/>
 			</label>
+			<Select.Root
+				onValueChange={(val) =>
+					setFormData({
+						...formData,
+						Type: val
+					})
+				}
+			>
+				<Select.Trigger placeholder="Type" />
+				<Select.Content>
+					{AllEventTypesArray.map((event) => (
+						<Select.Item key={event} value={event}>
+							{event}
+						</Select.Item>
+					))}
+				</Select.Content>
+			</Select.Root>
 
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">

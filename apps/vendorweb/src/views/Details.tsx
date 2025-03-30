@@ -1,6 +1,12 @@
-import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { isEthereumWallet } from '@dynamic-labs/ethereum';
+import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Group } from '@mantine/core';
 import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import {
+	ContractABI,
+	ContractAddress,
+	ContractGetEventIdsReturnedMetadata
+} from '@platform/blockchain';
 import { Event, Venue } from '@platform/types';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import {
@@ -19,6 +25,7 @@ import styled from 'styled-components';
 import { SuccessAlert } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
+import { FullscreenLoading } from '../components/FullscreenLoading';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
 import MintTicketsModal from '../components/MintTicketsModal';
 
@@ -62,6 +69,11 @@ export default function Details({ typestring }: DetailsProps) {
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
+	const [shouldGrayOutPage, setShouldGrayOutPage] = useState<boolean>(false);
+	const [latestTransactionHash, setLatestTransactionHash] =
+		useState<string>('');
+
+	const { primaryWallet } = useDynamicContext();
 
 	const validateUUID = () => {
 		if (
@@ -192,6 +204,77 @@ export default function Details({ typestring }: DetailsProps) {
 		}
 	};
 
+	const createTicketsOnBackend = async (min: bigint, max: bigint) => {
+		try {
+			const token = getAuthToken();
+			const res = await fetch(
+				process.env.NX_PUBLIC_API_BASEURL +
+					`/vendor/events/tickets/create`,
+				{
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						Event: id,
+						TicketMin: Number(min),
+						TicketMax: Number(max),
+						Contract: ContractAddress
+					})
+				}
+			);
+			if (!res.ok) {
+				const d = await res.json();
+				console.error(res);
+				setErrorMessage(d.message);
+				setShouldShowError(true);
+				return;
+			}
+		} catch (error) {
+			console.error(error);
+			setErrorMessage('Failed to create tickets on backend');
+			setShouldShowError(true);
+		}
+	};
+
+	const updateTransactionHash = async (hash: string) => {
+		setLatestTransactionHash(hash);
+		setShouldGrayOutPage(true);
+		const NFTMintingDescription = `${(data as Event)?.Name} at ${(data as Event)?.EventDatetime} - ${(data as Event)?.ID}`;
+		try {
+			if (primaryWallet && isEthereumWallet(primaryWallet)) {
+				const p = await primaryWallet.getPublicClient();
+				if (p) {
+					if (hash.startsWith('0x')) {
+						hash = hash.slice(2);
+					}
+					const transaction = await p.waitForTransactionReceipt({
+						hash: `0x${hash}`
+					});
+					console.log(transaction);
+					const dataFromContract = (await p.readContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'get_event_ids',
+						args: [NFTMintingDescription]
+					})) as [bigint[], ContractGetEventIdsReturnedMetadata];
+					console.log(dataFromContract[1]);
+					await createTicketsOnBackend(
+						dataFromContract[1].min,
+						dataFromContract[1].max
+					);
+					setShouldGrayOutPage(false);
+					fetchData();
+				}
+			} else {
+				throw new Error('Failed to confirm ethereum wallet.');
+			}
+		} catch (error) {
+			console.error(error);
+			throw new Error('Failed to update transaction hash');
+		}
+	};
 	useEffect(() => {
 		if (!shouldShowEditModal && validateUUID()) {
 			fetchData();
@@ -400,6 +483,7 @@ export default function Details({ typestring }: DetailsProps) {
 			{shouldShowMintModal && typestring === 'event' && (
 				<MintTicketsModal
 					onClose={() => setShouldShowMintModal(false)}
+					passTransactionHash={(val) => updateTransactionHash(val)}
 					Basecost={(data as Event)?.Basecost}
 					NumGa={(data as Event)?.NumGa}
 					NumUnique={(data as Event)?.NumUnique}
@@ -408,6 +492,10 @@ export default function Details({ typestring }: DetailsProps) {
 					ID={(data as Event)?.ID}
 					Pk={(data as Event)?.Pk}
 				/>
+			)}
+
+			{shouldGrayOutPage && (
+				<FullscreenLoading message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
 			)}
 		</>
 	);

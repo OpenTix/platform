@@ -3,11 +3,13 @@ import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Dialog, Flex, Text } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FullscreenLoading } from './FullscreenLoading';
 
 export interface MintTicketsModalProps {
 	onClose: () => void;
+	passTransactionHash: (hash: string) => void;
 	Basecost: number;
 	NumGa: number;
 	NumUnique: number;
@@ -18,6 +20,7 @@ export interface MintTicketsModalProps {
 }
 export default function MintTicketsModal({
 	onClose,
+	passTransactionHash,
 	Basecost,
 	NumGa,
 	NumUnique,
@@ -84,13 +87,11 @@ export default function MintTicketsModal({
 							Array(NumGa + NumUnique).fill(Basecost)
 						]
 					});
-					console.log(request);
 					const hash = await w.writeContract(request);
-					console.log(hash);
+					passTransactionHash(hash);
 					await updateEventWithTransactionHash(hash);
 					setIsSubmitting(false);
 					onClose();
-					navigate(0);
 				} else {
 					console.error('Wallet client or public client not set up');
 					setErrorMessage(
@@ -121,7 +122,6 @@ export default function MintTicketsModal({
 				>
 					<Text>{Disclaimer}</Text>
 					<Text>Pressing 'Mint' will open your wallet provider.</Text>
-
 					{showError && errorMessage && (
 						<Callout.Root color="red">
 							<Callout.Icon>

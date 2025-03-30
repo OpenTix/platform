@@ -2,7 +2,7 @@ import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import {
 	AllVenuesListSimplifiedResponse,
 	EventCreationFormData,
-	eventTypes
+	AllEventTypesArray
 } from '@platform/types';
 import { Select, TextField, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
@@ -225,7 +225,7 @@ export default function AddEventModal({
 			>
 				<Select.Trigger placeholder="Type" />
 				<Select.Content>
-					{eventTypes.map((event) => (
+					{AllEventTypesArray.map((event) => (
 						<Select.Item key={event} value={event}>
 							{event}
 						</Select.Item>

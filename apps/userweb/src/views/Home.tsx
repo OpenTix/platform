@@ -1,6 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
-import { eventTypes } from '@platform/types';
+import { AllEventTypesArray } from '@platform/types';
 import {
 	Box,
 	Container,
@@ -9,22 +9,13 @@ import {
 	TextField,
 	Card,
 	Select,
-	Heading,
 	Button
 } from '@radix-ui/themes';
-import {
-	useQuery,
-	QueryClient,
-	QueryClientProvider
-} from '@tanstack/react-query';
-import { User } from 'aws-cdk-lib/aws-iam';
-import { Popover, Toolbar } from 'radix-ui';
-import { useState } from 'react';
+import { Toolbar } from 'radix-ui';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSessionStorage } from 'usehooks-ts';
 import EventRow from '../components/EventRow';
-
-const queryClient = new QueryClient();
 
 const TBButton = styled(Toolbar.Button)`
 	padding-left: 10px;
@@ -51,12 +42,11 @@ const TBRoot = styled(Toolbar.Root)`
 	margin-top: 10px;
 `;
 
-const Label = styled.label`
-	display: flex;
-	flex-direction: row;
-	column-gap: 10px;
-	width: inherit;
-`;
+function getTimestamp() {
+	return new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+		.toISOString()
+		.slice(0, 16);
+}
 
 export default function Home() {
 	const [page, setPage] = useSessionStorage('Page', 1);
@@ -67,23 +57,17 @@ export default function Home() {
 
 	const [eventDate, setEventDate] = useSessionStorage(
 		'Date',
-		new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-			.toISOString()
-			.slice(0, 16)
+		new Date().toISOString()
+	);
+	const [displayedDate, setDisplayedDate] = useSessionStorage(
+		'DisplayedDate',
+		getTimestamp()
 	);
 	const [tempType, setTempType] = useState(type);
 	const [tempCost, setTempCost] = useState(cost);
 	const [tempZip, setTempZip] = useState(zip);
 	const [tempEventDate, setTempEventDate] = useState(eventDate);
 	const [tempEname, setTempEname] = useState(ename);
-
-	const applyFilters = () => {
-		setType(tempType);
-		setCost(tempCost);
-		setZip(tempZip);
-		setEventDate(tempEventDate);
-		setEname(tempEname);
-	};
 
 	const resetFilters = () => {
 		setTempType('');
@@ -106,295 +90,98 @@ export default function Home() {
 		setEname('');
 	};
 
-	function Events() {
-		const { isPending, isError, data, error } = useQuery({
-			queryKey: ['events'],
-			queryFn: getEvents
-		});
+	const [shouldFetch, setShouldFetch] = useSessionStorage(
+		'ShouldFetch',
+		true
+	);
+	const [dataChanged, setDataChanged] = useSessionStorage(
+		'DataChanged',
+		true
+	);
+	const [pageChanged, setPageChanged] = useState<boolean>(false);
+	const [resetCalled, setResetCalled] = useState<boolean>(false);
+	const [cards, setCards] = useState<React.ReactNode>(null);
 
-		if (isPending) {
-			return <Text key="events loading"> Loading... </Text>;
+	const applyFilters = () => {
+		try {
+			setEventDate(new Date(displayedDate).toISOString());
+		} catch {
+			setEventDate(new Date().toISOString());
+			setDisplayedDate(getTimestamp());
 		}
-
-		if (isError) {
-			console.error(error.message);
-			return <Text key="events error"> Error: {error.message} </Text>;
-		}
-
-		return (
-			<Flex key="event_card_root" direction="column" gap="3">
-				{data && data.length > 0 ? (
-					data.map((group: UserEventResponse[], idx: number) => {
-						return group && group.length > 0 ? (
-							<EventRow
-								key={`Event_Row_${idx}`}
-								group={group}
-							></EventRow>
-						) : (
-							<Box key={`No_Data_${idx}`}></Box>
-						);
-					})
-				) : (
-					<Card key={'pageError'}>
-						<Text>
-							There are no results of this type for page {page}
-						</Text>
-					</Card>
-				)}
-			</Flex>
-		);
-	}
-
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target;
-		switch (name) {
-			case 'Type':
-				setType(value);
-				break;
-			case 'Cost':
-				setCost(Number(value));
-				break;
-			case 'Time':
-				setEventDate(value);
-				break;
-			case 'Zip':
-				setZip(value);
-				break;
-			case 'Name':
-				setEname(value);
-				break;
-			default:
-				break;
-		}
+		setShouldFetch(true);
 	};
 
-	async function getEvents() {
-		const authToken = getAuthToken();
-		let date;
-		let events: UserEventResponse[][] = [];
-		try {
-			date = new Date(eventDate).toISOString();
-		} catch {
-			date = new Date().toISOString();
-			await setEventDate(
-				new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-					.toISOString()
-					.slice(0, 16)
+	useEffect(() => {
+		setShouldFetch(true);
+		setDataChanged(true);
+	}, []);
+
+	useEffect(() => {
+		const resetFilters = () => {
+			setDisplayedDate(getTimestamp());
+			setEventDate(new Date(displayedDate).toISOString());
+			setType('');
+			setCost(1000000);
+			setZip('');
+			setPage(1);
+		};
+
+		async function getEvents() {
+			if (resetCalled) {
+				await resetFilters();
+				setResetCalled(false);
+			}
+
+			setPageChanged(false);
+			setShouldFetch(false);
+			setDataChanged(false);
+
+			setCards(
+				AllEventTypesArray.map((eventType: string, idx: number) =>
+					type !== '' && eventType !== type ? (
+						<></>
+					) : (
+						<EventRow
+							key={`${idx}:${eventType}`}
+							zip={zip}
+							type={eventType}
+							name={ename}
+							cost={cost.toString()}
+							eventDate={eventDate}
+						/>
+					)
+				)
 			);
 		}
 
-		const requests = eventTypes.map((type) =>
-			fetch(
-				`${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${ename}&Basecost=${cost}&EventDatetime=${date}`,
-				{
-					method: 'GET',
-					headers: { Authorization: `Bearer ${authToken}` }
-				}
-			)
-		);
-
-		await Promise.allSettled(requests).then(async (responses) => {
-			const data = await Promise.all(
-				responses.map(async (response) => {
-					if (response.status === 'fulfilled') {
-						return await response.value.json();
-					} else if (response.status === 'rejected') {
-						console.error(response.reason);
-					}
-					return null;
-				})
-			);
-			events = data;
-		});
-
-		return events;
-	}
+		if ((shouldFetch && dataChanged) || resetCalled || pageChanged)
+			getEvents();
+	}, [
+		cost,
+		ename,
+		eventDate,
+		page,
+		type,
+		zip,
+		shouldFetch,
+		resetCalled,
+		setEventDate,
+		displayedDate,
+		setType,
+		setCost,
+		setZip,
+		setPage,
+		setDisplayedDate,
+		dataChanged,
+		pageChanged
+	]);
 
 	return (
-		<Flex>
-			<Box style={{ marginTop: '10px' }}>
-				<Flex gap="1" direction="column">
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							setEname(tempEname);
-						}}
-					>
-						<Flex gap="2" align="center">
-							<Toolbar.Root>
-								<TBButton
-									type="submit"
-									style={{
-										backgroundColor: '#4e3282',
-										color: 'white'
-									}}
-								>
-									<span role="img" aria-label="Search">
-										🔍
-									</span>
-								</TBButton>
-							</Toolbar.Root>
-							<TextField.Root
-								placeholder="Search"
-								size="3"
-								name="Name"
-								value={tempEname}
-								onChange={(e) => setTempEname(e.target.value)}
-							/>
-						</Flex>
-					</form>
-					<Popover.Root>
-						<Popover.Trigger
-							style={{
-								backgroundColor: 'var(--purple-12)',
-								borderRadius: '5px',
-								color: 'white'
-							}}
-						>
-							Filter
-						</Popover.Trigger>
-						<Flex gap="3" direction="column" width={'150px'}>
-							<Popover.Content
-								style={{ width: '150px', padding: '10px' }}
-							>
-								<label>
-									<Text
-										as="div"
-										size="2"
-										mb="1"
-										weight="bold"
-									>
-										Type
-									</Text>
-								</label>
-								<Select.Root
-									value={tempType}
-									onValueChange={setTempType}
-								>
-									<Select.Trigger placeholder="Select Event Type" />
-									<Select.Content>
-										<Select.Group>
-											{eventTypes.map((event) => (
-												<Select.Item
-													key={event}
-													value={event}
-												>
-													{event}
-												</Select.Item>
-											))}
-										</Select.Group>
-									</Select.Content>
-								</Select.Root>
-								<Label>
-									<Text
-										as="div"
-										size="2"
-										mb="1"
-										weight="bold"
-									>
-										Maximum Cost
-									</Text>
-									<TextField.Root
-										name="Cost"
-										placeholder="1000000"
-										value={tempCost}
-										onChange={(e) =>
-											setTempCost(Number(e.target.value))
-										}
-									/>
-								</Label>
-								<Label>
-									<Text
-										as="div"
-										size="2"
-										mb="1"
-										weight="bold"
-									>
-										Time
-									</Text>
-									<TextField.Root
-										name="Time"
-										value={tempEventDate}
-										onChange={(e) =>
-											setTempEventDate(e.target.value)
-										}
-										type="datetime-local"
-									/>
-								</Label>
-								<Label>
-									<Text>Zip</Text>
-									<TextField.Root
-										name="Zip"
-										value={tempZip}
-										onChange={(e) =>
-											setTempZip(e.target.value)
-										}
-										pattern={'{d}[5]'}
-									/>
-								</Label>
-								<Toolbar.Root>
-									<TBButton
-										onClick={resetFilters}
-										style={{ backgroundColor: 'red' }}
-									>
-										Clear Filters
-									</TBButton>
-									<TBButton onClick={applyFilters}>
-										Apply Filters
-									</TBButton>
-								</Toolbar.Root>
-							</Popover.Content>
-						</Flex>
-					</Popover.Root>
-				</Flex>
-			</Box>
+		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
 			<Container style={{ alignSelf: 'center' }} size={'4'}>
 				<Box style={{ maxWidth: '90vw', padding: '16px 16px' }}>
-					<QueryClientProvider client={queryClient}>
-						<Flex direction="column" gap="3">
-							<Events />
-						</Flex>
-					</QueryClientProvider>
-					<TBRoot>
-						{page > 1 ? (
-							<TBButton
-								onClick={() => setPage(page - 1)}
-								value={page - 1}
-							>
-								{page - 1}
-							</TBButton>
-						) : null}
-						<TBButton
-							style={{ backgroundColor: 'black' }}
-							onClick={() => setPage(page)}
-							value={page}
-						>
-							{page}
-						</TBButton>
-						<TBButton
-							onClick={() => setPage(page + 1)}
-							value={page + 1}
-						>
-							{page + 1}
-						</TBButton>
-						{page === 1 ? (
-							<TBButton
-								onClick={() => setPage(page + 2)}
-								value={page + 2}
-							>
-								{page + 2}
-							</TBButton>
-						) : null}
-						<Toolbar.Separator>...</Toolbar.Separator>
-						<TBButton
-							onClick={() => {
-								setPage(page + 4);
-							}}
-							value={page + 4}
-						>
-							{page + 4}
-						</TBButton>
-					</TBRoot>
+					{cards}
 				</Box>
 			</Container>
 		</Flex>
