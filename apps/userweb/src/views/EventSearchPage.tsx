@@ -221,7 +221,7 @@ async function getEvents(
 	cost: number,
 	eventDate: string
 ) {
-	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ? name : ''}&Basecost=${cost}&EventDatetime=${eventDate}`;
+	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate}`;
 	const authToken = getAuthToken();
 	const resp = await fetch(url, {
 		method: 'GET',
