@@ -39,7 +39,7 @@ export default function EventSearchPage() {
 	const [cost, setCost] = useSessionStorage('Cost', 1000000);
 	const [resetCalled, setResetCalled] = useState<boolean>(false);
 	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
-	const [pageSize, setPageSize] = useState(5);
+	const [pageSize, setPageSize] = useState(1);
 
 	const [eventDate, setEventDate] = useSessionStorage(
 		'Date',
@@ -76,7 +76,7 @@ export default function EventSearchPage() {
 		for (let i = 0; i < pageSize; i++) {
 			requests.push(
 				getEvents(
-					i + (page - 1) * pageSize,
+					i + page * pageSize,
 					zip,
 					type,
 					ename,
