@@ -24,7 +24,7 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as snsSubscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Construct } from 'constructs';
 
-export class BackendStack extends cdk.Stack {
+export class APIStack extends cdk.Stack {
 	constructor(
 		scope: Construct,
 		id: string,
