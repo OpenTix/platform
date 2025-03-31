@@ -1,6 +1,7 @@
 import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { Box } from '@radix-ui/themes';
 import { TextField } from '@radix-ui/themes';
+import { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSessionStorage } from 'usehooks-ts';
 import { NavLink, Navbar } from '@platform/ui';
@@ -9,6 +10,8 @@ export default function Navigation() {
 	//const { setShowAuthFlow } = useDynamicContext();
 	//if we want to change the login button, have a button call this with 'true'
 	//to show the modal. this includes dynamic's profile modal post-login
+
+	const [search, setSearch] = useState('');
 
 	const [ename, setEname] = useSessionStorage('Name', '');
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
@@ -19,7 +22,7 @@ export default function Navigation() {
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
-		setEname(ename);
+		setEname(search);
 		setDataChanged(true);
 		setShouldFetch(true);
 		navigate(`/eventSearch`);
@@ -39,9 +42,9 @@ export default function Navigation() {
 							placeholder="Search"
 							size="3"
 							name="Name"
-							value={ename}
+							value={search}
 							onChange={(e) => {
-								setEname(e.target.value);
+								setSearch(e.target.value);
 								setDataChanged(true);
 							}}
 						/>

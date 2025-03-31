@@ -44,7 +44,6 @@ export function EventCard({ event }: EventCardProps) {
 		if (venueRef.current.getClientRects().length > 1) {
 			setVenueSize(venueSize - 0.1);
 		}
-		console.log(venueRef.current.getClientRects().length);
 	}, [venueRef, venueSize]);
 
 	return (
