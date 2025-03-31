@@ -756,19 +756,29 @@ where event.vendor = (
     where vendor.wallet = $2
 )
 and ($3::int = -1 or $3::int = event.venue)
+and ($4::timestamp <= event.event_datetime)
+and ($5::text = '' or $5::text like LOWER(event.name) or $5::text like LOWER(event.type))
 order by event.event_datetime, event.name
-limit 5
-offset (($1::int - 1) * 5)
+limit 25
+offset (($1::int - 1) * 25)
 `
 
 type VendorGetEventsPaginatedParams struct {
 	Column1 int32
 	Wallet  string
 	Column3 int32
+	Column4 pgtype.Timestamp
+	Column5 string
 }
 
 func (q *Queries) VendorGetEventsPaginated(ctx context.Context, arg VendorGetEventsPaginatedParams) ([]AppEvent, error) {
-	rows, err := q.db.Query(ctx, vendorGetEventsPaginated, arg.Column1, arg.Wallet, arg.Column3)
+	rows, err := q.db.Query(ctx, vendorGetEventsPaginated,
+		arg.Column1,
+		arg.Wallet,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -882,18 +892,20 @@ where venue.vendor = (
     select pk from app.vendor vendor
     where vendor.wallet = $2
 )
+and ($3::text = '' or $3::text like LOWER(venue.name) or $3::text like LOWER(venue.zip) or $3::text like LOWER(venue.city))
 order by venue.name
-limit 5
-offset (($1::int - 1) * 5)
+limit 25
+offset (($1::int - 1) * 25)
 `
 
 type VendorGetVenuesPaginatedParams struct {
 	Column1 int32
 	Wallet  string
+	Column3 string
 }
 
 func (q *Queries) VendorGetVenuesPaginated(ctx context.Context, arg VendorGetVenuesPaginatedParams) ([]AppVenue, error) {
-	rows, err := q.db.Query(ctx, vendorGetVenuesPaginated, arg.Column1, arg.Wallet)
+	rows, err := q.db.Query(ctx, vendorGetVenuesPaginated, arg.Column1, arg.Wallet, arg.Column3)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ on:
                 options:
                     - userweb
                     - vendorweb
-                    - backend
+                    - API
                 default: 'userweb'
             useprbackend:
                 description: 'Use deployed PR backend api. (userweb/vendorweb only)'
@@ -136,7 +136,7 @@ jobs:
                       URL="https://client.pr${PRNUMBER}.dev.opentix.co"
                   elif [ "${{ github.event.inputs.target }}" == "vendorweb" ]; then
                       URL="https://vendor.pr${PRNUMBER}.dev.opentix.co"
-                  elif [ "${{ github.event.inputs.target }}" == "backend" ]; then
+                  elif [ "${{ github.event.inputs.target }}" == "API" ]; then
                       URL="https://api.pr${PRNUMBER}.dev.opentix.co"
                   else
                       echo "Invalid target: ${{ github.event.inputs.target }}"

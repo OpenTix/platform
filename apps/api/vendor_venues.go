@@ -1,12 +1,13 @@
 package main
 
 import (
-	"backend/query"
-	"backend/shared"
+	"api/query"
+	"api/shared"
 	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -17,30 +18,30 @@ var connStr string
 
 // Type for POST request to unmarshal body
 type VenuePostBodyParams struct {
-	Name        string `json:"Name"`
-	StreetAddress  string `json:"StreetAddress"`
-	Zip         string `json:"Zip"`
-	City        string `json:"City"`
-	StateCode   string `json:"StateCode"`
-	StateName   string `json:"StateName"`
-	CountryCode string `json:"CountryCode"`
-	CountryName string `json:"CountryName"`
-	NumUnique   int32  `json:"NumUnique"`
-	NumGa       int32  `json:"NumGa"`
-	Vendor      int32
+	Name          string `json:"Name"`
+	StreetAddress string `json:"StreetAddress"`
+	Zip           string `json:"Zip"`
+	City          string `json:"City"`
+	StateCode     string `json:"StateCode"`
+	StateName     string `json:"StateName"`
+	CountryCode   string `json:"CountryCode"`
+	CountryName   string `json:"CountryName"`
+	NumUnique     int32  `json:"NumUnique"`
+	NumGa         int32  `json:"NumGa"`
+	Vendor        int32
 }
 
 type VenuePatchBodyParams struct {
-	Pk 		int32  `json:"Pk"`
-	Name        string `json:"Name"`
-	StreetAddress  string `json:"StreetAddress"`
-	Zip         string `json:"Zip"`
-	City        string `json:"City"`
-	StateCode   string `json:"StateCode"`
-	StateName   string `json:"StateName"`
-	CountryCode string `json:"CountryCode"`
-	CountryName string `json:"CountryName"`
-	Photo	   string `json:"Photo"`
+	Pk            int32  `json:"Pk"`
+	Name          string `json:"Name"`
+	StreetAddress string `json:"StreetAddress"`
+	Zip           string `json:"Zip"`
+	City          string `json:"City"`
+	StateCode     string `json:"StateCode"`
+	StateName     string `json:"StateName"`
+	CountryCode   string `json:"CountryCode"`
+	CountryName   string `json:"CountryName"`
+	Photo         string `json:"Photo"`
 }
 
 func init() {
@@ -117,7 +118,7 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 	}
 	// Get venue by uuid
 	dbResponse, err := queries.VendorGetVenueByUuid(ctx, query.VendorGetVenueByUuidParams{
-		ID: u,
+		ID:     u,
 		Wallet: vendorinfo.Wallet,
 	})
 	if err != nil {
@@ -134,7 +135,6 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 		Headers:    shared.GetResponseHeaders(request.Headers),
 	}, nil
 }
-
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Grab auth token
@@ -185,6 +185,12 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
+	var filter string = ""
+	tmp, ok = request.QueryStringParameters["Filter"]
+	if ok && tmp != "" {
+		filter = tmp
+	}
+
 	// Connect to the database
 	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
@@ -197,6 +203,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	dbResponse, err := queries.VendorGetVenuesPaginated(ctx, query.VendorGetVenuesPaginatedParams{
 		Column1: page,
 		Wallet:  vendorinfo.Wallet,
+		Column3: strings.ToLower(filter),
 	})
 
 	if err != nil {
@@ -269,64 +276,63 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 }
 
 func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-    // Grab auth token
-    tk, err := shared.GetTokenFromRequest(request)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
-    }
+	// Grab auth token
+	tk, err := shared.GetTokenFromRequest(request)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error creating token object from DIDToken", request.Headers, err)
+	}
 
-    // Grab wallet address from token
-    vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
-    }
+	// Grab wallet address from token
+	vendorinfo, err := shared.GetWalletAndUUIDFromToken(tk)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(401, "Error retrieving wallet from token", request.Headers, err)
+	}
 
-    // Unmarshal body into VenuePatchBodyParams
-    var params VenuePatchBodyParams
-    err = json.Unmarshal([]byte(request.Body), &params)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
-    }
+	// Unmarshal body into VenuePatchBodyParams
+	var params VenuePatchBodyParams
+	err = json.Unmarshal([]byte(request.Body), &params)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(400, "Invalid body parameters", request.Headers, err)
+	}
 
-    // Connect to the database
-    conn, err := shared.ConnectToDatabase(ctx, connStr)
+	// Connect to the database
+	conn, err := shared.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
-    queries := query.New(conn)
+	queries := query.New(conn)
 
+	// Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
+	arg := query.VendorPatchVenueParams{
+		Pk:       params.Pk,
+		Wallet:   vendorinfo.Wallet,
+		Column3:  params.Name,
+		Column4:  params.StreetAddress,
+		Column5:  params.Zip,
+		Column6:  params.City,
+		Column7:  params.StateCode,
+		Column8:  params.StateName,
+		Column9:  params.CountryCode,
+		Column10: params.CountryName,
+		Column11: params.Photo,
+	}
 
-    // Non-editable: Pk, ID, Vendor, NumUnique, NumGa.
-    arg := query.VendorPatchVenueParams{
-        Pk:       params.Pk,
-        Wallet:   vendorinfo.Wallet,
-        Column3:  params.Name,
-        Column4:  params.StreetAddress,
-        Column5:  params.Zip,
-        Column6:  params.City,
-        Column7:  params.StateCode,
-        Column8:  params.StateName,
-        Column9:  params.CountryCode,
-        Column10: params.CountryName,
-        Column11: params.Photo,
-    }
+	updatedVenue, err := queries.VendorPatchVenue(ctx, arg)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
+	}
 
-    updatedVenue, err := queries.VendorPatchVenue(ctx, arg)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(404, "Failed to update venue", request.Headers, err)
-    }
+	responseBody, err := json.Marshal(updatedVenue)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
+	}
 
-    responseBody, err := json.Marshal(updatedVenue)
-    if err != nil {
-        return shared.CreateErrorResponseAndLogError(500, "Failed to marshal updated venue", request.Headers, err)
-    }
-
-    return events.APIGatewayProxyResponse{
-        StatusCode: 200,
-        Body:       string(responseBody),
-        Headers:    shared.GetResponseHeaders(request.Headers),
-    }, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(responseBody),
+		Headers:    shared.GetResponseHeaders(request.Headers),
+	}, nil
 }
 
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

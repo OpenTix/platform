@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backend/query"
-	"backend/shared"
+	"api/query"
+	"api/shared"
 	"context"
 	"encoding/json"
 
