@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStaticNavigation } from '@react-navigation/native';
 import { Button } from 'react-native';
 import { dynamicClient } from './DynamicSetup';
+import EventView from './EventView';
 import ProfileScreen from './Profile';
 import HomeScreen from './TicketListing';
 import TransferScreen from './TicketTransfer';
@@ -20,7 +21,8 @@ const MyTabs = createBottomTabNavigator({
 	screens: {
 		Tickets: HomeScreen,
 		Transfer: TransferScreen,
-		Profile: ProfileScreen
+		Profile: ProfileScreen,
+		Event: EventView
 	},
 	screenOptions: {
 		headerRight: () => (

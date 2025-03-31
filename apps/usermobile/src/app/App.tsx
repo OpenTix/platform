@@ -15,6 +15,7 @@ export default function App() {
 	});
 	client.auth.on('authSuccess', (user) => {
 		console.log('User logged in', user);
+		client.ui.auth.hide();
 	});
 	client.ui.on('authFlowCancelled', () => {
 		console.log('User cancelled the flow not cool');

@@ -1,5 +1,6 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventResponse } from '@platform/types';
+import { useNavigation } from '@react-navigation/native';
 import {
 	useQuery,
 	QueryClient,
@@ -16,7 +17,9 @@ import {
 	Alert,
 	Pressable,
 	StyleSheet,
-	TouchableOpacity
+	TouchableOpacity,
+	TouchableWithoutFeedbackComponent,
+	Button
 } from 'react-native';
 import { Card, Avatar } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
@@ -28,64 +31,63 @@ const HomeScreen = () => {
 	const client = useDynamic();
 	const [refreshing, setRefreshing] = React.useState(false);
 	const [modalVisible, setModalVisible] = React.useState(false);
+	const [qrVisible, setqrVisible] = React.useState(false);
 	const [gData, setgData] = React.useState({
 		ids: Array(0) as bigint[],
 		event_data: Array(0) as UserEventResponse[]
 	});
 	const [modalData, setmodalData] = React.useState(<></>);
-
-	// check the user in with the vendor
-	function checkin() {
-		console.log('The checkin code should go here :)');
-	}
+	const [qrData, setqrData] = React.useState('');
+	const [currentID, setcurrentID] = React.useState(BigInt(0));
+	const navigation = useNavigation();
 
 	// call this before setting the modal visibility
 	// this loads the proper data based on the index in the page
-	function setupModal(index: number) {
-		const ids = gData['ids'];
-		const events_data = gData['event_data'];
+	// function setupModal(index: number) {
+	// 	const ids = gData['ids'];
+	// 	const events_data = gData['event_data'];
 
-		const id = ids[index];
-		const event_data = events_data[index];
+	// 	const id = ids[index];
+	// 	const event_data = events_data[index];
 
-		const keys = Object.keys(event_data);
-		const values = Object.values(event_data);
+	// 	const keys = Object.keys(event_data);
+	// 	const values = Object.values(event_data);
 
-		let photo_uri = '';
+	// 	let photo_uri = '';
 
-		setmodalData(
-			<>
-				{values?.map((value: string | number, idx2: number) => {
-					if (keys[idx2] === 'Eventphoto') {
-						photo_uri = value as string;
-						return null;
-					} else if (keys[idx2] === 'ID') {
-						return null;
-					} else if (keys[idx2] === 'Venuephoto') {
-						return null;
-					}
-					return (
-						<Text key={idx2} style={{ textAlign: 'center' }}>
-							{keys[idx2]}:{' '}
-							{keys[idx2] === 'EventDatetime'
-								? new Date(value).toLocaleString()
-								: keys[idx2] === 'Basecost'
-									? `$${value}`
-									: value}
-						</Text>
-					);
-				})}
-				<Avatar.Image
-					key={2}
-					style={{ alignSelf: 'center', backgroundColor: 'white' }}
-					source={{ uri: photo_uri }}
-				/>
-				<Text style={{ textAlign: 'center' }}>
-					Ticket id = {id.toString()}
-				</Text>
-			</>
-		);
-	}
+	// 	setmodalData(
+	// 		<>
+	// 			{values?.map((value: string | number, idx2: number) => {
+	// 				if (keys[idx2] === 'Eventphoto') {
+	// 					photo_uri = value as string;
+	// 					return null;
+	// 				} else if (keys[idx2] === 'ID') {
+	// 					return null;
+	// 				} else if (keys[idx2] === 'Venuephoto') {
+	// 					return null;
+	// 				}
+	// 				return (
+	// 					<Text key={idx2} style={{ textAlign: 'center' }}>
+	// 						{keys[idx2]}:{' '}
+	// 						{keys[idx2] === 'EventDatetime'
+	// 							? new Date(value).toLocaleString()
+	// 							: keys[idx2] === 'Basecost'
+	// 								? `$${value}`
+	// 								: value}
+	// 					</Text>
+	// 				);
+	// 			})}
+	// 			<Avatar.Image
+	// 				key={2}
+	// 				style={{ alignSelf: 'center', backgroundColor: 'white' }}
+	// 				source={{ uri: photo_uri }}
+	// 			/>
+	// 			<Text style={{ textAlign: 'center' }}>
+	// 				Ticket id = {id.toString()}
+	// 			</Text>
+	// 		</>
+	// 	);
+	// }
 
 	// handle scroll up page refresh
 	const onRefresh = React.useCallback(() => {
@@ -256,6 +258,11 @@ const HomeScreen = () => {
 
 		return (
 			<>
+				{/* <Modal
+					animationType="slide"
+					transparent={true}
+					visible={qrVisible}
+				></Modal>
 				<Modal
 					animationType="slide"
 					transparent={true}
@@ -295,7 +302,7 @@ const HomeScreen = () => {
 							</View>
 						</View>
 					</TouchableOpacity>
-				</Modal>
+				</Modal> */}
 				{event_data?.map((data: UserEventResponse, idx: number) => {
 					// this should never happen but keeps the app from blowing up if it does
 					if (data == undefined) {
@@ -311,8 +318,13 @@ const HomeScreen = () => {
 					return (
 						<Pressable
 							onPress={() => {
-								setupModal(idx);
-								setModalVisible(!modalVisible);
+								// setupModal(idx);
+								// setcurrentID(BigInt(ticketid));
+								// @ts-expect-error This is valid code, but typescript doesn't like it
+								navigation.navigate('Event', {
+									Event: ticketid
+								});
+								// setModalVisible(!modalVisible);
 							}}
 							style={{ width: '100%' }}
 						>

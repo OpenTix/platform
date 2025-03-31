@@ -45,8 +45,11 @@
 		"react-spinners": "^0.15.0",
 		"styled-components": "5.3.6",
 		"text-encoding": "^0.7.0",
+		"react-native-qrcode-scanner": "^1.5.5",
+		"react-native-permissions": "^2.0.2",
 		"viem": "^2.23.2",
-		"web-streams-polyfill": "^4.1.0"
+		"web-streams-polyfill": "^4.1.0",
+		"expo-camera": "~16.0.18"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.5",

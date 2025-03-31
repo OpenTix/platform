@@ -39,6 +39,7 @@ export default function Home() {
 	});
 	client.auth.on('authSuccess', (user) => {
 		console.log('User logged in', user);
+		client.ui.auth.hide();
 		setShouldFetch(false);
 		setIsLoggedIn(true);
 	});
@@ -90,6 +91,7 @@ export default function Home() {
 								shadowColor: 'white'
 							}}
 							onPress={() =>
+								// @ts-expect-error This is valid code, but typescript doesn't like it
 								navigation.navigate('Events', {
 									Venue: venue.Pk,
 									Name: venue.Name
@@ -158,7 +160,7 @@ export default function Home() {
 					justifyContent: 'center'
 				}}
 			>
-				{client.auth.token ? null : <client.reactNative.WebView />}
+				{/* {client.auth.token ? null : <client.reactNative.WebView />} */}
 				<StatusBar
 					backgroundColor={'white'}
 					barStyle={'dark-content'}

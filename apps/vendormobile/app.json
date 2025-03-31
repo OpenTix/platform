@@ -19,7 +19,8 @@
 			"bundleIdentifier": "com.opentix.vendor",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false,
-				"NFCReaderUsageDescription": "We need to use NFC to check in tickets."
+				"NFCReaderUsageDescription": "We need to use NFC to check in tickets.",
+				"NSCameraUsageDescription": "Used to scan user ticket QR codes."
 			},
 			"appleTeamId": "S726Z4H4Q3"
 		},
