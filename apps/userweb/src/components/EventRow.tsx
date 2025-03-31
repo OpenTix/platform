@@ -2,6 +2,7 @@ import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
 import { Box, Flex, Heading, Button, Card, Text } from '@radix-ui/themes';
 import { useEffect, useState, useRef } from 'react';
+import { useInterval } from 'usehooks-ts';
 import { EventCard } from './EventCard';
 
 interface rowProps {
@@ -35,16 +36,16 @@ export default function EventRow({
 				`Page=${page}&Zip=${zip}&Type=${type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
 			)
 		)
-			.then((resp) =>
-				resp !== undefined
-					? setCards(resp)
-					: page <= 1
-						? setPage(page)
-						: setPage(page - 1)
-			)
+			.then((resp) => {
+				if (resp !== undefined) {
+					setCards(resp);
+				} else if (page <= 1) {
+					setPage(page);
+				} else {
+					setPage(page - 1);
+				}
+			})
 			.catch((error) => console.error('EventRow: ', error));
-
-		return;
 	}, [page, zip, type, name, cost, eventDate]);
 
 	return (
