@@ -99,7 +99,7 @@ export default function EventDetails({
 		}
 	}
 
-	async function VerifyScanIn(data: string) {
+	async function verifyScanIn(data: string) {
 		const fields = data.split(' ');
 		if (fields.length < 3) return 'invalid scan in data';
 		const id = fields[0];
@@ -216,7 +216,7 @@ export default function EventDetails({
 		console.log('THE CALLBACK RAN', intermediate);
 
 		if (intermediate != '') {
-			const ret = await VerifyScanIn(intermediate);
+			const ret = await verifyScanIn(intermediate);
 			qrData2 = ret;
 			console.log(ret);
 		}
