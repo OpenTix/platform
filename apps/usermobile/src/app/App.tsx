@@ -10,8 +10,6 @@ export default function App() {
 	const client = useDynamic();
 	const [show, setShow] = useState(false);
 
-	if (client.auth.token === null) client.ui.auth.show();
-
 	client.auth.on('authFailed', () => {
 		console.log('User failed to login');
 		client.ui.auth.show();
