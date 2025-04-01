@@ -6,7 +6,7 @@
 		"eas-build-post-install": "cd ../../ && node tools/scripts/eas-build-post-install.mjs . apps/vendormobile",
 		"android": "expo run:android",
 		"ios": "expo run:ios --device iPhone",
-		"prebuild": "expo prebuild"
+		"prebuild": "expo prebuild && sh -c 'cp -r saves/res android/app/src/main; cp saves/AndroidManifest.xml android/app/src/main; cp saves/gradle.properties android/'"
 	},
 	"dependencies": {
 		"@dynamic-labs/client": "^4.8.4",
