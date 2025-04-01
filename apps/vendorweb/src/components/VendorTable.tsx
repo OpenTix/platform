@@ -22,61 +22,26 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 	}
 
 	for (const label in labels) {
-		switch (labels[label]) {
-			case 'Pk':
-			case 'ID':
-			case 'Vendor':
-			case 'Venue':
-			case 'Photo':
-				continue;
-			default:
-				header.push(
-					<Table.ColumnHeaderCell>
-						<Text>
-							{labels[label] === 'TransactionHash'
-								? 'Minted'
-								: labels[label]}
-						</Text>
-					</Table.ColumnHeaderCell>
-				);
-		}
+		header.push(
+			<Table.ColumnHeaderCell key={`${label}`}>
+				<Text>{labels[label]}</Text>
+			</Table.ColumnHeaderCell>
+		);
 	}
 	const tableHeader = <Table.Row>{header}</Table.Row>;
 
 	const tableRows = (rowData ?? []).map((row, idx) => {
 		const tableRow = [];
 		for (const label in row) {
-			switch (label) {
-				case 'Pk':
-				case 'ID':
-				case 'Vendor':
-				case 'Venue':
-				case 'Photo':
-					continue;
-				case 'TransactionHash': {
-					const val = row[label as keyof typeof row];
-					tableRow.push(
-						<Table.Cell>
-							<Text>
-								{val === '' || val === null || val === undefined
-									? '❌'
-									: '✅'}
-							</Text>
-						</Table.Cell>
-					);
-					break;
-				}
-				default:
-					tableRow.push(
-						<Table.Cell>
-							<Text>
-								{label === 'EventDatetime'
-									? `${new Date(row[label as keyof typeof row]).toDateString()}`
-									: row[label as keyof typeof row]}
-							</Text>
-						</Table.Cell>
-					);
-			}
+			tableRow.push(
+				<Table.Cell key={`${label}:${row[label as keyof typeof row]}`}>
+					<Text>
+						{label === 'EventDatetime'
+							? `${new Date(row[label as keyof typeof row])}`
+							: row[label as keyof typeof row]}
+					</Text>
+				</Table.Cell>
+			);
 		}
 
 		return (
@@ -90,7 +55,7 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 	});
 
 	return (
-		<Box style={{ paddingBottom: '5px' }}>
+		<Box>
 			<ScrollArea>
 				<Table.Root>
 					<Table.Header>{tableHeader}</Table.Header>
