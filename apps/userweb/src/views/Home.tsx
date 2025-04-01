@@ -14,15 +14,20 @@ export default function Home() {
 
 	useEffect(() => {
 		setShouldFetch(true);
-		navigator?.geolocation?.getCurrentPosition(async (position) => {
-			const lat = position?.coords?.latitude;
-			const lon = position?.coords?.longitude;
-			const resp = await fetch(
-				`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
-			);
-			const json = await resp?.json();
-			setZip(json?.address?.postcode ?? '');
-		});
+		navigator?.geolocation?.getCurrentPosition(
+			async (position) => {
+				const lat = position?.coords?.latitude;
+				const lon = position?.coords?.longitude;
+				const resp = await fetch(
+					`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+				);
+				const json = await resp?.json();
+				setZip(json?.address?.postcode ?? '');
+			},
+			(error) => {
+				console.error('Geolocation error:', error);
+			}
+		);
 	}, [setShouldFetch, setZip]);
 
 	useEffect(() => {
