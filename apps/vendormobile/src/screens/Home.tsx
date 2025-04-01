@@ -19,7 +19,6 @@ export default function Home() {
 
 	const [refreshing, setRefreshing] = useState(false);
 	const [shouldFetch, setShouldFetch] = useState<boolean>(false);
-	const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 	const [cards, setCards] = useState<React.ReactNode>(null);
 	const [page, setPage] = useState<number>(1);
 
@@ -31,22 +30,6 @@ export default function Home() {
 			setRefreshing(false);
 		}, 1000);
 	}, []);
-
-	if (client.auth.token === null) client.ui.auth.show();
-
-	client.auth.on('authFailed', () => {
-		console.log('User failed to login');
-	});
-	client.auth.on('authSuccess', (user) => {
-		console.log('User logged in', user);
-		client.ui.auth.hide();
-		setShouldFetch(false);
-		setIsLoggedIn(true);
-	});
-	client.ui.on('authFlowCancelled', () => {
-		console.log('User cancelled the flow not cool');
-		client.ui.auth.show();
-	});
 
 	const getFunc = useCallback(async () => {
 		const resp = await fetch(
@@ -144,8 +127,8 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
-		if (isLoggedIn || shouldFetch) getFunc();
-	}, [isLoggedIn, shouldFetch]);
+		if (shouldFetch) getFunc();
+	}, [shouldFetch]);
 
 	useEffect(() => {
 		getFunc();
@@ -160,7 +143,6 @@ export default function Home() {
 					justifyContent: 'center'
 				}}
 			>
-				{/* {client.auth.token ? null : <client.reactNative.WebView />} */}
 				<StatusBar
 					backgroundColor={'white'}
 					barStyle={'dark-content'}
