@@ -31,14 +31,16 @@ export default function Home() {
 
 			setCards(
 				<>
-					<EventRow
-						key={'Near You'}
-						zip={zip}
-						type={'Near You'}
-						name={''}
-						cost={'1000000'}
-						eventDate={new Date().toISOString()}
-					/>
+					{zip !== '' ? (
+						<EventRow
+							key={'Near You'}
+							zip={zip}
+							type={'Near You'}
+							name={''}
+							cost={'1000000'}
+							eventDate={new Date().toISOString()}
+						/>
+					) : null}
 					{AllEventTypesArray.map(
 						(eventType: string, idx: number) => (
 							<EventRow
