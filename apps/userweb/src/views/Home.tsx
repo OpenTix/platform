@@ -1,7 +1,9 @@
-import { AllEventTypesArray } from '@platform/types';
-import { Box, Container, Flex } from '@radix-ui/themes';
-import { useState, useEffect } from 'react';
+import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { AllEventTypesArray, UserEventResponse } from '@platform/types';
+import { Box, Card, Container, Flex, Text } from '@radix-ui/themes';
+import { useState, useEffect, useCallback } from 'react';
 import { useSessionStorage } from 'usehooks-ts';
+import { EventCard } from '../components/EventCard';
 import EventRow from '../components/EventRow';
 
 export default function Home() {
@@ -11,6 +13,44 @@ export default function Home() {
 	);
 	const [zip, setZip] = useSessionStorage('Zip', '');
 	const [cards, setCards] = useState<React.ReactNode>(null);
+	const [near, setNear] = useState<React.ReactNode[]>([]);
+	const [shouldShow, setShouldShow] = useState<boolean>(true);
+
+	const getEvents = useCallback(
+		async (postcode: string) => {
+			const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}`;
+
+			const authToken = getAuthToken();
+			const resp = await fetch(url, {
+				method: 'GET',
+				headers: { Authorization: `Bearer ${authToken}` }
+			});
+
+			if (!resp.ok) {
+				console.error('There was an error fetching data');
+				return (
+					<Card>
+						<Text>There was an error fetching data</Text>
+					</Card>
+				);
+			}
+
+			const data = await resp.json();
+
+			return await (data && data.length !== 0
+				? setNear([
+						...near,
+						data.map((event: UserEventResponse, idx: number) => (
+							<EventCard
+								key={`${idx}:${event.Name}`}
+								event={event}
+							/>
+						))
+					])
+				: undefined);
+		},
+		[setNear, near]
+	);
 
 	useEffect(() => {
 		setShouldFetch(true);
@@ -19,19 +59,42 @@ export default function Home() {
 				const lat = position?.coords?.latitude;
 				const lon = position?.coords?.longitude;
 				const resp = await fetch(
-					`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+					`https://www.freemaptools.com/ajax/us/get-all-zip-codes-inside-radius.php?radius=10&lat=${lat}&lng=${lon}&rn=2488&showPOboxes=true`,
+					{
+						referrer:
+							'https://www.freemaptools.com/find-zip-codes-inside-radius.htm',
+						method: 'GET'
+					}
 				);
-				const json = await resp?.json();
-				setZip(json?.address?.postcode ?? '');
+				const text = await resp.text();
+				const zips = text
+					.split('<postcode')
+					.map((pc) => {
+						return parseInt(pc.substring(11, 16));
+					})
+					.filter((item) => !isNaN(item))
+					.slice(0, 3);
+				zips.forEach(async (pc) => {
+					await getEvents(pc.toString());
+					if (near.length >= 5) {
+						await setShouldShow(true);
+						return;
+					}
+				});
+				// const resp = await fetch(
+				// 	`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+				// );
+				// const json = await resp?.json();
+				// setZip(json?.address?.postcode ?? '');
 			},
 			(error) => {
 				console.error('Geolocation error:', error);
 			}
 		);
-	}, [setShouldFetch, setZip]);
+	}, [setShouldFetch, setZip, getEvents, near]);
 
 	useEffect(() => {
-		async function getEvents() {
+		async function showEvents() {
 			setShouldFetch(false);
 
 			setCards(
@@ -44,6 +107,7 @@ export default function Home() {
 							name={''}
 							cost={'1000000'}
 							eventDate={new Date().toISOString()}
+							passedData={near}
 						/>
 					) : null}
 					{AllEventTypesArray.map(
@@ -61,8 +125,11 @@ export default function Home() {
 				</>
 			);
 		}
-		getEvents();
-	}, [shouldFetch, setShouldFetch, zip]);
+		if (shouldShow) {
+			showEvents();
+			setShouldShow(false);
+		}
+	}, [shouldFetch, setShouldFetch, zip, near, shouldShow]);
 
 	return (
 		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
