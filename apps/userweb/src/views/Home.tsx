@@ -9,31 +9,60 @@ export default function Home() {
 		'ShouldFetch',
 		true
 	);
+	const [zip, setZip] = useSessionStorage('Zip', '');
 	const [cards, setCards] = useState<React.ReactNode>(null);
 
 	useEffect(() => {
 		setShouldFetch(true);
-	}, [setShouldFetch]);
+		navigator?.geolocation?.getCurrentPosition(
+			async (position) => {
+				const lat = position?.coords?.latitude;
+				const lon = position?.coords?.longitude;
+				const resp = await fetch(
+					`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+				);
+				const json = await resp?.json();
+				setZip(json?.address?.postcode ?? '');
+			},
+			(error) => {
+				console.error('Geolocation error:', error);
+			}
+		);
+	}, [setShouldFetch, setZip]);
 
 	useEffect(() => {
 		async function getEvents() {
 			setShouldFetch(false);
 
 			setCards(
-				AllEventTypesArray.map((eventType: string, idx: number) => (
-					<EventRow
-						key={`${idx}:${eventType}`}
-						zip={''}
-						type={eventType}
-						name={''}
-						cost={'1000000'}
-						eventDate={new Date().toISOString()}
-					/>
-				))
+				<>
+					{zip !== '' ? (
+						<EventRow
+							key={'Near You'}
+							zip={zip}
+							type={'Near You'}
+							name={''}
+							cost={'1000000'}
+							eventDate={new Date().toISOString()}
+						/>
+					) : null}
+					{AllEventTypesArray.map(
+						(eventType: string, idx: number) => (
+							<EventRow
+								key={`${idx}:${eventType}`}
+								zip={''}
+								type={eventType}
+								name={''}
+								cost={'1000000'}
+								eventDate={new Date().toISOString()}
+							/>
+						)
+					)}
+				</>
 			);
 		}
 		getEvents();
-	}, [shouldFetch, setShouldFetch]);
+	}, [shouldFetch, setShouldFetch, zip]);
 
 	return (
 		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
