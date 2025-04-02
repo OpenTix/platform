@@ -1,3 +1,5 @@
+import { polygonAmoy } from 'viem/chains';
+
 export const ContractAddress = '0xE30e1f5c14310797CeA37be45C5E7445E506C021';
 
 export type ContractGetEventIdsReturnedMetadata = {
@@ -5,6 +7,9 @@ export type ContractGetEventIdsReturnedMetadata = {
 	max: bigint;
 	exists: boolean;
 };
+
+export const CurrentChain = polygonAmoy;
+export const AmoyWSAddress = 'wss://polygon-amoy-bor-rpc.publicnode.com';
 
 export const ContractABI = [
 	{

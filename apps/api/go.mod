@@ -1,4 +1,4 @@
-module api
+module github.com/opentix/platform/apps/api
 
 go 1.23
 
