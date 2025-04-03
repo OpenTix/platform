@@ -44,6 +44,9 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 			log.Error("Error unmarshalling SNS message: ", err)
 			continue
 		}
+
+		// log the message
+		log.Info("Received message (contract): ", string(message.Contract))
 		
 		// get event from database, make sure it exists
 		eventUUID, err := uuid.Parse(message.Event)
