@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/opentix/platform/packages/gohelpers/packages/database"
@@ -31,7 +31,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	// log the event
 	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		log.Error("Error connecting to database: ", err)
+		log.Fatalf("Error connecting to database: ", err)
 		return err
 	}
 	defer conn.Close(ctx)
@@ -41,26 +41,26 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 		var message TicketCreateSNSMessageBody
 		err := json.Unmarshal([]byte(record.Body), &message)
 		if err != nil {
-			log.Error("Error unmarshalling SNS message: ", err)
+			log.Printf("Error unmarshalling SNS message: ", err)
 			continue
 		}
 
 		// log the message
-		log.Info("Received message (contract): ", string(message.Contract))
+		log.Printf("Received message (contract): %v", string(message.Contract))
 		
 		// get event from database, make sure it exists
 		eventUUID, err := uuid.Parse(message.Event)
 		if err != nil {
-			log.Error("Error parsing event UUID: ", err)
+			log.Printf("Error parsing event UUID: ", err)
 			continue
 		}
 		event, err := queries.GetEventByUuid(ctx, eventUUID)
 		if err != nil {
-			log.Error("Error getting event from database: ", err)
+			log.Printf("Error getting event from database: ", err)
 			continue
 		}
 		if event.ID == uuid.Nil {
-			log.Error("Event not found in database: ", message.Event)
+			log.Printf("Event not found in database: ", message.Event)
 			continue
 		}
 
@@ -79,16 +79,16 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 						Contract: message.Contract,
 					})
 					if err != nil {
-						log.Error("Error adding ticket to database: ", err)
+						log.Printf("Error adding ticket to database: ", err)
 						continue
 					}
-					log.Info("Ticket added to database: ", i)
+					log.Printf("Ticket added to database: ", i)
 				} else {
-					log.Error("Error getting ticket from database: ", err)
+					log.Printf("Error getting ticket from database: ", err)
 					continue
 				}
 			} else {
-				log.Info("Ticket already exists, skipping ticket ID: ", i)
+				log.Printf("Ticket already exists, skipping ticket ID: ", i)
 				continue
 			}
 		}
