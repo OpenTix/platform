@@ -1,8 +1,6 @@
 package main
 
 import (
-	"api/query"
-	"api/shared"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,6 +10,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
+
+	"github.com/opentix/platform/apps/api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var connStr string
@@ -45,12 +47,12 @@ type VenuePatchBodyParams struct {
 }
 
 func init() {
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 }
 
 func handleGetAll(ctx context.Context, request events.APIGatewayProxyRequest, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -76,7 +78,7 @@ func handleGetAll(ctx context.Context, request events.APIGatewayProxyRequest, ve
 
 func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, pk int32, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -105,7 +107,7 @@ func handleGetByPk(ctx context.Context, request events.APIGatewayProxyRequest, p
 
 func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest, id string, vendorinfo shared.GetWalletAndUUIDFromTokenResponse) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -192,7 +194,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -235,7 +237,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -296,7 +298,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}

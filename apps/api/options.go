@@ -1,7 +1,7 @@
 package main
 
 import (
-	"api/shared"
+	"github.com/opentix/platform/apps/api/shared"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"

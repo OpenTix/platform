@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { APIStack } from '../lib/backend-stack';
+import { EventHandlerStack } from '../lib/eventhandler-stack';
 import { UserwebStack } from '../lib/userweb-stack';
 import { VendorwebStack } from '../lib/vendorweb-stack';
 
@@ -63,6 +64,18 @@ new APIStack(
 	PREFIX + '-APIStack',
 	'../apps/api',
 	process.env.HOSTEDZONENAME,
+	{
+		env: {
+			account: process.env.CDK_DEFAULT_ACCOUNT,
+			region: process.env.CDK_DEFAULT_REGION
+		}
+	}
+);
+
+new EventHandlerStack(
+	app,
+	PREFIX + '-EventHandlerStack',
+	'../apps/eventhandlers',
 	{
 		env: {
 			account: process.env.CDK_DEFAULT_ACCOUNT,

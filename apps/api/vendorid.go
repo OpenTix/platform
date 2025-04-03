@@ -10,8 +10,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
 
-	"api/query"
-	"api/shared"
+	"github.com/opentix/platform/apps/api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var (
@@ -25,7 +26,7 @@ type PostPatchVendorIdRequestBody struct {
 
 func init() {
 	walletRegex = regexp.MustCompile("^[0-9A-Fa-f]{40}$")
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 }
 
 // This gets the current vendor's info based off the authorization token
@@ -43,7 +44,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -93,7 +94,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -151,7 +152,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
