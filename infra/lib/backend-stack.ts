@@ -174,8 +174,7 @@ export class APIStack extends cdk.Stack {
 		});
 
 		const UserZipsLambda = new GoFunction(this, 'UserZipsLambda', {
-			entry: `${basePath}/user_zips.go`,
-			...LambdaDBAccessProps
+			entry: `${basePath}/user_zips.go`
 		});
 
 		const VendorVenuesLambda = new GoFunction(this, 'VendorVenuesLambda', {
