@@ -56,11 +56,11 @@ export default function Home() {
 				json?.postcodes?.forEach(async (pc: number) => {
 					await getEvents(pc.toString());
 					if (near.current.length >= 5) {
-						setTimeout(() => setNearReady(true), 300);
+						setTimeout(() => setNearReady(true), 500);
 						return;
 					}
 				});
-				setTimeout(() => setNearReady(true), 300);
+				setTimeout(() => setNearReady(true), 500);
 				// const resp = await fetch(
 				// 	`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
 				// );
