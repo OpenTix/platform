@@ -20,7 +20,8 @@ import {
 	dbInternalName,
 	dbSecretArn,
 	photoBucket,
-	photoUploadTopicArn
+	photoUploadTopicArn,
+	ticketsMintedTopicArn
 } from './Constants';
 
 export class EventHandlerStack extends cdk.Stack {
@@ -119,6 +120,74 @@ export class EventHandlerStack extends cdk.Stack {
 		//create event source mapping
 		PhotoUploadEventLambda.addEventSource(
 			new cdk.aws_lambda_event_sources.SqsEventSource(photoUploadQueue)
+		);
+
+		// Ticket Creation
+
+		const TicketCreationEventLambdaRole = new Role(
+			this,
+			'TicketCreationEventLambdaRole',
+			{
+				assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+			}
+		);
+		TicketCreationEventLambdaRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: ['*']
+			})
+		);
+		TicketCreationEventLambdaRole.addManagedPolicy(
+			ManagedPolicy.fromAwsManagedPolicyName(
+				'service-role/AWSLambdaVPCAccessExecutionRole'
+			)
+		);
+
+		const ticketCreationTopic = sns.Topic.fromTopicArn(
+			this,
+			'TicketCreationTopic',
+			ticketsMintedTopicArn
+		);
+		const ticketCreationQueue = new cdk.aws_sqs.Queue(
+			this,
+			'TicketCreationQueue',
+			{
+				visibilityTimeout: cdk.Duration.seconds(300)
+			}
+		);
+		//subscribe queue to topic
+		ticketCreationTopic.addSubscription(
+			new snsSubscriptions.SqsSubscription(ticketCreationQueue)
+		);
+
+		const TicketCreationEventLambda = new GoFunction(
+			this,
+			'TicketCreationEventLambda',
+			{
+				entry: `${basePath}/TicketCreationEvent.go`,
+				role: TicketCreationEventLambdaRole,
+				vpc: vpc,
+				securityGroups: [dbSecurityGroup],
+				environment: {
+					DB_ADDRESS: dbAddress,
+					DB_PORT: dbPort,
+					DB_NAME: dbInternalName,
+					DB_SECRET_ARN: dbSecretArn
+				}
+			}
+		);
+
+		//grant lambda permissions to read from queue
+		ticketCreationQueue.grantConsumeMessages(TicketCreationEventLambda);
+
+		//create event source mapping
+		TicketCreationEventLambda.addEventSource(
+			new cdk.aws_lambda_event_sources.SqsEventSource(ticketCreationQueue)
 		);
 	}
 }
