@@ -142,6 +142,7 @@ export class EventHandlerStack extends cdk.Stack {
 				resources: ['*']
 			})
 		);
+		dbSecret.grantRead(TicketCreationEventLambdaRole);
 		TicketCreationEventLambdaRole.addManagedPolicy(
 			ManagedPolicy.fromAwsManagedPolicyName(
 				'service-role/AWSLambdaVPCAccessExecutionRole'

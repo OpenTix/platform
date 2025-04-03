@@ -126,7 +126,6 @@ jobs:
                   TARGETAPP_CAPITALIZED=$(echo "${TARGETAPP^}")
                   TARGETSTACK="pr${PRNUMBER}-${TARGETAPP_CAPITALIZED}Stack"
 
-                  DEPLOYENV=$DEPLOYENV HOSTEDZONENAME=$HOSTEDZONENAME PRNUMBER=$PRNUMBER npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
                   DEPLOYENV=$DEPLOYENV HOSTEDZONENAME=$HOSTEDZONENAME PRNUMBER=$PRNUMBER npx cdk deploy "$TARGETSTACK" --account 390403894969 --region us-east-1 --require-approval never
 
             - name: Update comment with SUCCESS
