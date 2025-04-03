@@ -79,6 +79,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 						log.Error("Error adding ticket to database: ", err)
 						continue
 					}
+					log.Info("Ticket added to database: ", i)
 				} else {
 					log.Error("Error getting ticket from database: ", err)
 					continue
