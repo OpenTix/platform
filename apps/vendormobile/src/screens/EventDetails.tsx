@@ -1,8 +1,19 @@
+import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { Event } from '@platform/types';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { Text, View, Image } from 'react-native';
+import {
+	Text,
+	View,
+	Image,
+	StyleSheet,
+	PermissionsAndroid,
+	Platform
+} from 'react-native';
 import { Button } from 'react-native-paper';
+import { Address } from 'viem';
+import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from '../hooks/DynamicSetup';
 
 type Params = {
@@ -17,6 +28,172 @@ export default function EventDetails({
 	const client = useDynamic();
 	const { Event } = route.params;
 	const [view, setView] = useState<React.ReactNode>(null);
+	const [intermediate, setIntermediate] = useState('');
+	let qrData2 = 'tmp2';
+	const navigation = useNavigation();
+
+	// query the contract (not on network) for the event name for an id
+	async function getEventNameFromId(id: bigint) {
+		const publicViemClient = client.viem.createPublicClient({
+			chain: polygonAmoy
+		});
+
+		// get the events description from the id
+		if (publicViemClient) {
+			console.log('before read contract');
+			const data = (await publicViemClient.readContract({
+				abi: ContractABI,
+				address: ContractAddress,
+				functionName: 'get_event_description',
+				args: [id]
+			})) as string;
+
+			console.log('after read contract');
+
+			return data;
+		} else {
+			console.log(
+				'Failed to create the public viem client when trying to get the event description.'
+			);
+			return '';
+		}
+	}
+
+	// fetchs from oklinks api to see what tickets an account owns
+	// this is set to amoy_testnet and is not an environment variable because I am lazy
+	// also yes that is my api key I do not care I get 1 mil requests per year and they don't have my payment info 😁
+	// this only handles up to 100 tickets so thats an issue for full deployment but not a real issue for our project
+	// api doc here: https://www.oklink.com/docs/en/#fundamental-blockchain-data-address-data-get-token-balance-details-by-address
+	async function getNFTsInWallet(address: string) {
+		const url = `https://www.oklink.com/api/v5/explorer/nft/address-balance-fills?chainShortName=amoy_testnet&address=${address}&tokenContractAddress=${ContractAddress}&limit=100&protocolType=token_1155`;
+		const resp = await fetch(url, {
+			method: 'GET',
+			headers: { 'Ok-Access-Key': '4dc070a9-44a6-474c-afc2-e8976eae75b7' }
+		});
+
+		if (!resp.ok)
+			return Error('There was an error fetching data from oklink');
+
+		// this is nasty but it gives us what we want
+		return (await resp.json())['data'][0]['tokenList'];
+	}
+
+	// try to checkin the ticket id for the event uuid
+	async function checkin(UUID: string, ticket_id: number) {
+		const tosubmit = { Event: UUID, TicketID: ticket_id };
+
+		const resp = await fetch(
+			`https://api.dev.opentix.co/vendor/events/tickets`,
+			{
+				method: 'PATCH',
+				headers: { Authorization: `Bearer ${client.auth.token}` },
+				body: JSON.stringify(tosubmit)
+			}
+		);
+
+		// this should be updated to add more info
+		if (!resp.ok) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	async function verifyScanIn(data: string) {
+		const fields = data.split(' ');
+		if (fields.length < 3) return 'invalid scan in data';
+		const id = fields[0];
+		const signedmessage = fields[1];
+		const senderaddress = fields[2];
+
+		console.log(`id = ${id}`);
+		console.log(`signedmessage = ${signedmessage}`);
+		console.log(`senderaddress = ${senderaddress}`);
+
+		const event_name = await getEventNameFromId(BigInt(id));
+		const split = event_name.split(' ');
+		const uuid = split[split.length - 1];
+		console.log(`uuid ${uuid}`);
+
+		const tmp = await getNFTsInWallet(senderaddress);
+		// parse into an array
+		const jsondata = JSON.parse(JSON.stringify(tmp));
+
+		// make temp array
+		let owned_ids = Array(0) as bigint[];
+
+		// fill it with the tokenIds
+		for (let i = 0; i < jsondata.length; i++) {
+			owned_ids.push(jsondata[i]['tokenId'] as bigint);
+		}
+
+		owned_ids = owned_ids.sort();
+		console.log(`owned ids = ${owned_ids}`);
+
+		let hasID = false;
+		for (const owned_id in owned_ids) {
+			console.log(`owned_id ${owned_ids[owned_id]}, id ${id}`);
+			if (owned_ids[owned_id] == BigInt(id)) {
+				hasID = true;
+				break;
+			}
+		}
+
+		if (hasID == false) {
+			return 'Sender does not own the ticket.';
+		}
+
+		const publicViemClient = client.viem.createPublicClient({
+			chain: polygonAmoy
+		});
+
+		const valid = await publicViemClient.verifyMessage({
+			address: senderaddress as Address,
+			message: uuid,
+			signature: signedmessage as Address
+		});
+
+		if (!valid) {
+			return 'Sender did not sign the message properly.';
+		}
+
+		console.log(`valid = ${valid}`);
+
+		// do the api call
+		const resp = await checkin(uuid, parseInt(id));
+		console.log(`checkin response is ${resp}`);
+
+		if (!resp) {
+			return 'Ticket already checked in';
+		}
+
+		return 'success';
+	}
+
+	const navigateToQRCamera = () => {
+		console.log('navigating to qr camera');
+		// @ts-expect-error This is valid code, but typescript doesn't like it
+		navigation.navigate('QRCamera', {
+			onGoBack: (data: string) => {
+				// Callback function to handle data from qr camera
+				// qrData2 = data;
+
+				// const result = await VerifyScanIn(data);
+
+				setIntermediate(data);
+
+				console.log(intermediate);
+
+				// if (result != 'success') {
+				// 	qrData2 = result;
+				// }
+
+				// qrData2 = result;
+
+				// getFunc();
+			}
+		});
+	};
 
 	const getFunc = useCallback(async () => {
 		const resp = await fetch(
@@ -35,6 +212,14 @@ export default function EventDetails({
 			minute: '2-digit',
 			hour12: true
 		});
+
+		console.log('THE CALLBACK RAN', intermediate);
+
+		if (intermediate != '') {
+			const ret = await verifyScanIn(intermediate);
+			qrData2 = ret;
+			console.log(ret);
+		}
 
 		const dateUpper =
 			new Date().getFullYear() === date.getFullYear()
@@ -78,10 +263,38 @@ export default function EventDetails({
 							maxHeight: 200
 						}}
 					/>
+					<Text>{qrData2}</Text>
+					{/* {hasPermission === null ? (
+						<Text>Requesting for camera permission</Text>
+					) : hasPermission == false ? (
+						<Text>No access to camera</Text>
+					) : (
+						<Text>wtf</Text>
+					)} */}
+					{/* {!scanned && (<CameraView
+						onBarcodeScanned={
+							scanned ? undefined : handleBarcodeScanned
+						}
+						barcodeScannerSettings={{
+							barcodeTypes: ['qr', 'pdf417']
+						}}
+						style={StyleSheet.absoluteFillObject}
+						
+					/>)} */}
+					{/* <HandleCamera />
+					{scanned && (
+						<Button
+							onPress={() => {
+								scanned = false;
+							}}
+						>
+							<Text>Tap to Scan Again</Text>
+						</Button>
+					)} */}
 				</View>
 				<View style={{ marginBottom: 30, alignItems: 'center' }}>
 					<Button
-						onPress={() => console.log("I've been clicked")}
+						onPress={navigateToQRCamera}
 						style={{
 							backgroundColor: 'black',
 							borderColor: 'black',
@@ -94,11 +307,12 @@ export default function EventDetails({
 				</View>
 			</View>
 		);
-	}, []);
+	}, [intermediate]);
 
 	useEffect(() => {
+		console.log('THE EFFECT RAN');
 		getFunc();
-	}, []);
+	}, [intermediate]);
 
 	return view;
 }

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import { View } from 'react-native';
 import { Text } from 'react-native';
@@ -7,23 +8,36 @@ import Navigation from '../../components/Navigation';
 
 export default function App() {
 	const client = useDynamic();
-
-	if (client.auth.token === null) client.ui.auth.show();
+	const [show, setShow] = useState(false);
 
 	client.auth.on('authFailed', () => {
 		console.log('User failed to login');
+		client.ui.auth.show();
 	});
 	client.auth.on('authSuccess', (user) => {
 		console.log('User logged in', user);
+		client.ui.auth.hide();
 	});
 	client.ui.on('authFlowCancelled', () => {
 		console.log('User cancelled the flow not cool');
 		client.ui.auth.show();
 	});
+	client.auth.on('loggedOut', () => {
+		client.ui.auth.show();
+	});
 
-	React.useEffect(() => {
-		return;
-	}, [client.auth.token]);
+	useEffect(() => {
+		if (!show) return;
+		if (client.auth.token !== null) {
+			client.ui.auth.hide();
+		} else {
+			client.ui.auth.show();
+		}
+	}, [show]);
+
+	useEffect(() => {
+		setTimeout(() => setShow(true), 1500);
+	}, [setShow]);
 
 	return (
 		<>

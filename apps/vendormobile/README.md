@@ -26,7 +26,7 @@ The above requires an Apple Developer Program membership ($100 a year) to build 
 
 _This should work on any system, but mileage may vary_
 
-cd into the android directory and run `./gradlew app:assemble:Release`
+cd into the android directory and run `./gradlew app:assembleRelease`
 
 This will build the .apk required for android devices and (like ios) will make the app remain on the phone. However there will be no debug session on the first run.
 

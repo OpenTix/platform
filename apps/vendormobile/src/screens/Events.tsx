@@ -75,6 +75,7 @@ export default function Events({
 								shadowColor: 'white'
 							}}
 							onPress={() => {
+								// @ts-expect-error This is valid code, but typescript doesn't like it
 								navigation.navigate('EventDetails', {
 									Event: event.ID
 								});
@@ -158,7 +159,10 @@ export default function Events({
 										}}
 									>
 										{key}:{' '}
-										{event[key as keyof typeof Event]}
+										{
+											// @ts-expect-error This is valid code, but typescript doesn't like it
+											event[key as keyof typeof Event]
+										}
 									</Text>
 								);
 							})}
