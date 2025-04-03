@@ -70,6 +70,7 @@ export default function Home() {
 						return;
 					}
 				});
+				setShouldShow(true);
 				// const resp = await fetch(
 				// 	`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
 				// );
@@ -80,7 +81,7 @@ export default function Home() {
 				console.error('Geolocation error:', error);
 			}
 		);
-	}, [setShouldFetch, setZip, getEvents, near]);
+	}, [setShouldFetch, setZip, getEvents]);
 
 	useEffect(() => {
 		async function showEvents() {

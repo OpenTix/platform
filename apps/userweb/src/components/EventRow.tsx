@@ -23,7 +23,7 @@ export default function EventRow({
 	passedData
 }: rowProps) {
 	const flexRef = useRef(null);
-	const [cards, setCards] = useState([]);
+	const [cards, setCards] = useState<React.ReactNode>([]);
 	const [page, setPage] = useState(1);
 
 	const moveCards = (dist: number, pageDist: number) => {
@@ -33,10 +33,13 @@ export default function EventRow({
 	};
 
 	useEffect(() => {
-		if (passedData) return;
+		if (passedData) {
+			setCards(passedData);
+			return;
+		}
 		Promise.resolve(
 			getEvents(
-				`Page=${page}&Zip=${zip}&Type=${type === 'Near You' ? '' : type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
+				`Page=${page}&Zip=${zip}&Type=${type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
 			)
 		)
 			.then((resp) => {
@@ -49,7 +52,7 @@ export default function EventRow({
 				}
 			})
 			.catch((error) => console.error('EventRow: ', error));
-	}, [page, zip, type, name, cost, eventDate]);
+	}, [page, zip, type, name, cost, eventDate, passedData]);
 
 	return (
 		<Box>
