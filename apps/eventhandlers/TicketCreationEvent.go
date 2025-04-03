@@ -31,36 +31,39 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	// log the event
 	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
-		log.Fatalf("Error connecting to database: ", err)
+		log.Fatalf("Error connecting to database: %v", err)
 		return err
 	}
 	defer conn.Close(ctx)
 	queries := query.New(conn)
 
 	for _, record := range sqsEvent.Records {
-		var message TicketCreateSNSMessageBody
-		err := json.Unmarshal([]byte(record.Body), &message)
+		var snsMessage SNSMessage
+		err := json.Unmarshal([]byte(record.Body), &snsMessage)
 		if err != nil {
-			log.Printf("Error unmarshalling SNS message: ", err)
+			log.Printf("Error unmarshalling SNS event: %v", err)
 			continue
 		}
-
-		// log the message
-		log.Printf("Received message (contract): %v", string(message.Contract))
+		var message TicketCreateSNSMessageBody
+		err = json.Unmarshal([]byte(snsMessage.Message), &message)
+		if err != nil {
+			log.Printf("Error unmarshalling SNS message: %v", err)
+			continue
+		}
 		
 		// get event from database, make sure it exists
 		eventUUID, err := uuid.Parse(message.Event)
 		if err != nil {
-			log.Printf("Error parsing event UUID: ", err)
+			log.Printf("Error parsing event UUID: %v", err)
 			continue
 		}
 		event, err := queries.GetEventByUuid(ctx, eventUUID)
 		if err != nil {
-			log.Printf("Error getting event from database: ", err)
+			log.Printf("Error getting event from database: %v", err)
 			continue
 		}
 		if event.ID == uuid.Nil {
-			log.Printf("Event not found in database: ", message.Event)
+			log.Printf("Event not found in database:%v ", message.Event)
 			continue
 		}
 
@@ -79,16 +82,15 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 						Contract: message.Contract,
 					})
 					if err != nil {
-						log.Printf("Error adding ticket to database: ", err)
+						log.Printf("Error adding ticket to database: %v", err)
 						continue
 					}
-					log.Printf("Ticket added to database: ", i)
 				} else {
-					log.Printf("Error getting ticket from database: ", err)
+					log.Printf("Error getting ticket from database: %v", err)
 					continue
 				}
 			} else {
-				log.Printf("Ticket already exists, skipping ticket ID: ", i)
+				log.Printf("Ticket already exists, skipping ticket ID: %v", i)
 				continue
 			}
 		}

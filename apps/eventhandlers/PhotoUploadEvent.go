@@ -28,7 +28,7 @@ func init() {
 	}
 }
 
-type PhotoSNSMessage struct {
+type SNSMessage struct {
 	Type      string `json:"Type"`
 	MessageId string `json:"MessageId"`
 	TopicArn  string `json:"TopicArn"`
@@ -71,7 +71,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	for _, record := range sqsEvent.Records {
 
 		// Unmarshal the SNS notification in record.Body.
-		var snsMsg PhotoSNSMessage
+		var snsMsg SNSMessage
 		if err := json.Unmarshal([]byte(record.Body), &snsMsg); err != nil {
 			log.Printf("Error unmarshalling SNS message: %v", err)
 			continue
