@@ -2,6 +2,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorPage } from '@platform/ui';
 import App from './App';
 import EventDetailsPage from './views/EventDetailsPage';
+import EventSearchPage from './views/EventSearchPage';
 import Home from './views/Home';
 import Profile from './views/Profile';
 
@@ -25,6 +26,11 @@ const router = createBrowserRouter([
 			{
 				path: 'event/:id',
 				element: <EventDetailsPage />,
+				ErrorBoundary: ErrorPage
+			},
+			{
+				path: '/eventSearch',
+				element: <EventSearchPage />,
 				ErrorBoundary: ErrorPage
 			},
 			{

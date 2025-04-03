@@ -22,7 +22,7 @@ module.exports = {
 			main: './src/entry.tsx',
 			index: './src/index.html',
 			baseHref: '/',
-			assets: ['./src/favicon.ico', './src/assets'],
+			assets: ['./src/favicon.ico', './src/assets', './src/public'],
 			styles: [],
 			outputHashing:
 				process.env['NODE_ENV'] === 'production' ? 'all' : 'none',

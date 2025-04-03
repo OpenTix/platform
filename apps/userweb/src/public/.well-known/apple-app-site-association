@@ -1,0 +1,27 @@
+{
+	"applinks": {
+		"details": [
+			{
+				"appIDs": [
+					"S726Z4H4Q3.com.opentix.user"
+				],
+				"components": [
+					{
+						"/": "*",
+						"comment": "Matches all routes"
+					}
+				]
+			}
+		]
+	},
+	"activitycontinuation": {
+		"apps": [
+			"S726Z4H4Q3.com.opentix.user"
+		]
+	},
+	"webcredentials": {
+		"apps": [
+			"S726Z4H4Q3.com.opentix.user"
+		]
+	}
+}
