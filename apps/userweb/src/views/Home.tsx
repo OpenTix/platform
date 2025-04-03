@@ -20,10 +20,8 @@ export default function Home() {
 		async (postcode: string) => {
 			const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}`;
 
-			const authToken = getAuthToken();
 			const resp = await fetch(url, {
-				method: 'GET',
-				headers: { Authorization: `Bearer ${authToken}` }
+				method: 'GET'
 			});
 
 			if (!resp.ok) {
@@ -59,22 +57,13 @@ export default function Home() {
 				const lat = position?.coords?.latitude;
 				const lon = position?.coords?.longitude;
 				const resp = await fetch(
-					`https://www.freemaptools.com/ajax/us/get-all-zip-codes-inside-radius.php?radius=10&lat=${lat}&lng=${lon}&rn=2488&showPOboxes=true`,
+					`${process.env.NX_PUBLIC_API_BASEURL}/user/zips?Radius=25&Latitude=${lat}&Longitude=${lon}`,
 					{
-						referrer:
-							'https://www.freemaptools.com/find-zip-codes-inside-radius.htm',
 						method: 'GET'
 					}
 				);
-				const text = await resp.text();
-				const zips = text
-					.split('<postcode')
-					.map((pc) => {
-						return parseInt(pc.substring(11, 16));
-					})
-					.filter((item) => !isNaN(item))
-					.slice(0, 3);
-				zips.forEach(async (pc) => {
+				const json = await resp.json();
+				json.postcodes.forEach(async (pc: number) => {
 					await getEvents(pc.toString());
 					if (near.length >= 5) {
 						await setShouldShow(true);
