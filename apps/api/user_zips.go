@@ -17,6 +17,7 @@ import (
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var radius int64
 	var latitude, longitude float64
+	var err error
 	tmp, ok := request.QueryStringParameters["Radius"]
 	if ok {
 		radius, err = strconv.ParseInt(tmp, 10, 64)
@@ -26,30 +27,30 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	} else {
 		radius = 10
 	}
-	tmp, ok := request.QueryStringParameters["Latitude"]
+	tmp, ok = request.QueryStringParameters["Latitude"]
 	if ok {
-		latitude, err = strconv.Float(tmp, 10, 64)
+		latitude, err = strconv.ParseFloat(tmp, 10)
 		if err != nil {
-			return shared.CreateErrorResponse(400, "Invalid latitude parameter")
+			return shared.CreateErrorResponse(400, "Invalid latitude parameter", request.Headers)
 		}
 	} else {
-		return shared.CreateErrorResponse(400, "Invalid latitude parameter")
+		return shared.CreateErrorResponse(400, "Invalid latitude parameter", request.Headers)
 	}
-	tmp, ok := request.QueryStringParameters["Longitude"]
+	tmp, ok = request.QueryStringParameters["Longitude"]
 	if ok {
-		longitude, err = strconv.ParseFloat(tmp, 10, 64)
+		longitude, err = strconv.ParseFloat(tmp, 10)
 		if err != nil {
-			return shared.CreateErrorResponse(400, "Invalid longitude parameter")
+			return shared.CreateErrorResponse(400, "Invalid longitude parameter", request.Headers)
 		}
 	} else {
-		return shared.CreateErrorResponse(400, "Invalid longitude parameter")
+		return shared.CreateErrorResponse(400, "Invalid longitude parameter", request.Headers)
 	}
 
 	var requestURL = fmt.Sprintf("https://www.freemaptools.com/ajax/us/get-all-zip-codes-inside-radius.php?radius=%d&lat=%f&lng=%f&rn=2488&showPOboxes=true", radius, latitude, longitude)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
-		return shared.CreateErrorResponse(500, "Could not create request to "+requestURL)
+		return shared.CreateErrorResponse(500, "Could not create request to "+requestURL, request.Headers)
 	}
 	req.Header.Set("Referer", "https://www.freemaptools.com/find-zip-codes-inside-radius.htm")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36")
@@ -58,11 +59,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return shared.CreateErrorResponse(500, "Unable to perform get request to "+requestURL)
+		return shared.CreateErrorResponse(500, "Unable to perform get request to "+requestURL, request.Headers)
 	}
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
-		return shared.CreateErrorResponse(500, "Unable to read response body from "+requestURL)
+		return shared.CreateErrorResponse(500, "Unable to read response body from "+requestURL, request.Headers)
 	}
 
 	var postcodes []int64
