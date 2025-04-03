@@ -14,6 +14,15 @@ import (
 	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
+type SNSMessage struct {
+	Type      string `json:"Type"`
+	MessageId string `json:"MessageId"`
+	TopicArn  string `json:"TopicArn"`
+	Subject   string `json:"Subject"`
+	Message   string `json:"Message"`
+	Timestamp string `json:"Timestamp"`
+}
+
 type TicketCreateSNSMessageBody struct {
 	Event string `json:"Event"`
 	Contract string `json:"Contract"`
