@@ -26,11 +26,8 @@ export function EventCard({ event }: EventCardProps) {
 		hour12: true
 	});
 
-	const dateUpper =
-		new Date().getFullYear() === date.getFullYear()
-			? `${dayOfWeek}, ${month} ${day}`
-			: `${dayOfWeek}, ${month} ${day}`;
-	const dateLower = `${time}`;
+	const dateUpper = `${month} ${day}, ${date.getFullYear()}`;
+	const dateLower = `${dayOfWeek} ${time}`;
 
 	useEffect(() => {
 		if (!titleRef.current) return;
