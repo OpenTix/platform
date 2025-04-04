@@ -33,12 +33,12 @@ if (isMobile) {
 	);
 } else {
 	root.render(
-		// <StrictMode>
-		<Theme>
-			<DynamicContextProvider settings={dynamicSettings}>
-				<AppRouter />
-			</DynamicContextProvider>
-		</Theme>
-		// </StrictMode>
+		<StrictMode>
+			<Theme>
+				<DynamicContextProvider settings={dynamicSettings}>
+					<AppRouter />
+				</DynamicContextProvider>
+			</Theme>
+		</StrictMode>
 	);
 }
