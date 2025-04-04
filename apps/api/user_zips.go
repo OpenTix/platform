@@ -79,8 +79,8 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		postcodes = append(postcodes, tmp)
 	}
 
-	if len(postcodes) > 3 {
-		postcodes = postcodes[:3]
+	if len(postcodes) > 5 {
+		postcodes = postcodes[:5]
 	}
 
 	body, _ := json.Marshal(map[string][]int64{"postcodes": postcodes})
