@@ -54,7 +54,6 @@ export default function Home() {
 				const json = await resp.json();
 				json?.postcodes?.forEach(async (pc: number) => {
 					await getEvents(pc.toString());
-					console.log(near.current);
 					if (near.current.length >= 5) {
 						setTimeout(() => setNearReady(true), 750);
 						return;
@@ -117,7 +116,7 @@ export default function Home() {
 		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
 			<Container style={{ alignSelf: 'center' }} size={'4'}>
 				<Box style={{ maxWidth: '90vw', padding: '16px 16px' }}>
-					{nearReady ? (
+					{nearReady && near.current.length > 0 ? (
 						<EventRow
 							key={'Near You'}
 							zip={''}
