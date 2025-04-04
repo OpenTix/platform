@@ -8,7 +8,6 @@ export default function Home() {
 	const [cards, setCards] = useState<React.ReactNode>(null);
 	const near = useRef<React.ReactNode[]>([]);
 	const [shouldShow, setShouldShow] = useState<boolean>(true);
-	const [shouldUpdateCards, setShouldUpdateCards] = useState<boolean>(false);
 	const [nearReady, setNearReady] = useState<boolean>(false);
 
 	const getEvents = useCallback(async (postcode: string) => {
@@ -60,11 +59,6 @@ export default function Home() {
 					}
 				});
 				setTimeout(() => setNearReady(true), 750);
-				// const resp = await fetch(
-				// 	`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
-				// );
-				// const json = await resp?.json();
-				// setZip(json?.address?.postcode ?? '');
 			},
 			(error) => {
 				console.error('Geolocation error:', error);
@@ -91,25 +85,6 @@ export default function Home() {
 			setShouldShow(false);
 			showEvents();
 		}
-		// } else if (shouldUpdateCards) {
-		//     setCards(
-		//         <>
-		//         {near.current.length > 0 ? (
-		//         <EventRow
-		//             key={'Near You'}
-		//             zip={''}
-		//             type={'Near You'}
-		//             name={''}
-		//             cost={'1000000'}
-		//             eventDate={new Date().toISOString()}
-		//             passedData={near.current}
-		//         />
-		//         ) : null}
-		//         {cards}
-		//     </>
-		//     );
-		//     setShouldUpdateCards(false);
-		// }
 	}, [shouldShow, setShouldShow, nearReady]);
 
 	return (
