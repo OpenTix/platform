@@ -15,8 +15,7 @@ export default function Home() {
 		const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}`;
 
 		const resp = await fetch(url, {
-			method: 'GET',
-			referrer: 'https://client.dev.opentix.co'
+			method: 'GET'
 		});
 
 		if (!resp.ok) {
@@ -55,12 +54,13 @@ export default function Home() {
 				const json = await resp.json();
 				json?.postcodes?.forEach(async (pc: number) => {
 					await getEvents(pc.toString());
+					console.log(near.current);
 					if (near.current.length >= 5) {
-						setTimeout(() => setNearReady(true), 500);
+						setTimeout(() => setNearReady(true), 750);
 						return;
 					}
 				});
-				setTimeout(() => setNearReady(true), 500);
+				setTimeout(() => setNearReady(true), 750);
 				// const resp = await fetch(
 				// 	`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
 				// );
