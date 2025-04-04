@@ -134,7 +134,6 @@ mainLoop();
 // );
 
 /* Event Commencement:
-
 [
   {
     address: '0xe30e1f5c14310797cea37be45c5e7445e506c021',
