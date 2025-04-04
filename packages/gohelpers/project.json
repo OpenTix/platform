@@ -1,0 +1,24 @@
+{
+	"name": "packages/gohelpers",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "library",
+	"sourceRoot": "packages/gohelpers",
+	"tags": [],
+	"targets": {
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "go vet ./packages/gohelpers/..."
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "go test ./packages/gohelpers/..."
+			}
+		},
+		"tidy": {
+			"executor": "@nx-go/nx-go:tidy"
+		}
+	}
+}

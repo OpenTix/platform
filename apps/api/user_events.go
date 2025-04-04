@@ -1,8 +1,6 @@
 package main
 
 import (
-	"api/query"
-	"api/shared"
 	"context"
 	"encoding/json"
 	"strconv"
@@ -13,6 +11,10 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/opentix/platform/apps/api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var connStr string
@@ -31,12 +33,12 @@ type eventGetQueryParams struct {
 }
 
 func init() {
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 }
 
 func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest, id string) (events.APIGatewayProxyResponse, error) {
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -128,7 +130,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}

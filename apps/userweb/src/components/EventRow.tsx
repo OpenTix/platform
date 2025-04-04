@@ -39,7 +39,7 @@ export default function EventRow({
 		}
 		Promise.resolve(
 			getEvents(
-				`Page=${page}&Zip=${zip}&Type=${type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
+				`Page=${page}&Zip=${zip}&Type=${type === 'Near You' ? '' : type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
 			)
 		)
 			.then((resp) => {

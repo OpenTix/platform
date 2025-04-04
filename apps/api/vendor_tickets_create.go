@@ -1,14 +1,16 @@
 package main
 
 import (
-	"api/query"
-	"api/shared"
 	"context"
 	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
+
+	"github.com/opentix/platform/apps/api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var connStr string
@@ -22,7 +24,7 @@ type TicketCreatePostBodyParams struct {
 }
 
 func init() {
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 }
 
 func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -53,7 +55,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponse(400, "Missing required parameters", request.Headers)
 	}
 
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Error connecting to database", request.Headers, err)
 	}
