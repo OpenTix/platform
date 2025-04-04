@@ -37,7 +37,7 @@ import {
 	useIsLoggedIn
 } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
-import { UserEventResponse } from '@platform/types';
+import { UserEventDetailsResponse } from '@platform/types';
 import {
 	Badge,
 	Box,
@@ -49,11 +49,13 @@ import {
 	Heading,
 	Separator,
 	Skeleton,
-	Text
+	Text,
+	Container
 	// TextField
 } from '@radix-ui/themes';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { TicketCard } from '../components/TicketCard';
 
 //70/30 left right column split
 const LeftColumn = styled.div`
@@ -91,6 +93,11 @@ const ActionsText = styled(Text)`
 	}
 `;
 
+interface TicketInfo {
+	ticketid: bigint;
+	data: UserEventDetailsResponse;
+}
+
 export default function Profile() {
 	const { primaryWallet, handleLogOut, handleUnlinkWallet } =
 		useDynamicContext();
@@ -98,7 +105,7 @@ export default function Profile() {
 	const { open } = useSendBalance();
 	const { initExportProcess } = useEmbeddedReveal();
 	const { openFundingOptions } = useOpenFundingOptions();
-	// const BASEURL = process.env.NX_PUBLIC_API_BASEURL;
+	const BASEURL = process.env.NX_PUBLIC_API_BASEURL;
 	const [balance, setBalance] = useState<number | null | undefined>(
 		undefined
 	);
@@ -106,19 +113,13 @@ export default function Profile() {
 		undefined
 	);
 	const [isWeb2User, setIsWeb2User] = useState<boolean>(false);
-	const [ticketIds, setTicketIds] = useState<bigint[] | null | undefined>(
-		undefined
-	);
-	const [eventData, setEventData] = useState<
-		UserEventResponse[] | null | undefined
+	const [ticketData, setTicketData] = useState<
+		TicketInfo[] | null | undefined
 	>(undefined);
-	// const [clientName, setclientName] = useState<string>('');
-	// const [newclientName, setNewclientName] = useState<string>('');
 	const isLoggedIn = useIsLoggedIn();
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
-		console.log(`bal = ${bal}`);
 		if (bal) {
 			setBalance(Number(bal));
 			await fetch('https://api.coinbase.com/v2/prices/POL-USD/buy')
@@ -146,52 +147,6 @@ export default function Profile() {
 			console.error(error);
 		}
 	};
-	// const getClientName = async () => {
-	// 	// const tk = getAuthToken();
-	// 	// await fetch(BASEURL + '/client/id', {
-	// 	// 	method: 'GET',
-	// 	// 	headers: {
-	// 	// 		Authorization: `Bearer ${tk}`
-	// 	// 	}
-	// 	// }).then((res) => {
-	// 	// 	if (res.ok && res.status === 200) {
-	// 	// 		res.json().then((data) => {
-	// 	// 			setclientName(data.Name);
-	// 	// 		});
-	// 	// 	}
-	// 	// });
-	// 	setclientName('chill guy');
-	// };
-	// const handleUpdateNameSubmit = async (
-	// 	e: React.FormEvent<HTMLFormElement>
-	// ) => {
-	// 	console.log("don't press please");
-	// 	// e.preventDefault();
-	// 	// if (newclientName === clientName) {
-	// 	// 	alert('Name is the same as current name');
-	// 	// 	return;
-	// 	// }
-	// 	// if (newclientName === '') {
-	// 	// 	alert('Name cannot be empty');
-	// 	// 	return;
-	// 	// }
-	// 	// const tk = getAuthToken();
-	// 	// await fetch(BASEURL + '/vendor/id', {
-	// 	// 	method: 'PATCH',
-	// 	// 	headers: {
-	// 	// 		'Content-Type': 'application/json',
-	// 	// 		Authorization: `Bearer ${tk}`
-	// 	// 	},
-	// 	// 	body: JSON.stringify({ Name: newclientName })
-	// 	// }).then((res) => {
-	// 	// 	if (res.ok && res.status === 200) {
-	// 	// 		setclientName(newclientName);
-	// 	// 		alert('Name updated successfully');
-	// 	// 	} else {
-	// 	// 		alert('Failed to update name');
-	// 	// 	}
-	// 	// });
-	// };
 
 	// fetchs from oklinks api to see what tickets an account owns
 	// this is set to amoy_testnet and is not an environment variable because I am lazy
@@ -265,13 +220,10 @@ export default function Profile() {
 	// query our backend for the event data using the uuid
 	async function getEventByUUID(UUID: string) {
 		const tk = getAuthToken();
-		const resp = await fetch(
-			`https://api.dev.opentix.co/user/events?ID=${UUID}`,
-			{
-				method: 'GET',
-				headers: { Authorization: `Bearer ${tk}` }
-			}
-		);
+		const resp = await fetch(`${BASEURL}/user/events?ID=${UUID}`, {
+			method: 'GET',
+			headers: { Authorization: `Bearer ${tk}` }
+		});
 
 		if (!resp.ok) {
 			return Error('There was an error fetching event data by UUID');
@@ -281,7 +233,14 @@ export default function Profile() {
 
 	// return a dict of our owned ticket ids and event data for each
 	async function getAllOwnedEvents() {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0); // Set time to midnight for accurate comparison
 		const ids = (await getOwnedTicketIds()) as bigint[];
+
+		if (ids.length === 0) {
+			setTicketData(null);
+			return;
+		}
 
 		// get all the event names from the ids (calls contract)
 		const event_names = Array(ids.length).fill('') as string[];
@@ -293,22 +252,39 @@ export default function Profile() {
 		}
 
 		// get the event data for all the events we have
-		const event_data = Array(ids.length) as UserEventResponse[];
+		const ticket_data = [] as TicketInfo[];
 		for (let i = 0; i < event_names.length; i++) {
-			// minimize the number of calls to the backend api
-			if (i !== 0 && event_names[i] === event_names[i - 1]) {
-				event_data[i] = event_data[i - 1];
-				continue;
-			}
-
 			// grab the event data
 			const split = event_names[i].split(' ');
 			const uuid = split[split.length - 1];
-			event_data[i] = await getEventByUUID(uuid);
+			const event = (await getEventByUUID(
+				uuid
+			)) as UserEventDetailsResponse;
+			const event_date = new Date(event.EventDatetime);
+
+			// only add the ticket if its in the future (or today)
+			if (event_date >= today) {
+				ticket_data.push({ ticketid: ids[i], data: event });
+			}
 		}
-		setTicketIds(ids);
-		setEventData(event_data);
-		// return { ids, event_data };
+
+		// sort the data by date
+		ticket_data.sort((a, b) => {
+			const aDate = new Date(a.data.EventDatetime);
+			const bDate = new Date(b.data.EventDatetime);
+
+			if (aDate < bDate) {
+				return -1;
+			}
+
+			if (aDate > bDate) {
+				return 1;
+			}
+
+			return 0;
+		});
+
+		setTicketData(ticket_data);
 	}
 
 	const handleUnlinkWalletAndLogout = async () => {
@@ -322,385 +298,381 @@ export default function Profile() {
 	};
 
 	useEffect(() => {
-		getUserBalance();
-		setIsWeb2User(userHasEmbeddedWallet());
-		// getClientName();
-		getAllOwnedEvents();
+		if (isLoggedIn) {
+			getUserBalance();
+			setIsWeb2User(userHasEmbeddedWallet());
+			getAllOwnedEvents();
+		}
 	}, [primaryWallet]);
 
-	// useEffect(() => {
-	// 	getAllOwnedEvents();
-	// }, []);
-
 	return (
-		<Box>
-			{isLoggedIn ? (
-				<>
-					<Flex gap="5">
-						<LeftColumn>
-							<Box width="100%">
-								<Flex gap="3" direction={'column'}>
-									<Card>
-										<Flex gap="3" direction={'column'}>
-											<Callout.Root
-												variant="soft"
-												color="gray"
-											>
-												<CalloutIconPointer
-													onClick={handleAddressCopy}
+		<Container size="4">
+			<>
+				<Box py={'5'}>
+					<Heading>Profile</Heading>
+				</Box>
+				{isLoggedIn ? (
+					<>
+						<Flex gap="5">
+							<LeftColumn>
+								<Box width="100%">
+									<Flex gap="3" direction={'column'}>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Callout.Root
+													variant="soft"
+													color="gray"
 												>
-													<CopyIcon />
-												</CalloutIconPointer>
-												<Callout.Text size="3">
-													{primaryWallet?.address}
-												</Callout.Text>
-											</Callout.Root>
-											<Text weight="light" size="1">
-												This is your wallet address. It
-												holds money and your event
-												tickets, and can be used to send
-												or receive both.
-											</Text>
-										</Flex>
-									</Card>
-									<Card>
-										<Flex gap="3" direction={'column'}>
-											<Heading size="4">Funding</Heading>
-											<Flex align="center" gap="2">
-												<Text weight="light">
-													Exchange
-												</Text>
-												<Badge color="green">
-													Easiest
-												</Badge>
-											</Flex>
-											<Text>
-												You can deposit money in
-												multiple ways. The easiest is to
-												use an exchange
-											</Text>
-											<ol
-												style={{
-													paddingLeft: '1.5rem',
-													margin: 0
-												}}
-											>
-												<li>
-													<Text>
-														Buy USDC from Coinbase
-														or another exchange.
-													</Text>
-												</li>
-												<li>
-													<Text>
-														Send USDC to your wallet
-														address above.
-													</Text>
-												</li>
-											</ol>
-											<Separator size="4" />
-											<Text weight="light">
-												Other Options
-											</Text>
-											<ul
-												style={{
-													paddingLeft: '1.5rem',
-													margin: 0
-												}}
-											>
-												<li>
-													<Text>
-														Buy directly using a
-														wallet like Metamask.
-													</Text>
-												</li>
-												<li>
-													<Flex
-														align="center"
-														gap="2"
+													<CalloutIconPointer
+														onClick={
+															handleAddressCopy
+														}
 													>
+														<CopyIcon />
+													</CalloutIconPointer>
+													<Callout.Text size="3">
+														{primaryWallet?.address}
+													</Callout.Text>
+												</Callout.Root>
+												<Text weight="light" size="1">
+													This is your wallet address.
+													It holds money and your
+													event tickets, and can be
+													used to send or receive
+													both.
+												</Text>
+											</Flex>
+										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Funding
+												</Heading>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														Exchange
+													</Text>
+													<Badge color="green">
+														Easiest
+													</Badge>
+												</Flex>
+												<Text>
+													You can deposit money in
+													multiple ways. The easiest
+													is to use an exchange
+												</Text>
+												<ol
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															Buy USDC from
+															Coinbase or another
+															exchange.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															Send USDC to your
+															wallet address
+															above.
+														</Text>
+													</li>
+												</ol>
+												<Separator size="4" />
+												<Text weight="light">
+													Other Options
+												</Text>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
 														<Text>
 															Buy directly using a
-															credit card or
-															PayPal.
+															wallet like
+															Metamask.
 														</Text>
-														<Badge color="yellow">
-															Coming Soon
-														</Badge>
-													</Flex>
-												</li>
-											</ul>
-										</Flex>
-									</Card>
-								</Flex>
-							</Box>
-						</LeftColumn>
-						<RightColumn>
-							<Box width={'100%'}>
-								<Flex gap="3" direction={'column'}>
-									<Card>
-										<Flex gap="3" direction={'column'}>
-											<Heading size="4">Balance</Heading>
-											<Flex gap="3">
-												{usdBalance === undefined ? (
-													<Skeleton>
-														<USDBalance>
-															$0.00
-														</USDBalance>
-													</Skeleton>
-												) : (
-													<USDBalance>
-														$
-														{usdBalance?.toFixed(2)}
-													</USDBalance>
-												)}
-												{balance === undefined ? (
-													<Skeleton>
-														<TokenBalance>
-															0.0000 POL
-														</TokenBalance>
-													</Skeleton>
-												) : (
-													<TokenBalance>
-														{balance?.toFixed(4)}{' '}
-														POL
-													</TokenBalance>
-												)}
+													</li>
+													<li>
+														<Flex
+															align="center"
+															gap="2"
+														>
+															<Text>
+																Buy directly
+																using a credit
+																card or PayPal.
+															</Text>
+															<Badge color="yellow">
+																Coming Soon
+															</Badge>
+														</Flex>
+													</li>
+												</ul>
 											</Flex>
-										</Flex>
-									</Card>
-									<Card>
-										<Flex gap="3" direction={'column'}>
-											<Heading size="4">Actions</Heading>
-											<ActionsText
-												onClick={handleSendbalance}
-											>
-												Send Money
-											</ActionsText>
-											<ActionsText
-												onClick={openFundingOptions}
-											>
-												Deposit Money
-											</ActionsText>
-											<ActionsText
-												onClick={() => handleLogOut()}
-											>
-												Logout
-											</ActionsText>
-											{isWeb2User && (
-												<>
-													<Dialog.Root>
-														<Dialog.Trigger>
-															<ActionsText color="red">
-																Unlink Account
-															</ActionsText>
-														</Dialog.Trigger>
+										</Card>
+									</Flex>
+								</Box>
+							</LeftColumn>
+							<RightColumn>
+								<Box width={'100%'}>
+									<Flex gap="3" direction={'column'}>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Balance
+												</Heading>
+												<Flex gap="3">
+													{usdBalance ===
+													undefined ? (
+														<Skeleton>
+															<USDBalance>
+																$0.00
+															</USDBalance>
+														</Skeleton>
+													) : (
+														<USDBalance>
+															$
+															{usdBalance?.toFixed(
+																2
+															)}
+														</USDBalance>
+													)}
+													{balance === undefined ? (
+														<Skeleton>
+															<TokenBalance>
+																0.0000 POL
+															</TokenBalance>
+														</Skeleton>
+													) : (
+														<TokenBalance>
+															{balance?.toFixed(
+																4
+															)}{' '}
+															POL
+														</TokenBalance>
+													)}
+												</Flex>
+											</Flex>
+										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Actions
+												</Heading>
+												<ActionsText
+													onClick={handleSendbalance}
+												>
+													Send Money
+												</ActionsText>
+												<ActionsText
+													onClick={openFundingOptions}
+												>
+													Deposit Money
+												</ActionsText>
+												<ActionsText
+													onClick={() =>
+														handleLogOut()
+													}
+												>
+													Logout
+												</ActionsText>
+												{isWeb2User && (
+													<>
+														<Dialog.Root>
+															<Dialog.Trigger>
+																<ActionsText color="red">
+																	Unlink
+																	Account
+																</ActionsText>
+															</Dialog.Trigger>
 
-														<Dialog.Content maxWidth="450px">
-															<Dialog.Title>
-																Unlink Account
-															</Dialog.Title>
-															<Dialog.Description
-																size="2"
-																mb="4"
-															>
-																Make sure you
-																have backed up
-																your private key
-																and recovery
-																phrase before
-																unlinking. After
-																unlinking, you
-																will not be able
-																to access your
-																wallet through
-																this site. If
-																you sign in
-																again, a new
-																wallet will be
-																created for you.
-																You are
-																responsible for
-																safeguarding
-																this information
-															</Dialog.Description>
-
-															<Flex
-																direction="column"
-																gap="3"
-															>
-																<Button
-																	variant="soft"
-																	color="gray"
-																	onClick={() => {
-																		revealWalletKey(
-																			{
-																				type: 'recoveryPhrase',
-																				htmlContainerId:
-																					'recovery-phrase-modal'
-																			}
-																		);
-																	}}
+															<Dialog.Content maxWidth="450px">
+																<Dialog.Title>
+																	Unlink
+																	Account
+																</Dialog.Title>
+																<Dialog.Description
+																	size="2"
+																	mb="4"
 																>
-																	View
-																	Recovery
-																	Phrase
-																</Button>
-																<div id="recovery-phrase-modal"></div>
-															</Flex>
-															<Flex
-																direction="column"
-																gap="3"
-															>
-																<Button
-																	variant="soft"
-																	color="gray"
-																	onClick={() => {
-																		revealWalletKey(
-																			{
-																				type: 'privateKey',
-																				htmlContainerId:
-																					'private-key-modal'
-																			}
-																		);
-																	}}
-																>
-																	View Private
-																	Key
-																</Button>
-																<div id="private-key-modal"></div>
-															</Flex>
+																	Make sure
+																	you have
+																	backed up
+																	your private
+																	key and
+																	recovery
+																	phrase
+																	before
+																	unlinking.
+																	After
+																	unlinking,
+																	you will not
+																	be able to
+																	access your
+																	wallet
+																	through this
+																	site. If you
+																	sign in
+																	again, a new
+																	wallet will
+																	be created
+																	for you. You
+																	are
+																	responsible
+																	for
+																	safeguarding
+																	this
+																	information
+																</Dialog.Description>
 
-															<Flex
-																gap="3"
-																mt="4"
-																justify="end"
-															>
-																<Dialog.Close>
+																<Flex
+																	direction="column"
+																	gap="3"
+																>
 																	<Button
 																		variant="soft"
 																		color="gray"
+																		onClick={() => {
+																			revealWalletKey(
+																				{
+																					type: 'recoveryPhrase',
+																					htmlContainerId:
+																						'recovery-phrase-modal'
+																				}
+																			);
+																		}}
 																	>
-																		Cancel
+																		View
+																		Recovery
+																		Phrase
 																	</Button>
-																</Dialog.Close>
-																<Dialog.Close>
+																	<div id="recovery-phrase-modal"></div>
+																</Flex>
+																<Flex
+																	direction="column"
+																	gap="3"
+																>
 																	<Button
-																		color="red"
-																		onClick={
-																			handleUnlinkWalletAndLogout
-																		}
+																		variant="soft"
+																		color="gray"
+																		onClick={() => {
+																			revealWalletKey(
+																				{
+																					type: 'privateKey',
+																					htmlContainerId:
+																						'private-key-modal'
+																				}
+																			);
+																		}}
 																	>
-																		Unlink
-																		Wallet
-																		and
-																		Logout
+																		View
+																		Private
+																		Key
 																	</Button>
-																</Dialog.Close>
-															</Flex>
-														</Dialog.Content>
-													</Dialog.Root>
-													<ActionsText
-														color="red"
-														onClick={() =>
-															initExportProcess()
-														}
-													>
-														Export Private Key
-													</ActionsText>
-												</>
-											)}
-										</Flex>
-									</Card>
-								</Flex>
-							</Box>
-						</RightColumn>
-					</Flex>
-					<Flex gap="5">
-						{eventData?.map(
-							(data: UserEventResponse, idx: number) => {
-								// this should never happen but keeps the app from blowing up if it does
-								if (data == undefined) {
-									return null;
-								}
+																	<div id="private-key-modal"></div>
+																</Flex>
 
-								// these make the code read better
-								const keys = Object.keys(data);
-								const values = Object.values(data);
-								let photo_uri = '';
-								const ticketid = ticketIds?.[idx].toString();
+																<Flex
+																	gap="3"
+																	mt="4"
+																	justify="end"
+																>
+																	<Dialog.Close>
+																		<Button
+																			variant="soft"
+																			color="gray"
+																		>
+																			Cancel
+																		</Button>
+																	</Dialog.Close>
+																	<Dialog.Close>
+																		<Button
+																			color="red"
+																			onClick={
+																				handleUnlinkWalletAndLogout
+																			}
+																		>
+																			Unlink
+																			Wallet
+																			and
+																			Logout
+																		</Button>
+																	</Dialog.Close>
+																</Flex>
+															</Dialog.Content>
+														</Dialog.Root>
+														<ActionsText
+															color="red"
+															onClick={() =>
+																initExportProcess()
+															}
+														>
+															Export Private Key
+														</ActionsText>
+													</>
+												)}
+											</Flex>
+										</Card>
+									</Flex>
+								</Box>
+							</RightColumn>
+						</Flex>
 
-								return (
-									<Card
-										key={idx}
-										style={{
-											display: 'flex',
-											width: '100%'
-										}}
-									>
-										{values?.map(
-											(
-												value: string | number,
-												idx2: number
-											) => {
-												if (
-													keys[idx2] === 'Eventphoto'
-												) {
-													photo_uri = value as string;
-													return null;
-												} else if (
-													keys[idx2] === 'Eventname'
-												) {
-													return (
-														<Card
-															title={`${value}`}
-														/>
-													);
-												}
-												// return (
-												// 	<Text key={idx2}>
-												// 		{keys[idx2]}:{' '}
-												// 		{keys[idx2] === 'EventDatetime'
-												// 			? new Date(
-												// 					value
-												// 				).toLocaleString()
-												// 			: keys[idx2] === 'Basecost'
-												// 				? `$${value}`
-												// 				: value}
-												// 	</Text>
-												// );
-											}
-										)}
-										<Text style={{ flex: 1 }}>
-											Ticket id: {ticketid}
-										</Text>
-										{/* <Image
-												source={{
-													uri: photo_uri
-												}}
-												style={{
-													height: undefined,
-													width: '100%',
-													aspectRatio: 1,
-													maxHeight: 200,
-													alignSelf: 'flex-end',
-													flex: 2
-												}}
-											/> */}
-										{/* <Avatar.Image source={{ uri: photo_uri }} /> */}
-									</Card>
-								);
-							}
-						) ?? (
+						<Box py={'5'}>
+							<Heading size={'4'}>Your Tickets</Heading>
 							<Card>
-								<Text>You don't own any tickets :\</Text>
+								<Flex
+									style={{
+										display: 'flex',
+										flexWrap: 'wrap'
+									}}
+									gap="2"
+									flexGrow="1"
+								>
+									{ticketData === undefined ? (
+										<Card>
+											<Text>Loading...</Text>
+										</Card>
+									) : ticketData == null ? (
+										<Card>
+											<Text>
+												You don't own any tickets :\
+											</Text>
+										</Card>
+									) : (
+										ticketData?.map(
+											(data: TicketInfo, idx: number) => {
+												// these make the code read better
+												const ticketid =
+													data.ticketid.toString();
+
+												return (
+													<TicketCard
+														key={`${idx}`}
+														event={data.data}
+														ticket={
+															ticketid as string
+														}
+													/>
+												);
+											}
+										)
+									)}
+								</Flex>
 							</Card>
-						)}
-					</Flex>
-				</>
-			) : (
-				<p>You are not logged in.</p>
-			)}
-		</Box>
+						</Box>
+					</>
+				) : (
+					<Text>You are not logged in.</Text>
+				)}
+			</>
+		</Container>
 	);
 }
