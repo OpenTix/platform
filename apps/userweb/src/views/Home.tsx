@@ -11,7 +11,7 @@ export default function Home() {
 	const [nearReady, setNearReady] = useState<boolean>(false);
 
 	const getEvents = useCallback(async (postcode: string) => {
-		const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}`;
+		const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}&EventDatetime=${new Date().toISOString()}`;
 
 		const resp = await fetch(url, {
 			method: 'GET'
