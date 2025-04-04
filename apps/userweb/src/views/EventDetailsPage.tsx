@@ -49,6 +49,7 @@ export default function EventDetailsPage() {
 							<Card
 								style={{
 									padding: 0,
+									margin: 0,
 									textAlign: 'center',
 									alignContent: 'center'
 								}}
@@ -57,17 +58,19 @@ export default function EventDetailsPage() {
 									<Avatar.Image
 										src={data.Eventphoto}
 										style={{
-											maxHeight: '20em',
 											maxWidth: '20em',
-											objectFit: 'cover'
+											maxHeight: '20em',
+											objectFit: 'contain',
+											display: 'block'
 										}}
 									></Avatar.Image>
 									<Avatar.Fallback>
 										<img
 											style={{
-												maxHeight: '20em',
 												maxWidth: '20em',
-												objectFit: 'cover'
+												maxHeight: '20em',
+												objectFit: 'contain',
+												display: 'block'
 											}}
 											src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg"
 											alt="Event"
