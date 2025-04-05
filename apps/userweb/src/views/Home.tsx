@@ -6,7 +6,7 @@ import EventRow from '../components/EventRow';
 
 export default function Home() {
 	const [cards, setCards] = useState<React.ReactNode>(null);
-	const near = useRef<React.ReactNode>(null);
+	const near = useRef<React.ReactNode[]>([]);
 	const [shouldShow, setShouldShow] = useState<boolean>(true);
 	const [nearReady, setNearReady] = useState<boolean>(false);
 
