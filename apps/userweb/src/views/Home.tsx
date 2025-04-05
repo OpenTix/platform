@@ -6,7 +6,7 @@ import EventRow from '../components/EventRow';
 
 export default function Home() {
 	const [cards, setCards] = useState<React.ReactNode>(null);
-	const near = useRef<React.ReactNode[]>([]);
+	const near = useRef<React.ReactNode>(null);
 	const [shouldShow, setShouldShow] = useState<boolean>(true);
 	const [nearReady, setNearReady] = useState<boolean>(false);
 
@@ -99,7 +99,7 @@ export default function Home() {
 							name={''}
 							cost={'1000000'}
 							eventDate={new Date().toISOString()}
-							passedData={near.current}
+							passedData={near.current.slice(0, 5)}
 						/>
 					) : null}
 					{cards}
