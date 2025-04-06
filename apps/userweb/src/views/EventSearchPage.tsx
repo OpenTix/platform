@@ -97,13 +97,12 @@ export default function EventSearchPage() {
 	}, [zip, type, ename, cost, eventDate, page, pageSize]);
 
 	return (
-		<Flex pt="3" justify={'center'} gap="3">
+		<Flex pt="3" justify={'start'} gap="3">
 			<Box
 				style={{
 					display: 'flex',
 					flexDirection: 'column',
-					rowGap: '10px',
-					width: '17.5em'
+					rowGap: '10px'
 				}}
 			>
 				<Button
@@ -195,14 +194,28 @@ export default function EventSearchPage() {
 								pattern={'d{5}'}
 							/>
 						</PopoverLabel>
-
-						<Button
-							onClick={() => setResetCalled(true)}
-							style={{ backgroundColor: 'red' }}
-						>
-							Clear Filters
-						</Button>
-						<Button onClick={applyFilters}>Apply Filters</Button>
+						<Flex gap={'10px'} justify={'center'}>
+							<Button
+								onClick={() => {
+									setResetCalled(true);
+									setType('');
+									setZip('');
+									setCost(1000000);
+									setDisplayedDate(getTimestamp());
+									setEventDate(new Date().toISOString());
+									setShouldFetch(true);
+								}}
+								style={{ backgroundColor: 'red', flex: '1' }}
+							>
+								Clear Filters
+							</Button>
+							<Button
+								onClick={applyFilters}
+								style={{ flex: '1' }}
+							>
+								Apply Filters
+							</Button>
+						</Flex>
 					</Box>
 				)}
 			</Box>

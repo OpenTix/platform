@@ -1,6 +1,7 @@
 import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Box } from '@radix-ui/themes';
-import { TextField } from '@radix-ui/themes';
+import { TextField, Button } from '@radix-ui/themes';
 import { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSessionStorage } from 'usehooks-ts';
@@ -37,7 +38,26 @@ export default function Navigation() {
 			{(location.pathname === '/' ||
 				location.pathname === '/eventSearch') && (
 				<Box>
-					<form onSubmit={handleSearch}>
+					<form
+						onSubmit={handleSearch}
+						style={{
+							display: 'flex',
+							gap: '0px',
+							overflow: 'hidden'
+						}}
+					>
+						<Button
+							type="submit"
+							size="3"
+							variant="surface"
+							color="gray"
+							style={{
+								borderTopRightRadius: '0',
+								borderBottomRightRadius: '0'
+							}}
+						>
+							<MagnifyingGlassIcon width="20" height="20" />
+						</Button>
 						<TextField.Root
 							placeholder="Search"
 							size="3"
@@ -46,6 +66,11 @@ export default function Navigation() {
 							onChange={(e) => {
 								setSearch(e.target.value);
 								setDataChanged(true);
+							}}
+							style={{
+								flex: '1',
+								borderTopLeftRadius: '0',
+								borderBottomLeftRadius: '0'
 							}}
 						/>
 					</form>
