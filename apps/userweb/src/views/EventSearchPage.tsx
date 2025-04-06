@@ -107,6 +107,7 @@ export default function EventSearchPage() {
 			>
 				<Button
 					onClick={() => setShowSidebar(!showSidebar)}
+					color="purple"
 					style={{ width: '100px', alignSelf: 'flex-start' }}
 				>
 					Filter
@@ -211,6 +212,7 @@ export default function EventSearchPage() {
 							</Button>
 							<Button
 								onClick={applyFilters}
+								color="purple"
 								style={{ flex: '1' }}
 							>
 								Apply Filters
