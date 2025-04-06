@@ -26,7 +26,7 @@ export class ListenerStack extends cdk.Stack {
 		const cluster = new ecs.Cluster(this, 'ListenerCluster', { vpc });
 
 		cluster.addCapacity('DefaultAutoScalingGroup', {
-			instanceType: new ec2.InstanceType('t4g.nano'),
+			instanceType: new ec2.InstanceType('t3a.nano'),
 			desiredCapacity: 1
 		});
 
@@ -36,7 +36,9 @@ export class ListenerStack extends cdk.Stack {
 			this,
 			'ListenerImage',
 			{
-				directory: path.join(__dirname, '../../apps/listener')
+				directory: path.join(__dirname, '../../'), // Project root so it can see dist/
+				file: 'apps/listener/Dockerfile',
+				exclude: ['**/.git/**', '**/cdk.out/**']
 			}
 		);
 
