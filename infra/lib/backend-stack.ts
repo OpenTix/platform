@@ -20,6 +20,7 @@ import {
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 import {
 	vpcId,
@@ -29,7 +30,8 @@ import {
 	dbInternalName,
 	dbSecretArn,
 	jwksURL,
-	photoBucket
+	photoBucket,
+	ticketsMintedTopicArn
 } from './Constants';
 
 export class APIStack extends cdk.Stack {
@@ -58,6 +60,13 @@ export class APIStack extends cdk.Stack {
 			this,
 			'DBSecret',
 			dbSecretArn
+		);
+
+		// SNS
+		const ticketsMintedTopic = sns.Topic.fromTopicArn(
+			this,
+			'TicketsMintedTopic',
+			ticketsMintedTopicArn
 		);
 
 		// Roles
@@ -122,6 +131,32 @@ export class APIStack extends cdk.Stack {
 			)
 		);
 
+		const TicketsMintedTopicRole = new Role(
+			this,
+			'TicketsMintedTopicRole',
+			{
+				assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+			}
+		);
+		TicketsMintedTopicRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: ['*']
+			})
+		);
+		ticketsMintedTopic.grantPublish(TicketsMintedTopicRole);
+		dbSecret.grantRead(TicketsMintedTopicRole);
+		TicketsMintedTopicRole.addManagedPolicy(
+			ManagedPolicy.fromAwsManagedPolicyName(
+				'service-role/AWSLambdaVPCAccessExecutionRole'
+			)
+		);
+
 		const LambdaDBAccessProps = {
 			role: LambdaDBAccessRole,
 			vpc: vpc,
@@ -165,6 +200,10 @@ export class APIStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const UserZipsLambda = new GoFunction(this, 'UserZipsLambda', {
+			entry: `${basePath}/user_zips.go`
+		});
+
 		const VendorVenuesLambda = new GoFunction(this, 'VendorVenuesLambda', {
 			entry: `${basePath}/vendor_venues.go`,
 			...LambdaDBAccessProps
@@ -189,7 +228,16 @@ export class APIStack extends cdk.Stack {
 			'VendorTicketsCreationLambda',
 			{
 				entry: `${basePath}/vendor_tickets_create.go`,
-				...LambdaDBAccessProps
+				role: TicketsMintedTopicRole,
+				vpc: vpc,
+				securityGroups: [dbSecurityGroup],
+				environment: {
+					DB_ADDRESS: dbAddress,
+					DB_PORT: dbPort,
+					DB_NAME: dbInternalName,
+					DB_SECRET_ARN: dbSecretArn,
+					TICKET_CREATION_SNS_ARN: ticketsMintedTopicArn
+				}
 			}
 		);
 
@@ -391,6 +439,13 @@ export class APIStack extends cdk.Stack {
 			new LambdaIntegration(UserEventsLambda)
 		);
 		addDynamicOptions(userEventsResource);
+
+		const userZipsResource = userResource.addResource('zips');
+		userZipsResource.addMethod(
+			'GET',
+			new LambdaIntegration(UserZipsLambda)
+		);
+		addDynamicOptions(userZipsResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url

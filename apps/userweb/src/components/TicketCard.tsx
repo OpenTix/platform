@@ -1,16 +1,15 @@
-import { UserEventResponse } from '@platform/types';
+import { UserEventDetailsResponse } from '@platform/types';
 import { Box, Card, Flex, Inset, Text } from '@radix-ui/themes';
-import { title } from 'process';
 import { Avatar } from 'radix-ui';
 import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { text } from 'stream/consumers';
 
-export interface EventCardProps {
-	event: UserEventResponse;
+export interface TicketCardProps {
+	event: UserEventDetailsResponse;
+	ticket: string;
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function TicketCard({ event, ticket }: TicketCardProps) {
 	const titleRef = useRef<HTMLElement>(null);
 	const [titleSize, setTitleSize] = useState(1.2);
 	const venueRef = useRef<HTMLElement>(null);
@@ -25,9 +24,13 @@ export function EventCard({ event }: EventCardProps) {
 		minute: '2-digit',
 		hour12: true
 	});
+	const year = date.toLocaleString('default', { year: 'numeric' });
 
-	const dateUpper = `${month} ${day}, ${date.getFullYear()}`;
-	const dateLower = `${dayOfWeek} ${time}`;
+	const dateUpper =
+		new Date().getFullYear() === date.getFullYear()
+			? `${dayOfWeek}, ${month} ${day} ${year}`
+			: `${dayOfWeek}, ${month} ${day} ${year}`;
+	const dateLower = `${time}`;
 
 	useEffect(() => {
 		if (!titleRef.current) return;
@@ -48,7 +51,7 @@ export function EventCard({ event }: EventCardProps) {
 			asChild
 			size="3"
 			variant="classic"
-			style={{ width: '17.6em', minHeight: '14.5em' }}
+			style={{ width: '17em', height: '14.5em' }}
 		>
 			<Link
 				to={`/event/${event.ID}`}
@@ -67,7 +70,7 @@ export function EventCard({ event }: EventCardProps) {
 								width: '100%',
 								maxHeight: '10em'
 							}}
-							src={event.Photo}
+							src={event.Eventphoto}
 							alt="Image of venue"
 						/>
 						<Avatar.Fallback>
@@ -81,7 +84,7 @@ export function EventCard({ event }: EventCardProps) {
 								src={
 									'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
 								}
-								alt={event.Name}
+								alt={event.Eventname}
 							/>
 						</Avatar.Fallback>
 					</Avatar.Root>
@@ -95,15 +98,20 @@ export function EventCard({ event }: EventCardProps) {
 						}}
 						ref={titleRef}
 					>
-						{event.Name}
+						{event.Eventname}
 					</Text>
 					<Flex
 						justify="between"
 						style={{ fontSize: `${venueSize}em` }}
 					>
-						<Box style={{ width: '50%' }}>
-							<Text>{event.Venuename}</Text>
-						</Box>
+						<Flex direction="column" align="start">
+							<Box style={{ textAlign: 'left' }}>
+								<Text>{event.Venuename}</Text>
+							</Box>
+							<Box style={{ textAlign: 'left' }}>
+								<Text>#{ticket}</Text>
+							</Box>
+						</Flex>
 						<Flex direction="column" align="end">
 							<Box style={{ textAlign: 'right' }}>
 								<Text ref={venueRef}>{dateUpper}</Text>
