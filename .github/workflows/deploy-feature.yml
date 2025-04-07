@@ -100,6 +100,9 @@ jobs:
                     NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
                   fi
 
+            - run: npm ci --legacy-peer-deps
+              working-directory: ./infra
+
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
@@ -118,9 +121,6 @@ jobs:
                   role-duration-seconds: 3600
                   role-skip-session-tagging: true
                   aws-region: 'us-east-1'
-
-            - run: npm ci --legacy-peer-deps
-              working-directory: ./infra
 
             - name: Deploy
               working-directory: ./infra
