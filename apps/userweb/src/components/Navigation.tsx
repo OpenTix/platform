@@ -2,7 +2,7 @@ import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { Box } from '@radix-ui/themes';
 import { TextField } from '@radix-ui/themes';
 import { useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSessionStorage } from 'usehooks-ts';
 import { NavLink, Navbar } from '@platform/ui';
 
@@ -14,9 +14,13 @@ export default function Navigation() {
 	const [search, setSearch] = useState('');
 
 	const [ename, setEname] = useSessionStorage('Name', '');
+	const [page] = useSessionStorage('Page', '');
+	const [zip] = useSessionStorage('Zip', '');
+	const [type] = useSessionStorage('Type', '');
+	const [cost] = useSessionStorage('Cost', '');
+	const [date] = useSessionStorage('Date', '');
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
-	const [searchParams, setSearchParams] = useSearchParams();
 	const location = useLocation();
 	const navigate = useNavigate();
 
@@ -25,7 +29,9 @@ export default function Navigation() {
 		setEname(search);
 		setDataChanged(true);
 		setShouldFetch(true);
-		navigate(`/eventSearch`);
+		navigate(
+			`/eventSearch?Name=${ename}&Page=${page}&Zip=${zip}&Type=${type}&Cost=${cost}&Date=${date}`
+		);
 	};
 
 	return (

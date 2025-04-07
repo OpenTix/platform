@@ -30,8 +30,8 @@ function getTimestamp() {
 }
 
 export default function EventSearchPage() {
-	const [searchParams, setSearchParams] = useSearchParams();
 	const [showSidebar, setShowSidebar] = useState(false);
+	const [params, setParams] = useSearchParams();
 	const [page, setPage] = useSessionStorage('Page', 1);
 	const [zip, setZip] = useSessionStorage('Zip', '');
 	const [type, setType] = useSessionStorage('Type', '');
@@ -131,15 +131,23 @@ export default function EventSearchPage() {
 								Type
 							</Text>
 							<Select.Root
-								value={type}
+								value={params.get('Type') ?? ''}
 								onValueChange={(value) => {
-									setType(value);
+									setType(value === 'all' ? '' : value);
+									params.set(
+										'Type',
+										value === 'all' ? '' : value
+									);
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 							>
 								<Select.Trigger placeholder="Select Event Type" />
 								<Select.Content>
 									<Select.Group>
+										<Select.Item key="all" value="all">
+											All
+										</Select.Item>
 										{AllEventTypesArray.map((event) => (
 											<Select.Item
 												key={event}
@@ -160,9 +168,11 @@ export default function EventSearchPage() {
 							<TextField.Root
 								name="Cost"
 								placeholder="1000000"
-								value={cost}
+								value={Number(params.get('Cost') ?? 1000000)}
 								onChange={(e) => {
 									setCost(Number(e.target.value));
+									params.set('Cost', e.target.value);
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 							/>
@@ -174,9 +184,13 @@ export default function EventSearchPage() {
 							</Text>
 							<TextField.Root
 								name="Time"
-								value={displayedDate}
+								value={
+									params.get('Date') ?? Date.now().toString()
+								}
 								onChange={(e) => {
 									setDisplayedDate(e.target.value);
+									params.set('Date', e.target.value);
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 								type="datetime-local"
@@ -187,9 +201,11 @@ export default function EventSearchPage() {
 							<Text>Zip</Text>
 							<TextField.Root
 								name="Zip"
-								value={zip}
+								value={params.get('Zip') ?? ''}
 								onChange={(e) => {
 									setZip(e.target.value);
+									params.set('Zip', e.target.value);
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 								pattern={'d{5}'}
