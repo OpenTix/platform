@@ -45,8 +45,20 @@ export default function App() {
 		setTimeout(() => setShow(true), 1500);
 	}, [setShow]);
 
+	const deepLinking = {
+		prefixes: ['opentixvendormobile://'],
+		config: {
+			initialRouteName: 'Home',
+			screens: {
+				Home: 'Home',
+				Events: 'Events',
+				EventDetails: 'EventDetails'
+			}
+		}
+	};
+
 	return (
-		<NavigationContainer>
+		<NavigationContainer linking={deepLinking}>
 			<client.reactNative.WebView />
 			<Stack.Navigator initialRouteName="Home">
 				<Stack.Screen
