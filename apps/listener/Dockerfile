@@ -4,7 +4,7 @@
 # Tip: Modify "docker-build" options in project.json to change docker build args.
 #
 # Run the container with `docker run -p 3000:3000 -t listener`.
-FROM docker.io/node:lts-alpine
+FROM --platform=linux/amd64 docker.io/node:lts-alpine
 
 ENV HOST=0.0.0.0
 ENV PORT=3000

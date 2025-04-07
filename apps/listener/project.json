@@ -61,7 +61,7 @@
 		},
 		"docker-build": {
 			"dependsOn": ["build"],
-			"command": "docker build -f apps/listener/Dockerfile . -t listener"
+			"command": "docker build --platform=linux/amd64 -f apps/listener/Dockerfile . -t listener"
 		}
 	}
 }

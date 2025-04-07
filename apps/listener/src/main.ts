@@ -23,7 +23,9 @@ type TicketCreationSNSMessage = {
 
 // eslint-disable-next-line
 async function HandleEvent(logs: Array<any>, publicClient: any) {
-	const snsClient = new SNSClient({});
+	const snsClient = new SNSClient({
+		region: 'us-east-1'
+	});
 	for (const log of logs) {
 		if (log.eventName === 'Event_Commencement') {
 			const { args } = log;
@@ -42,7 +44,7 @@ async function HandleEvent(logs: Array<any>, publicClient: any) {
 				TicketMin: Number(data[1].min),
 				TicketMax: Number(data[1].max)
 			};
-			console.log('Event Commencement:', message);
+			console.log('Event Commencement:', String(message));
 
 			const params = {
 				Message: JSON.stringify(message),
@@ -98,40 +100,6 @@ async function mainLoop() {
 }
 
 mainLoop();
-
-// HandleEvent(
-// 	[
-// 		{
-// 			address: '0xe30e1f5c14310797cea37be45c5e7445e506c021',
-// 			blockHash:
-// 				'0x271d318186869d74c91cb4306fa2cd751a4fe850b8dfcf63fc4f5547f3eaaa30',
-// 			blockNumber: 19881969n,
-// 			data: '0x000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000437465737420617420323032352d30342d30325431363a30303a30305a202d2038373965636332322d313630352d346163332d616463342d3566646136623462656265360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003d68747470733a2f2f6f70656e7469782e636f2f6576656e742f38373965636332322d313630352d346163332d616463342d356664613662346265626536000000',
-// 			logIndex: 7,
-// 			removed: false,
-// 			topics: [
-// 				'0x73e344453faa207d9ac2de809547c73b7cf1131a88f1fb01b0893c651c10c40f',
-// 				'0x000000000000000000000000b98218cf9bdc576626e2fa562f0a9cb9f10b6143'
-// 			],
-// 			transactionHash:
-// 				'0x7665390cd4719b258833897aa15a608384ac48c23d9c75c078899607c0e386b4',
-// 			transactionIndex: 3,
-// 			args: {
-// 				from: '0xb98218Cf9BDc576626E2Fa562F0a9Cb9F10b6143',
-// 				description:
-// 					'test at 2025-04-02T16:00:00Z - 879ecc22-1605-4ac3-adc4-5fda6b4bebe6',
-// 				venue_URI:
-// 					'https://opentix.co/event/879ecc22-1605-4ac3-adc4-5fda6b4bebe6',
-// 				capacity: 4n
-// 			},
-// 			eventName: 'Event_Commencement'
-// 		}
-// 	],
-// 	createPublicClient({
-// 		chain: CurrentChain,
-// 		transport: webSocket(AmoyWSAddress)
-// 	})
-// );
 
 /* Event Commencement:
 [
