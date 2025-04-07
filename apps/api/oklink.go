@@ -90,15 +90,14 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	if err != nil {
 		return shared.CreateErrorResponse(500, "Unable to perform get request to "+requestURL, request.Headers)
 	}
+	defer res.Body.Close()
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return shared.CreateErrorResponse(500, "Unable to read response body from "+requestURL, request.Headers)
 	}
-
-	body, _ := json.Marshal(resBody)
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       string(body),
+		Body:       string(resBody),
 		Headers:    shared.GetResponseHeaders(request.Headers),
 	}, nil
 }
