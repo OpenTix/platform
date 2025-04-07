@@ -60,7 +60,8 @@ export class ListenerStack extends cdk.Stack {
 			logging: new ecs.AwsLogDriver({
 				logGroup,
 				streamPrefix: 'listener'
-			})
+			}),
+			portMappings: [{ containerPort: 80 }]
 		});
 
 		ticketsMintedTopic.grantPublish(taskDefinition.taskRole);
