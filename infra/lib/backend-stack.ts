@@ -200,6 +200,10 @@ export class APIStack extends cdk.Stack {
 			...LambdaDBAccessProps
 		});
 
+		const UserZipsLambda = new GoFunction(this, 'UserZipsLambda', {
+			entry: `${basePath}/user_zips.go`
+		});
+
 		const VendorVenuesLambda = new GoFunction(this, 'VendorVenuesLambda', {
 			entry: `${basePath}/vendor_venues.go`,
 			...LambdaDBAccessProps
@@ -435,6 +439,13 @@ export class APIStack extends cdk.Stack {
 			new LambdaIntegration(UserEventsLambda)
 		);
 		addDynamicOptions(userEventsResource);
+
+		const userZipsResource = userResource.addResource('zips');
+		userZipsResource.addMethod(
+			'GET',
+			new LambdaIntegration(UserZipsLambda)
+		);
+		addDynamicOptions(userZipsResource);
 
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url

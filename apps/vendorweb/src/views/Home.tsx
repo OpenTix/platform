@@ -15,6 +15,7 @@ import {
 	QueryClientProvider
 } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useSessionStorage } from 'usehooks-ts';
 import { SuccessAlert } from '@platform/ui';
 import AddEventModal from '../components/AddEventModal';
 import AddVenueModal from '../components/AddVenueModal';
@@ -35,7 +36,11 @@ export default function Home() {
 	const [venueData, setVenueData] = useState<Venue[]>([]);
 	const [eventDisplay, setEventDisplay] = useState(eventData);
 	const [venueDisplay, setVenueDisplay] = useState(venueData);
-	const [activeTab, setActiveTab] = useState<'events' | 'venues'>('events');
+	// const [activeTab, setActiveTab] = useState<'events' | 'venues'>('events');
+	const [activeTab, setActiveTab] = useSessionStorage(
+		'VendorActiveHomeTab',
+		'events'
+	);
 	const [showModal, setShowModal] = useState(false);
 	const [modalType, setModalType] = useState<'events' | 'venues' | null>(
 		null
@@ -43,7 +48,7 @@ export default function Home() {
 	const [wasAddSuccessful, setWasAddSuccessful] = useState<boolean>(false);
 
 	const addRow = () => {
-		setModalType(activeTab);
+		setModalType(activeTab as 'events' | 'venues' | null);
 		setShowModal(true);
 	};
 

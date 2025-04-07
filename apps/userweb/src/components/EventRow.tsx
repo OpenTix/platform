@@ -11,6 +11,7 @@ interface rowProps {
 	name: string;
 	cost: string;
 	eventDate: string;
+	passedData?: React.ReactNode[];
 }
 
 export default function EventRow({
@@ -18,10 +19,11 @@ export default function EventRow({
 	type,
 	name,
 	cost,
-	eventDate
+	eventDate,
+	passedData
 }: rowProps) {
 	const flexRef = useRef(null);
-	const [cards, setCards] = useState([]);
+	const [cards, setCards] = useState<React.ReactNode>([]);
 	const [page, setPage] = useState(1);
 
 	const moveCards = (dist: number, pageDist: number) => {
@@ -31,6 +33,10 @@ export default function EventRow({
 	};
 
 	useEffect(() => {
+		if (passedData) {
+			setCards(passedData);
+			return;
+		}
 		Promise.resolve(
 			getEvents(
 				`Page=${page}&Zip=${zip}&Type=${type === 'Near You' ? '' : type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
@@ -46,7 +52,7 @@ export default function EventRow({
 				}
 			})
 			.catch((error) => console.error('EventRow: ', error));
-	}, [page, zip, type, name, cost, eventDate]);
+	}, [page, zip, type, name, cost, eventDate, passedData]);
 
 	return (
 		<Box>
