@@ -31,7 +31,8 @@ import {
 	dbSecretArn,
 	jwksURL,
 	photoBucket,
-	ticketsMintedTopicArn
+	ticketsMintedTopicArn,
+	oklinkSecretArn
 } from './Constants';
 
 export class APIStack extends cdk.Stack {
@@ -60,6 +61,12 @@ export class APIStack extends cdk.Stack {
 			this,
 			'DBSecret',
 			dbSecretArn
+		);
+
+		const oklinkSecret = Secret.fromSecretCompleteArn(
+			this,
+			'OKLinkSecret',
+			oklinkSecretArn
 		);
 
 		// SNS
@@ -106,6 +113,26 @@ export class APIStack extends cdk.Stack {
 				'service-role/AWSLambdaVPCAccessExecutionRole'
 			)
 		);
+
+		const LambdaOKLinkAccessRole = new Role(
+			this,
+			'LambdaOKLinkAccessRole',
+			{
+				assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+			}
+		);
+		LambdaOKLinkAccessRole.addToPolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'logs:CreateLogGroup',
+					'logs:CreateLogStream',
+					'logs:PutLogEvents'
+				],
+				resources: ['*']
+			})
+		);
+		oklinkSecret.grantRead(LambdaOKLinkAccessRole);
 
 		const PhotoBucketRole = new Role(this, 'PhotoBucketRole', {
 			assumedBy: new ServicePrincipal('lambda.amazonaws.com')
@@ -255,6 +282,14 @@ export class APIStack extends cdk.Stack {
 			}
 		});
 
+		const OKLinkLambda = new GoFunction(this, 'OKLinkLambda', {
+			entry: `${basePath}/oklink.go`,
+			role: LambdaOKLinkAccessRole,
+			environment: {
+				OKLINK_SECRET_ARN: oklinkSecretArn
+			}
+		});
+
 		function addDynamicOptions(resource: cdk.aws_apigateway.Resource) {
 			resource.addMethod(
 				'OPTIONS',
@@ -314,6 +349,12 @@ export class APIStack extends cdk.Stack {
 			authorizer: auth
 		});
 		addDynamicOptions(testDbResource);
+
+		const oklinkResource = api.root.addResource('oklink');
+		oklinkResource.addMethod('GET', new LambdaIntegration(OKLinkLambda), {
+			authorizer: auth
+		});
+		addDynamicOptions(oklinkResource);
 
 		const vendorResource = api.root.addResource('vendor');
 		const vendorIdResource = vendorResource.addResource('id');

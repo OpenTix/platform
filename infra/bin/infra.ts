@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { APIStack } from '../lib/backend-stack';
+import { APIStack } from '../lib/api-stack';
 import { EventHandlerStack } from '../lib/eventhandler-stack';
 import { ListenerStack } from '../lib/listener-stack';
 import { UserwebStack } from '../lib/userweb-stack';
