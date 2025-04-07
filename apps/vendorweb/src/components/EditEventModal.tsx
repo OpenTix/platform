@@ -17,7 +17,12 @@ export default function EditEventModal({
 	onClose,
 	onSuccess
 }: EditEventModalProps) {
+	const maxLen = 1000;
 	const navigate = useNavigate();
+	const [lengths, setLengths] = useState<{
+		Disclaimer: number;
+		Description: number;
+	}>({ Disclaimer: 0, Description: 0 });
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [shouldShowError, setShouldShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
@@ -29,6 +34,15 @@ export default function EditEventModal({
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
+		setLengths({
+			...lengths,
+			[name]: value.length
+		});
+
+		if (value.length >= maxLen) {
+			return;
+		}
+
 		setFormData({
 			...formData,
 			[name]: value
@@ -125,7 +139,7 @@ export default function EditEventModal({
 
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
-					Description
+					Description {lengths.Description}/{maxLen}
 				</Text>
 				<TextField.Root
 					name="Description"
@@ -136,7 +150,7 @@ export default function EditEventModal({
 			</label>
 			<label>
 				<Text as="div" size="2" mb="1" weight="bold">
-					Disclaimer
+					Disclaimer {lengths.Disclaimer}/{maxLen}
 				</Text>
 				<TextField.Root
 					name="Disclaimer"
