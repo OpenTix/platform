@@ -37,7 +37,7 @@ type SNSMessage struct {
 	Timestamp string `json:"Timestamp"`
 }
 
-type S3Event struct {
+type PhotoS3Event struct {
 	Records []struct {
 		EventVersion string `json:"eventVersion"`
 		EventSource  string `json:"eventSource"`
@@ -78,7 +78,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 		}
 
 		// Unmarshal the embedded S3 event
-		var s3Evt S3Event
+		var s3Evt PhotoS3Event
 		if err := json.Unmarshal([]byte(snsMsg.Message), &s3Evt); err != nil {
 			log.Printf("Error unmarshalling S3 event: %v", err)
 			continue
