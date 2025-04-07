@@ -123,7 +123,7 @@ export default function Profile() {
 
 	async function getNFTsInWallet() {
 		const token = getAuthToken();
-		const url = `${process.env.NX_PUBLIC_API_BASEURL}/oklink?wallet=${primaryWallet?.address}&contractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
+		const url = `${process.env.NX_PUBLIC_API_BASEURL}/oklink?wallet=${primaryWallet?.address}&tokenContractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
 		const resp = await fetch(url, {
 			method: 'GET',
 			headers: { Authorization: `Bearer ${token}` }
