@@ -86,6 +86,8 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponse(500, "Could not create request to "+requestURL, request.Headers)
 	}
 
+	req.Header.Set("OK-ACCESS-KEY", OKLINK_API_KEY)
+
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return shared.CreateErrorResponse(500, "Unable to perform get request to "+requestURL, request.Headers)
