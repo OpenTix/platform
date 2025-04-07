@@ -99,7 +99,7 @@ export default function Home() {
 							name={''}
 							cost={'1000000'}
 							eventDate={new Date().toISOString()}
-							passedData={near.current.slice(0, 5)}
+							passedData={near.current}
 						/>
 					) : null}
 					{cards}

@@ -48,7 +48,7 @@ export function EventCard({ event }: EventCardProps) {
 			asChild
 			size="3"
 			variant="classic"
-			style={{ width: '17.6em', height: '14.5em' }}
+			style={{ width: '17.6em', minHeight: '14.5em' }}
 		>
 			<Link
 				to={`/event/${event.ID}`}
@@ -101,7 +101,7 @@ export function EventCard({ event }: EventCardProps) {
 						justify="between"
 						style={{ fontSize: `${venueSize}em` }}
 					>
-						<Box style={{ width: '60%' }}>
+						<Box style={{ width: '50%' }}>
 							<Text>{event.Venuename}</Text>
 						</Box>
 						<Flex direction="column" align="end">
