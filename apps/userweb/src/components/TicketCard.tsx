@@ -1,5 +1,5 @@
 import { UserEventDetailsResponse } from '@platform/types';
-import { Box, Card, Flex, Inset, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Inset, Text, Button } from '@radix-ui/themes';
 import { Avatar } from 'radix-ui';
 import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -55,7 +55,12 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 		>
 			<Link
 				to={`/event/${event.ID}`}
-				style={{ margin: '0', padding: '0' }}
+				style={{
+					margin: '0',
+					padding: '0',
+					position: 'relative',
+					zIndex: 1
+				}}
 			>
 				<Inset
 					clip="padding-box"
@@ -88,6 +93,33 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 							/>
 						</Avatar.Fallback>
 					</Avatar.Root>
+
+					<Button
+						// chatgpt gave me this and it looks nice so keep
+						style={{
+							position: 'absolute',
+							top: '0.5em', // adjust as needed for spacing
+							left: '0.5em', // adjust as needed for spacing
+							padding: '0.5em 1em',
+							backgroundColor: '#ff6347', // change button color as needed
+							color: 'purple',
+							border: 'none',
+							borderRadius: '5px',
+							cursor: 'pointer',
+							background: 'white',
+							zIndex: 10
+						}}
+						onClick={(e) => {
+							// do not remove these two lines
+							// they are required to have the button actually work
+							e.preventDefault();
+							e.stopPropagation(); // Prevents the click event from triggering the Link's onClick
+
+							console.log('Button clicked');
+						}}
+					>
+						Transfer
+					</Button>
 				</Inset>
 
 				<Box mx="2" mt="2" mb="4">
