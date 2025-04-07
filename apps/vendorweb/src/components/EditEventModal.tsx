@@ -34,6 +34,7 @@ export default function EditEventModal({
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
+
 		setLengths({
 			...lengths,
 			[name]: value.length
