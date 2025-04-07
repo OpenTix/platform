@@ -20,9 +20,17 @@ import {
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGateway as ApiGatewayTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as snsSubscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Construct } from 'constructs';
+import {
+	vpcId,
+	vpcDefaultSecurityGroupId,
+	dbAddress,
+	dbPort,
+	dbInternalName,
+	dbSecretArn,
+	jwksURL,
+	photoBucket
+} from './Constants';
 
 export class APIStack extends cdk.Stack {
 	constructor(
@@ -33,22 +41,6 @@ export class APIStack extends cdk.Stack {
 		props?: cdk.StackProps
 	) {
 		super(scope, id, props);
-
-		// Defining this way will bundle automatically during deployment.
-		// This requires docker.
-
-		const vpcId = 'vpc-06542e3e0e22d1530';
-		const vpcDefaultSecurityGroupId = 'sg-07535f897144baa31';
-		const dbAddress = 'dev-db-1.c09akg0io005.us-east-1.rds.amazonaws.com';
-		const dbPort = '5432';
-		const dbInternalName = 'openticket';
-		const dbSecretArn =
-			'arn:aws:secretsmanager:us-east-1:390403894969:secret:rds!db-7b97592e-38be-4add-9eea-f5057439df30-L9XP8Y';
-		const jwksURL =
-			'https://app.dynamic.xyz/api/v0/sdk/e332e4a7-4ed1-41ed-8ae9-7d7c462bf453/.well-known/jwks';
-		const photoBucket = 'dev-openticket-images';
-		const photoUploadTopicArn =
-			'arn:aws:sns:us-east-1:390403894969:S3ImageUploaded';
 
 		// DB
 		const vpc = Vpc.fromLookup(this, 'VPC', {
@@ -403,52 +395,5 @@ export class APIStack extends cdk.Stack {
 		new cdk.CfnOutput(this, 'ApiUrl', {
 			value: api.url
 		});
-
-		// React to photo upload event
-		const photoUploadTopic = sns.Topic.fromTopicArn(
-			this,
-			'PhotoUploadTopic',
-			photoUploadTopicArn
-		);
-		//create sqs queue for topic
-		const photoUploadQueue = new cdk.aws_sqs.Queue(
-			this,
-			'PhotoUploadQueue',
-			{
-				visibilityTimeout: cdk.Duration.seconds(300)
-			}
-		);
-
-		//subscribe queue to topic
-		photoUploadTopic.addSubscription(
-			new snsSubscriptions.SqsSubscription(photoUploadQueue)
-		);
-
-		//create lambda to process photo upload event
-		const PhotoUploadEventLambda = new GoFunction(
-			this,
-			'PhotoUploadEventLambda',
-			{
-				entry: `${basePath}/PhotoUploadEvent.go`,
-				role: PhotoBucketRole,
-				vpc: vpc,
-				securityGroups: [dbSecurityGroup],
-				environment: {
-					DB_ADDRESS: dbAddress,
-					DB_PORT: dbPort,
-					DB_NAME: dbInternalName,
-					DB_SECRET_ARN: dbSecretArn,
-					PHOTO_BUCKET: photoBucket
-				}
-			}
-		);
-
-		//grant lambda permissions to read from queue
-		photoUploadQueue.grantConsumeMessages(PhotoUploadEventLambda);
-
-		//create event source mapping
-		PhotoUploadEventLambda.addEventSource(
-			new cdk.aws_lambda_event_sources.SqsEventSource(photoUploadQueue)
-		);
 	}
 }

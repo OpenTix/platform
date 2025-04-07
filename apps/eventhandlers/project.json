@@ -1,0 +1,30 @@
+{
+	"name": "apps/eventhandlers",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/eventhandlers",
+	"tags": [],
+	"targets": {
+		"build": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "mkdir -p dist/apps/eventhandlers && for f in apps/eventhandlers/*.go; do go build -o dist/apps/eventhandlers/$(basename \"$f\" .go) \"$f\"; done"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "for f in apps/eventhandlers/*.go; do go vet \"$f\"; done"
+			}
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "for f in apps/eventhandlers/*.go; do go test -v \"$f\"; done"
+			}
+		},
+		"tidy": {
+			"executor": "@nx-go/nx-go:tidy"
+		}
+	}
+}

@@ -1,3 +1,7 @@
 go 1.23
 
-use ./apps/api
+use (
+	./apps/api
+	./apps/eventhandlers
+	./packages/gohelpers
+)

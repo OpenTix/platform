@@ -7,21 +7,21 @@ import (
 	"os"
 	"strings"
 
-	"api/query"
-	"api/shared"
-
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var connStr string
 var PHOTO_BUCKET string
 
 func init() {
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 	PHOTO_BUCKET = os.Getenv("PHOTO_BUCKET")
 	if PHOTO_BUCKET == "" {
 		panic("PHOTO_BUCKET must be set")
@@ -59,7 +59,7 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 	// Connect to the database
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		connStr = shared.BuildDatabaseConnectionString()
+		connStr = database.BuildDatabaseConnectionString()
 		conn, err = pgx.Connect(ctx, connStr)
 		if err != nil {
 			panic("Failed to connect to database: " + err.Error())

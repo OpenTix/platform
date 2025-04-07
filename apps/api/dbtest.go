@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	_ "github.com/lib/pq"
 
-	"api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
 )
 
 var (
@@ -28,7 +28,7 @@ func init() {
 	dbAddress = os.Getenv("DB_ADDRESS")
 	dbPort = os.Getenv("DB_PORT")
 	dbName = os.Getenv("DB_NAME")
-	dbCredentials := shared.GetDBCredentials()
+	dbCredentials := database.GetDBCredentials()
 	dbUser = dbCredentials.Username
 	dbPassword = dbCredentials.Password
 }

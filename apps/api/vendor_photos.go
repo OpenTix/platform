@@ -17,15 +17,16 @@ import (
 
 	"github.com/google/uuid"
 
-	"api/query"
-	"api/shared"
+	"github.com/opentix/platform/apps/api/shared"
+	"github.com/opentix/platform/packages/gohelpers/packages/database"
+	"github.com/opentix/platform/packages/gohelpers/packages/query"
 )
 
 var connStr string
 var PHOTO_BUCKET string
 
 func init() {
-	connStr = shared.BuildDatabaseConnectionString()
+	connStr = database.BuildDatabaseConnectionString()
 	PHOTO_BUCKET = os.Getenv("PHOTO_BUCKET")
 	if PHOTO_BUCKET == "" {
 		panic("PHOTO_BUCKET must be set")
@@ -85,7 +86,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
@@ -205,7 +206,7 @@ func handleDelete(ctx context.Context, request events.APIGatewayProxyRequest) (e
 	}
 
 	// Connect to the database
-	conn, err := shared.ConnectToDatabase(ctx, connStr)
+	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
