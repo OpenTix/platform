@@ -44,7 +44,10 @@ async function HandleEvent(logs: Array<any>, publicClient: any) {
 				TicketMin: Number(data[1].min),
 				TicketMax: Number(data[1].max)
 			};
-			console.log('Event Commencement:', String(message));
+			console.log(
+				'Received Event Commencement:',
+				JSON.stringify(message)
+			);
 
 			const params = {
 				Message: JSON.stringify(message),
@@ -52,7 +55,7 @@ async function HandleEvent(logs: Array<any>, publicClient: any) {
 			};
 			try {
 				const data = await snsClient.send(new PublishCommand(params));
-				console.log('Message sent to SNS:', data);
+				console.log('Message sent to SNS:', JSON.stringify(data));
 			} catch (err) {
 				console.error('Error sending message to SNS:', err);
 			}

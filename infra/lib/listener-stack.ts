@@ -31,7 +31,6 @@ export class ListenerStack extends cdk.Stack {
 		});
 
 		// Build the Docker image asset.
-		// Adjust the directory if your Dockerfile is located elsewhere.
 		const dockerImageAsset = new ecr_assets.DockerImageAsset(
 			this,
 			'ListenerImage',
