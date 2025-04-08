@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { Venue } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useCallback, useState } from 'react';
@@ -7,10 +8,9 @@ import {
 	View,
 	StatusBar,
 	RefreshControl,
-	ActivityIndicator,
 	Image
 } from 'react-native';
-import { Card } from 'react-native-paper';
+import { Card, ActivityIndicator } from 'react-native-paper';
 import { useDynamic } from '../hooks/DynamicSetup';
 
 export default function Home() {
@@ -54,71 +54,109 @@ export default function Home() {
 				}}
 			>
 				{data.map((venue: Venue, idx: number) => {
+					const leftComponent = ({ size }: { size: number }) => (
+						<View>
+							<Image
+								source={{
+									uri:
+										venue?.['Photo'] ??
+										'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+								}}
+								key={'Photo'}
+								style={{
+									width: 70,
+									height: 70,
+									borderRadius: 35
+								}}
+							/>
+						</View>
+					);
+
+					const rightComponent = ({ size }: { size: number }) => (
+						<AntDesign name="right" size={size} />
+					);
+
+					const subtitle = (
+						<View>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{venue.StreetAddress}
+							</Text>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{venue.City}, {venue.StateName} {venue.Zip}
+							</Text>
+						</View>
+					);
+
 					return (
 						<Card
-							key={idx}
 							style={{
-								minWidth: '80%',
-								maxWidth: '80%',
-								borderRadius: 15,
-								borderColor: 'black',
-								paddingTop: 10,
-								paddingBottom: 10,
-								paddingLeft: 10,
-								paddingRight: 10,
-								display: 'flex',
-								flexDirection: 'column',
-								rowGap: 5,
+								minWidth: '90%',
+								maxWidth: '90%',
 								justifyContent: 'center',
-								backgroundColor: '#8030F0',
-								shadowColor: 'white'
+								backgroundColor: 'white',
+								marginHorizontal: 5,
+								marginVertical: 5,
+								padding: 10,
+								paddingBottom: 12,
+								elevation: 5,
+								shadowColor: '#000', // Shadow for iOS
+								shadowOffset: {
+									width: 0,
+									height: 2
+								},
+								shadowOpacity: 0.4,
+								shadowRadius: 6
 							}}
+							key={idx}
 							onPress={() =>
-								// @ts-expect-error This is valid code, but typescript doesn't like it
 								navigation.navigate('Events', {
 									Venue: venue.Pk,
 									Name: venue.Name
 								})
 							}
 						>
-							{Object.keys(venue).map((key: string) => {
-								if (
-									key === 'Pk' ||
-									key === 'ID' ||
-									key === 'Venue' ||
-									key === 'Vendor'
-								) {
-									return null;
-								} else if (key === 'Photo') {
-									return !venue['Photo'] ? null : (
-										<Image
-											source={{ uri: venue['Photo'] }}
-											key={key}
-											style={{
-												marginTop: 5,
-												width: '100%',
-												height: undefined,
-												aspectRatio: 1,
-												maxHeight: 200,
-												alignSelf: 'center'
-											}}
-										/>
-									);
+							<Card.Title
+								title={
+									venue.Name.length > 25
+										? venue.Name.slice(0, 22) + '...'
+										: venue.Name
 								}
-								return (
-									<Text
-										key={key}
-										style={{
-											color: 'white',
-											textAlign: 'center',
-											textAlignVertical: 'center'
-										}}
-									>
-										{key}:{' '}
-										{venue[key as keyof typeof Venue]}
-									</Text>
-								);
-							})}
+								titleStyle={{
+									fontSize: 16,
+									textAlign: 'center'
+								}}
+								subtitle={subtitle}
+								subtitleStyle={{
+									display: 'flex',
+									flexDirection: 'column',
+									justifyContent: 'center',
+									marginTop: 5,
+									alignItems: 'center',
+									rowGap: 7,
+									textAlign: 'center',
+									fontSize: 10
+								}}
+								leftStyle={{
+									marginLeft: 0,
+									justifyContent: 'center',
+									alignItems: 'center',
+									width: '20%'
+								}}
+								left={leftComponent}
+								right={rightComponent}
+							/>
 						</Card>
 					);
 				})}
@@ -157,16 +195,17 @@ export default function Home() {
 								onRefresh={onRefresh}
 							/>
 						}
-						style={{ marginTop: 10, marginBottom: 10 }}
 						contentContainerStyle={{
 							flexGrow: 1,
-							justifyContent: 'center'
+							justifyContent: 'center',
+							paddingBottom: 10,
+							paddingTop: 10
 						}}
 					>
 						{cards}
 					</ScrollView>
 				) : (
-					<ActivityIndicator size="large" />
+					<ActivityIndicator size="large" color="purple" />
 				)}
 			</View>
 		</>
