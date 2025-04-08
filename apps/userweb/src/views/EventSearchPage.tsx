@@ -32,6 +32,7 @@ export default function EventSearchPage() {
 		params.get('Date') ?? new Date().toISOString()
 	);
 
+	const [timeoutId, setTimeoutID] = useState<NodeJS.Timeout>();
 	const [, setResetCalled] = useState<boolean>(false);
 	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
 	const [pageSize] = useState(1);
@@ -52,30 +53,34 @@ export default function EventSearchPage() {
 	};
 
 	useEffect(() => {
-		const requests = [];
-		const cards: JSX.Element[][] = [];
-		console.log('getting events');
-		for (let i = 0; i < pageSize; i++) {
-			requests.push(
-				getEvents(
-					i + Number(params.get('Page') ?? 1) * pageSize,
-					params.get('Zip') ?? '',
-					params.get('Type') ?? '',
-					params.get('Name') ?? '',
-					Number(params.get('Cost') ?? defaultCost),
-					params.get('Date') ?? ''
-				)
-			);
-		}
-		Promise.allSettled(requests).then((responses) => {
-			responses.map((response: PromiseSettledResult<JSX.Element[]>) =>
-				response.status === 'fulfilled' && response.value
-					? cards.push(response.value)
-					: 0
-			);
-			setEventCards(cards);
-		});
-		return;
+		clearTimeout(timeoutId);
+		setTimeoutID(
+			setTimeout(() => {
+				const requests = [];
+				const cards: JSX.Element[][] = [];
+				for (let i = 0; i < pageSize; i++) {
+					requests.push(
+						getEvents(
+							i + Number(params.get('Page') ?? 1) * pageSize,
+							params.get('Zip') ?? '',
+							params.get('Type') ?? '',
+							params.get('Name') ?? '',
+							Number(params.get('Cost') ?? defaultCost),
+							params.get('Date') ?? ''
+						)
+					);
+				}
+				Promise.allSettled(requests).then((responses) => {
+					responses.map(
+						(response: PromiseSettledResult<JSX.Element[]>) =>
+							response.status === 'fulfilled' && response.value
+								? cards.push(response.value)
+								: 0
+					);
+					setEventCards(cards);
+				});
+			}, 500)
+		);
 	}, [params, pageSize]);
 
 	return (
@@ -210,14 +215,6 @@ export default function EventSearchPage() {
 								pattern={'d{5}'}
 							/>
 						</PopoverLabel>
-
-						<Button
-							onClick={() => setResetCalled(true)}
-							style={{ backgroundColor: 'red' }}
-						>
-							Clear Filters
-						</Button>
-						<Button onClick={applyFilters}>Apply Filters</Button>
 					</Box>
 				)}
 			</Box>
@@ -238,7 +235,6 @@ async function getEvents(
 ) {
 	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate ? eventDate + ':00.000Z' : ''}`;
 	const authToken = getAuthToken();
-	console.log(url);
 	const resp = await fetch(url, {
 		method: 'GET',
 		headers: { Authorization: `Bearer ${authToken}` }
