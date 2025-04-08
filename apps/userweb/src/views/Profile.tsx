@@ -90,6 +90,8 @@ export default function Profile() {
 		TicketInfo[] | null | undefined
 	>(undefined);
 	const isLoggedIn = useIsLoggedIn();
+	const [ticketTransfersEnabled, setTicketTransfersEnabled] =
+		useState<boolean>(false);
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -275,6 +277,7 @@ export default function Profile() {
 			getUserBalance();
 			setIsWeb2User(userHasEmbeddedWallet());
 			getAllOwnedEvents();
+			// add function here to check if transfers are allowed
 		}
 	}, [primaryWallet]);
 
@@ -390,6 +393,114 @@ export default function Profile() {
 												</ul>
 											</Flex>
 										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Ticket Transfers
+												</Heading>
+												<Text>
+													Ticket Transfers allow you
+													to let another user buy your
+													ticket from you.
+												</Text>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														Selling
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															To sell your ticket
+															you must first
+															enable ticket
+															transfers on your
+															account.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															Enabling ticket
+															transfers allows
+															your ticket to be
+															moved from your
+															account to another
+															users account when
+															they purchase your
+															ticket.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															After enabling you
+															will be able to
+															initiate a ticket
+															transfer below.
+														</Text>
+													</li>
+												</ul>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														Buying
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															To buy download our
+															mobile app.
+														</Text>
+													</li>
+												</ul>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														FAQ
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															Enabling/Disabling
+															Ticket Transfer
+															requires a small
+															fee.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															Selling a Ticket
+															requires a small
+															fee.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															All Ticket sales are
+															for the same cost as
+															the ticket
+															originally was. No
+															under or over
+															charging.
+														</Text>
+													</li>
+												</ul>
+											</Flex>
+										</Card>
 									</Flex>
 								</Box>
 							</LeftColumn>
@@ -449,6 +560,15 @@ export default function Profile() {
 												>
 													Deposit Money
 												</ActionsText>
+												{ticketTransfersEnabled ? (
+													<ActionsText>
+														Disable Ticket Transfers
+													</ActionsText>
+												) : (
+													<ActionsText>
+														Enable Ticket Transfers
+													</ActionsText>
+												)}
 												<ActionsText
 													onClick={() =>
 														handleLogOut()
