@@ -1,21 +1,19 @@
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Camera, CameraView } from 'expo-camera';
 import { useEffect, useState } from 'react';
-import { View, Button, StyleSheet } from 'react-native';
-import { useDynamic } from '../hooks/DynamicSetup';
+import { View, StyleSheet } from 'react-native';
 
-// @ts-expect-error This is valid code, but typescript doesn't like it
-export default function QRCamera({ route }) {
+export default function QRCamera({
+	route
+}: NativeStackScreenProps<'QRCamera'>) {
 	const navigation = useNavigation();
-	const client = useDynamic();
-	const [hasPermission, setHasPermission] = useState(null);
+	const [hasPermission, setHasPermission] = useState<boolean>(false);
 	let scanned = false;
-	// const [qrDatainternal, setqrDatainternal] = useState('');
 	let qrDatainternal = '';
 
 	const handleGoBack = () => {
-		// Pass data back to ScreenA using the onGoBack callback
-		console.log(qrDatainternal);
+		// Pass data back to Event Deatails Screen using the onGoBack callback
 		route.params.onGoBack(qrDatainternal);
 		navigation.goBack();
 	};
@@ -23,8 +21,6 @@ export default function QRCamera({ route }) {
 	useEffect(() => {
 		const getCameraPermissions = async () => {
 			const { status } = await Camera.requestCameraPermissionsAsync();
-			console.log(`status = ${status}`);
-			// @ts-expect-error This is valid code, but typescript doesn't like it
 			setHasPermission(status === 'granted');
 		};
 
@@ -34,10 +30,8 @@ export default function QRCamera({ route }) {
 	// @ts-expect-error This is valid code, but typescript doesn't like it
 	const handleBarcodeScanned = ({ type, data }) => {
 		if (scanned) return;
-		console.log(scanned);
 		scanned = true;
 		qrDatainternal = data;
-		console.log(`qrdatainternal ${type} ${qrDatainternal}`);
 		handleGoBack();
 	};
 
