@@ -3,15 +3,8 @@ import { Event } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import {
-	Text,
-	View,
-	Image,
-	StyleSheet,
-	PermissionsAndroid,
-	Platform
-} from 'react-native';
-import { Button } from 'react-native-paper';
+import { Text, View, Image, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { Address } from 'viem';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from '../hooks/DynamicSetup';
@@ -29,7 +22,7 @@ export default function EventDetails({
 	const { Event } = route.params;
 	const [view, setView] = useState<React.ReactNode>(null);
 	const [intermediate, setIntermediate] = useState('');
-	let qrData2 = 'tmp2';
+	let qrData2 = '';
 	const navigation = useNavigation();
 
 	// query the contract (not on network) for the event name for an id
@@ -40,15 +33,12 @@ export default function EventDetails({
 
 		// get the events description from the id
 		if (publicViemClient) {
-			console.log('before read contract');
 			const data = (await publicViemClient.readContract({
 				abi: ContractABI,
 				address: ContractAddress,
 				functionName: 'get_event_description',
 				args: [id]
 			})) as string;
-
-			console.log('after read contract');
 
 			return data;
 		} else {
@@ -106,14 +96,9 @@ export default function EventDetails({
 		const signedmessage = fields[1];
 		const senderaddress = fields[2];
 
-		console.log(`id = ${id}`);
-		console.log(`signedmessage = ${signedmessage}`);
-		console.log(`senderaddress = ${senderaddress}`);
-
 		const event_name = await getEventNameFromId(BigInt(id));
 		const split = event_name.split(' ');
 		const uuid = split[split.length - 1];
-		console.log(`uuid ${uuid}`);
 
 		const tmp = await getNFTsInWallet(senderaddress);
 		// parse into an array
@@ -128,11 +113,9 @@ export default function EventDetails({
 		}
 
 		owned_ids = owned_ids.sort();
-		console.log(`owned ids = ${owned_ids}`);
 
 		let hasID = false;
 		for (const owned_id in owned_ids) {
-			console.log(`owned_id ${owned_ids[owned_id]}, id ${id}`);
 			if (owned_ids[owned_id] == BigInt(id)) {
 				hasID = true;
 				break;
@@ -157,11 +140,8 @@ export default function EventDetails({
 			return 'Sender did not sign the message properly.';
 		}
 
-		console.log(`valid = ${valid}`);
-
 		// do the api call
 		const resp = await checkin(uuid, parseInt(id));
-		console.log(`checkin response is ${resp}`);
 
 		if (!resp) {
 			return 'Ticket already checked in';
@@ -171,26 +151,10 @@ export default function EventDetails({
 	}
 
 	const navigateToQRCamera = () => {
-		console.log('navigating to qr camera');
 		// @ts-expect-error This is valid code, but typescript doesn't like it
 		navigation.navigate('QRCamera', {
 			onGoBack: (data: string) => {
-				// Callback function to handle data from qr camera
-				// qrData2 = data;
-
-				// const result = await VerifyScanIn(data);
-
 				setIntermediate(data);
-
-				console.log(intermediate);
-
-				// if (result != 'success') {
-				// 	qrData2 = result;
-				// }
-
-				// qrData2 = result;
-
-				// getFunc();
 			}
 		});
 	};
@@ -213,21 +177,21 @@ export default function EventDetails({
 			hour12: true
 		});
 
-		console.log('THE CALLBACK RAN', intermediate);
-
 		if (intermediate != '') {
 			const ret = await verifyScanIn(intermediate);
 			qrData2 = ret;
-			console.log(ret);
 		}
 
-		const dateUpper =
-			new Date().getFullYear() === date.getFullYear()
-				? `${dayOfWeek}, ${month} ${day}`
-				: `${dayOfWeek}, ${month} ${day}, ${date.getFullYear()}`;
-		const dateLower = `${time}`;
+		const displayDate = `${dayOfWeek} ${month} ${day}, ${date.getFullYear()} ${time}`;
 		setView(
-			<View style={{ flex: 1, justifyContent: 'center' }}>
+			<View
+				style={{
+					flex: 1,
+					justifyContent: 'center',
+					backgroundColor: 'white',
+					height: '100%'
+				}}
+			>
 				<View
 					style={{
 						flex: 1,
@@ -251,8 +215,7 @@ export default function EventDetails({
 							columnGap: 10
 						}}
 					>
-						<Text>{dateUpper}</Text>
-						<Text>{dateLower}</Text>
+						<Text>{displayDate}</Text>
 					</View>
 					<Image
 						source={{ uri: data.Photo ?? null }}
@@ -260,57 +223,45 @@ export default function EventDetails({
 							width: '100%',
 							height: undefined,
 							aspectRatio: 1,
-							maxHeight: 200
+							maxHeight: 200,
+							borderRadius: 10
 						}}
 					/>
-					<Text>{qrData2}</Text>
-					{/* {hasPermission === null ? (
-						<Text>Requesting for camera permission</Text>
-					) : hasPermission == false ? (
-						<Text>No access to camera</Text>
+					{qrData2 !== '' && qrData2 !== 'success' ? (
+						<ActivityIndicator size="small" color="purple" />
 					) : (
-						<Text>wtf</Text>
-					)} */}
-					{/* {!scanned && (<CameraView
-						onBarcodeScanned={
-							scanned ? undefined : handleBarcodeScanned
-						}
-						barcodeScannerSettings={{
-							barcodeTypes: ['qr', 'pdf417']
-						}}
-						style={StyleSheet.absoluteFillObject}
-						
-					/>)} */}
-					{/* <HandleCamera />
-					{scanned && (
-						<Button
-							onPress={() => {
-								scanned = false;
-							}}
-						>
-							<Text>Tap to Scan Again</Text>
-						</Button>
-					)} */}
+						<Text>{qrData2}</Text>
+					)}
 				</View>
 				<View style={{ marginBottom: 30, alignItems: 'center' }}>
-					<Button
+					<TouchableOpacity
 						onPress={navigateToQRCamera}
 						style={{
-							backgroundColor: 'black',
-							borderColor: 'black',
-							borderRadius: 20,
-							width: '50%'
+							backgroundColor: 'white',
+							borderRadius: 15,
+							paddingTop: 5,
+							paddingBottom: 5,
+							width: '50%',
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: {
+								width: 0,
+								height: 2
+							},
+							shadowOpacity: 0.4,
+							shadowRadius: 6
 						}}
 					>
-						<Text style={{ color: 'white' }}>Check in</Text>
-					</Button>
+						<Text style={{ color: 'black', textAlign: 'center' }}>
+							Check in
+						</Text>
+					</TouchableOpacity>
 				</View>
 			</View>
 		);
 	}, [intermediate]);
 
 	useEffect(() => {
-		console.log('THE EFFECT RAN');
 		getFunc();
 	}, [intermediate]);
 
