@@ -198,5 +198,7 @@ jobs:
 
             - name: deploy dev
               working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
+              run: |
+                STACKS="dev-UserwebStack dev-VendorwebStack dev-APIStack dev-EventHandlerStack"
+                DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy $STACKS --account 390403894969 --region us-east-1 --require-approval never
 
