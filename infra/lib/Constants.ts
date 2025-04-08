@@ -10,3 +10,7 @@ export const jwksURL =
 export const photoBucket = 'dev-openticket-images';
 export const photoUploadTopicArn =
 	'arn:aws:sns:us-east-1:390403894969:S3ImageUploaded';
+export const ticketsMintedTopicArn =
+	'arn:aws:sns:us-east-1:390403894969:BlockchainTicketsMinted';
+export const oklinkSecretArn =
+	'arn:aws:secretsmanager:us-east-1:390403894969:secret:OKLink/APIKey-kYcvaB';

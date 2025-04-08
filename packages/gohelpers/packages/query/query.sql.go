@@ -214,6 +214,34 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (inter
 	return column_1, err
 }
 
+const getEventByUuid = `-- name: GetEventByUuid :one
+select pk, id, vendor, venue, name, type, event_datetime, description, disclaimer, basecost, num_unique, num_ga, photo, transaction_hash from app.event event
+where event.id = $1
+limit 1
+`
+
+func (q *Queries) GetEventByUuid(ctx context.Context, id uuid.UUID) (AppEvent, error) {
+	row := q.db.QueryRow(ctx, getEventByUuid, id)
+	var i AppEvent
+	err := row.Scan(
+		&i.Pk,
+		&i.ID,
+		&i.Vendor,
+		&i.Venue,
+		&i.Name,
+		&i.Type,
+		&i.EventDatetime,
+		&i.Description,
+		&i.Disclaimer,
+		&i.Basecost,
+		&i.NumUnique,
+		&i.NumGa,
+		&i.Photo,
+		&i.TransactionHash,
+	)
+	return i, err
+}
+
 const getTicket = `-- name: GetTicket :one
 select pk, contract, ticket_id, checked_in, event from app.ticket where event = $1 and ticket_id = $2 limit 1
 `
