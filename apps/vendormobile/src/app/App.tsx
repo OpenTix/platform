@@ -126,7 +126,6 @@ export default function App() {
 				/>
 				<Stack.Screen
 					name="Events"
-					// @ts-expect-error This is valid code, but typescript doesn't like it
 					component={Events}
 					initialParams={{ Venue: undefined }}
 					// @ts-expect-error This is valid code, but typescript doesn't like it
@@ -134,7 +133,6 @@ export default function App() {
 				/>
 				<Stack.Screen
 					name="EventDetails"
-					// @ts-expect-error This is valid code, but typescript doesn't like it
 					component={EventDetails}
 					initialParams={{ Event: undefined }}
 				/>
