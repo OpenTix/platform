@@ -26,7 +26,7 @@ export function EventCard({ event }: EventCardProps) {
 			asChild
 			size="3"
 			variant="classic"
-			style={{ width: '17em', height: '14.5em' }}
+			style={{ width: '17.6em', minHeight: '14.5em' }}
 		>
 			<Link
 				to={`/event/${event.ID}`}

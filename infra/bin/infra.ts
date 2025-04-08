@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
-import { APIStack } from '../lib/backend-stack';
+import { APIStack } from '../lib/api-stack';
 import { EventHandlerStack } from '../lib/eventhandler-stack';
+import { ListenerStack } from '../lib/listener-stack';
 import { UserwebStack } from '../lib/userweb-stack';
 import { VendorwebStack } from '../lib/vendorweb-stack';
 
@@ -83,3 +84,10 @@ new EventHandlerStack(
 		}
 	}
 );
+
+new ListenerStack(app, PREFIX + '-ListenerStack', {
+	env: {
+		account: process.env.CDK_DEFAULT_ACCOUNT,
+		region: process.env.CDK_DEFAULT_REGION
+	}
+});

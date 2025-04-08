@@ -11,6 +11,8 @@ on:
                     - userweb
                     - vendorweb
                     - API
+                    - EventHandler
+                    - listener
                 default: 'userweb'
             useprbackend:
                 description: 'Use deployed PR backend api. (userweb/vendorweb only)'
@@ -76,10 +78,16 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
-                  cache: 'npm'
+                node-version: 20
 
-            - run: npm ci --legacy-peer-deps
+            - uses: MasterworksIO/action-local-cache@2
+              id: local-cache
+              with:
+                path: node_modules
+                key: ${{ hashFiles('package-lock.json') }}
+
+            - run: npm i
+              if: steps.local-cache.outputs.cache-hit != 'true'
 
             - name: Build
               run: |
@@ -91,6 +99,9 @@ jobs:
                   else
                     NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js)-pr$PRNUMBER npx nx run-many -t build --no-cloud
                   fi
+
+            - run: npm ci --legacy-peer-deps
+              working-directory: ./infra
 
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
@@ -111,9 +122,6 @@ jobs:
                   role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
-            - run: npm ci --legacy-peer-deps
-              working-directory: ./infra
-
             - name: Deploy
               working-directory: ./infra
               run: |
@@ -125,7 +133,6 @@ jobs:
                   TARGETAPP_CAPITALIZED=$(echo "${TARGETAPP^}")
                   TARGETSTACK="pr${PRNUMBER}-${TARGETAPP_CAPITALIZED}Stack"
 
-                  DEPLOYENV=$DEPLOYENV HOSTEDZONENAME=$HOSTEDZONENAME PRNUMBER=$PRNUMBER npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
                   DEPLOYENV=$DEPLOYENV HOSTEDZONENAME=$HOSTEDZONENAME PRNUMBER=$PRNUMBER npx cdk deploy "$TARGETSTACK" --account 390403894969 --region us-east-1 --require-approval never
 
             - name: Update comment with SUCCESS
@@ -138,6 +145,10 @@ jobs:
                       URL="https://vendor.pr${PRNUMBER}.dev.opentix.co"
                   elif [ "${{ github.event.inputs.target }}" == "API" ]; then
                       URL="https://api.pr${PRNUMBER}.dev.opentix.co"
+                  elif [ "${{ github.event.inputs.target }}" == "EventHandler" ]; then
+                      URL="https://opentix.co"
+                  elif [ "${{ github.event.inputs.target }}" == "listener" ]; then
+                      URL="https://opentix.co"
                   else
                       echo "Invalid target: ${{ github.event.inputs.target }}"
                       exit 1

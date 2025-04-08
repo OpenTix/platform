@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/uuid"
 
 	"github.com/opentix/platform/apps/api/shared"
@@ -14,7 +18,8 @@ import (
 )
 
 var connStr string
-
+var snsArn string
+var region string
 
 type TicketCreatePostBodyParams struct {
 	Event string `json:"Event"`
@@ -25,6 +30,12 @@ type TicketCreatePostBodyParams struct {
 
 func init() {
 	connStr = database.BuildDatabaseConnectionString()
+
+	snsArn = os.Getenv("TICKET_CREATION_SNS_ARN")
+	if snsArn == "" {
+		panic("Failed to load TICKET_CREATION_SNS_ARN from env")
+	}
+	region = "us-east-1"
 }
 
 func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -75,20 +86,34 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return shared.CreateErrorResponse(403, "Vendor does not own event", request.Headers)
 	}
 
-	for i := params.TicketMin; i <= params.TicketMax; i++ {
-		// Create ticket
-		_, err = queries.AddTicket(ctx, query.AddTicketParams{
-			Event: event.Pk,
-			TicketID: int32(i),
-			Contract: params.Contract,
-		})
-		if err != nil {
-			return shared.CreateErrorResponseAndLogError(500, "Error creating ticket", request.Headers, err)
-		}
+	// Load AWS configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Println("Error loading AWS config:", err)
+		panic(err)
+	}
+
+	svc := sns.NewFromConfig(cfg)
+
+	// Send ticket mint event to sns
+	snsMessage, err := json.Marshal(params)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Error serializing snsMessage", request.Headers, err)
+	}
+	msg := string(snsMessage)
+	_, err = svc.Publish(
+		ctx,
+		&sns.PublishInput{
+			TopicArn: &snsArn,
+			Message:  &msg,
+		},
+	)
+	if err != nil {
+		return shared.CreateErrorResponseAndLogError(500, "Error publishing to SNS", request.Headers, err)
 	}
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 201,
+		StatusCode: 202,
 		Headers:    shared.GetResponseHeaders(request.Headers),
 	}, nil
 }
