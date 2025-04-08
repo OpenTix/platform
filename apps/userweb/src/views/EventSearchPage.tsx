@@ -25,32 +25,13 @@ export default function EventSearchPage() {
 	const defaultCost = 1000000;
 
 	const [showSidebar, setShowSidebar] = useState(false);
-
-	// Params //
 	const [params, setParams] = useSearchParams();
-	const [eventDate, setEventDate] = useState(
-		params.get('Date') ?? new Date().toISOString()
-	);
 
 	const [timeoutId, setTimeoutID] = useState<NodeJS.Timeout>();
-	const [, setResetCalled] = useState<boolean>(false);
 	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
 	const [pageSize] = useState(1);
 
-	const [displayedDate, setDisplayedDate] = useState(eventDate);
-
-	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
-
-	const applyFilters = () => {
-		try {
-			setEventDate(new Date(displayedDate).toISOString());
-		} catch {
-			setEventDate(new Date().toISOString());
-			setDisplayedDate(getTimestamp());
-		}
-		setShouldFetch(true);
-	};
 
 	useEffect(() => {
 		clearTimeout(timeoutId);
@@ -183,7 +164,6 @@ export default function EventSearchPage() {
 									new Date().toISOString()
 								}
 								onChange={(e) => {
-									setDisplayedDate(e.target.value);
 									if (e.target.value) {
 										params.set('Date', e.target.value);
 									} else {
