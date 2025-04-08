@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.8
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.18
 	github.com/ethereum/go-ethereum v1.15.1
-	github.com/golang-jwt/jwt/v4 v4.5.1
+    github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/lib/pq v1.10.9
