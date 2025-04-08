@@ -65,7 +65,7 @@ export default function EventSearchPage() {
 	}, [params, pageSize]);
 
 	return (
-		<Flex pt="3" justify={'center'} gap="3">
+		<Flex pt="3" justify={'start'} gap="3">
 			<Box
 				style={{
 					display: 'flex',
@@ -74,129 +74,123 @@ export default function EventSearchPage() {
 					width: '17.5em'
 				}}
 			>
-				<Button
-					onClick={() => setShowSidebar(!showSidebar)}
-					style={{ width: '100px', alignSelf: 'flex-start' }}
+				<Box
+					style={{
+						width: '275px',
+						padding: '10px',
+						display: 'flex',
+						flexDirection: 'column',
+						rowGap: '10px',
+						backgroundColor: 'white',
+						boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+						borderRadius: '6px'
+					}}
 				>
-					Filter
-				</Button>
-
-				{showSidebar && (
+					<Text align={'center'} weight={'bold'}>
+						Filter
+					</Text>
 					<Box
 						style={{
-							width: '275px',
-							padding: '10px',
-							display: 'flex',
-							flexDirection: 'column',
-							rowGap: '10px',
-							backgroundColor: 'white',
-							boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-							borderRadius: '6px'
+							height: '4px',
+							backgroundColor: 'purple',
+							borderRadius: '2px',
+							marginBottom: '4px'
 						}}
-					>
-						<PopoverLabel>
-							<Text as="div" size="2" mb="1" weight="bold">
-								Type
-							</Text>
-							<Select.Root
-								value={params.get('Type') ?? ''}
-								onValueChange={(value) => {
-									if (value !== 'all') {
-										params.set('Type', value);
-									} else {
-										params.delete('Type');
-									}
-									setParams(params.toString());
-									setDataChanged(true);
-								}}
-							>
-								<Select.Trigger placeholder="Select Event Type" />
-								<Select.Content>
-									<Select.Group>
-										<Select.Item key="all" value="all">
-											All
-										</Select.Item>
-										{AllEventTypesArray.map((event) => (
-											<Select.Item
-												key={event}
-												value={event}
-											>
-												{event}
-											</Select.Item>
-										))}
-									</Select.Group>
-								</Select.Content>
-							</Select.Root>
-						</PopoverLabel>
-
-						<PopoverLabel>
-							<Text as="div" size="2" mb="1" weight="bold">
-								Maximum Cost
-							</Text>
-							<TextField.Root
-								name="Cost"
-								placeholder={String(defaultCost)}
-								value={Number(
-									params.get('Cost') ?? defaultCost
-								)}
-								onChange={(e) => {
-									if (
-										Number(e.target.value) !== defaultCost
-									) {
-										params.set('Cost', e.target.value);
-									} else {
-										params.delete('Cost');
-									}
-									setParams(params.toString());
-									setDataChanged(true);
-								}}
-							/>
-						</PopoverLabel>
-
-						<PopoverLabel>
-							<Text as="div" size="2" mb="1" weight="bold">
-								Time
-							</Text>
-							<TextField.Root
-								name="Time"
-								value={
-									params.get('Date') ??
-									new Date().toISOString()
+					/>
+					<PopoverLabel>
+						<Text as="div" size="2" mb="1" weight="bold">
+							Type
+						</Text>
+						<Select.Root
+							value={params.get('Type') ?? ''}
+							onValueChange={(value) => {
+								if (value !== 'all') {
+									params.set('Type', value);
+								} else {
+									params.delete('Type');
 								}
-								onChange={(e) => {
-									if (e.target.value) {
-										params.set('Date', e.target.value);
-									} else {
-										params.delete('Date');
-									}
-									setParams(params.toString());
-									setDataChanged(true);
-								}}
-								type="datetime-local"
-							/>
-						</PopoverLabel>
+								setParams(params.toString());
+								setDataChanged(true);
+							}}
+						>
+							<Select.Trigger placeholder="Select Event Type" />
+							<Select.Content>
+								<Select.Group>
+									<Select.Item key="all" value="all">
+										All
+									</Select.Item>
+									{AllEventTypesArray.map((event) => (
+										<Select.Item key={event} value={event}>
+											{event}
+										</Select.Item>
+									))}
+								</Select.Group>
+							</Select.Content>
+						</Select.Root>
+					</PopoverLabel>
 
-						<PopoverLabel>
-							<Text as="div" size="2" mb="1" weight="bold">
-								Zip
-							</Text>
-							<TextField.Root
-								name="Zip"
-								value={params.get('Zip') ?? ''}
-								onChange={(e) => {
-									if (e.target.value !== '') {
-										params.set('Zip', e.target.value);
-									} else {
-										params.delete('Zip');
-									}
-									setParams(params.toString());
-									setDataChanged(true);
-								}}
-								pattern={'d{5}'}
-							/>
-						</PopoverLabel>
-					</Box>
-				)}
+					<PopoverLabel>
+						<Text as="div" size="2" mb="1" weight="bold">
+							Maximum Cost
+						</Text>
+						<TextField.Root
+							name="Cost"
+							placeholder={String(defaultCost)}
+							value={Number(params.get('Cost') ?? defaultCost)}
+							onChange={(e) => {
+								if (Number(e.target.value) !== defaultCost) {
+									params.set('Cost', e.target.value);
+								} else {
+									params.delete('Cost');
+								}
+								setParams(params.toString());
+								setDataChanged(true);
+							}}
+						/>
+					</PopoverLabel>
+
+					<PopoverLabel>
+						<Text as="div" size="2" mb="1" weight="bold">
+							Time
+						</Text>
+						<TextField.Root
+							name="Time"
+							value={
+								params.get('Date') ?? new Date().toISOString()
+							}
+							onChange={(e) => {
+								if (e.target.value) {
+									params.set('Date', e.target.value);
+								} else {
+									params.delete('Date');
+								}
+								setParams(params.toString());
+								setDataChanged(true);
+							}}
+							type="datetime-local"
+						/>
+					</PopoverLabel>
+
+					<PopoverLabel>
+						<Text as="div" size="2" mb="1" weight="bold">
+							Zip
+						</Text>
+						<TextField.Root
+							name="Zip"
+							value={params.get('Zip') ?? ''}
+							onChange={(e) => {
+								if (e.target.value !== '') {
+									params.set('Zip', e.target.value);
+								} else {
+									params.delete('Zip');
+								}
+								setParams(params.toString());
+								setDataChanged(true);
+							}}
+							pattern={'d{5}'}
+						/>
+					</PopoverLabel>
+				</Box>
 			</Box>
 			<Flex width="66%" direction={'row'} wrap={'wrap'} gap="3">
 				{eventCards.map((cards: JSX.Element[]) => cards)}
