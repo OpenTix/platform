@@ -119,15 +119,6 @@ export default function Events({
 									textAlignVertical: 'center'
 								}}
 							>
-								{VenueName}
-							</Text>
-							<Text
-								style={{
-									color: 'black',
-									textAlign: 'center',
-									textAlignVertical: 'center'
-								}}
-							>
 								${event.Basecost}
 							</Text>
 						</View>
@@ -136,14 +127,14 @@ export default function Events({
 					return (
 						<Card
 							style={{
-								minWidth: '80%',
-								maxWidth: '80%',
+								minWidth: '90%',
+								maxWidth: '90%',
 								justifyContent: 'center',
 								backgroundColor: 'white',
-								paddingRight: 10,
-								marginHorizontal: 10,
+								marginHorizontal: 5,
 								marginVertical: 5,
 								padding: 10,
+								paddingBottom: 12,
 								elevation: 5,
 								shadowColor: '#000', // Shadow for iOS
 								shadowOffset: {
@@ -155,14 +146,17 @@ export default function Events({
 							}}
 							key={idx}
 							onPress={() => {
-								// @ts-expect-error This is valid code, but typescript doesn't like it
 								navigation.navigate('EventDetails', {
 									Event: event.ID
 								});
 							}}
 						>
 							<Card.Title
-								title={event.Name}
+								title={
+									event.Name.length > 25
+										? event.Name.slice(0, 22) + '...'
+										: event.Name
+								}
 								titleStyle={{
 									fontSize: 16,
 									textAlign: 'center'
@@ -175,7 +169,8 @@ export default function Events({
 									marginTop: 5,
 									alignItems: 'center',
 									rowGap: 7,
-									textAlign: 'center'
+									textAlign: 'center',
+									fontSize: 10
 								}}
 								leftStyle={{
 									marginLeft: 0,
