@@ -1,5 +1,5 @@
 import { AllEventTypesArray, UserEventResponse } from '@platform/types';
-import { Box, Card, Container, Flex, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Text } from '@radix-ui/themes';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { EventCard } from '../components/EventCard';
 import EventRow from '../components/EventRow';
@@ -88,23 +88,26 @@ export default function Home() {
 	}, [shouldShow, setShouldShow, nearReady]);
 
 	return (
-		<Flex align="start" gap="4" style={{ marginTop: '10px' }}>
-			<Container style={{ alignSelf: 'center' }} size={'4'}>
-				<Box style={{ maxWidth: '90vw', padding: '16px 16px' }}>
-					{nearReady && near.current.length > 0 ? (
-						<EventRow
-							key={'Near You'}
-							zip={''}
-							type={'Near You'}
-							name={''}
-							cost={'1000000'}
-							eventDate={new Date().toISOString()}
-							passedData={near.current}
-						/>
-					) : null}
-					{cards}
-				</Box>
-			</Container>
+		<Flex
+			align="start"
+			gap="4"
+			style={{ marginTop: '10px' }}
+			justify={'center'}
+		>
+			<Box style={{ width: '72vw' }}>
+				{nearReady && near.current.length > 0 ? (
+					<EventRow
+						key={'Near You'}
+						zip={''}
+						type={'Near You'}
+						name={''}
+						cost={'1000000'}
+						eventDate={new Date().toISOString()}
+						passedData={near.current}
+					/>
+				) : null}
+				{cards}
+			</Box>
 		</Flex>
 	);
 }

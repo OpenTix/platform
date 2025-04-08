@@ -1,21 +1,13 @@
 import { UserEventResponse } from '@platform/types';
 import { Box, Card, Flex, Inset, Text } from '@radix-ui/themes';
-import { title } from 'process';
 import { Avatar } from 'radix-ui';
-import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { text } from 'stream/consumers';
 
 export interface EventCardProps {
 	event: UserEventResponse;
 }
 
 export function EventCard({ event }: EventCardProps) {
-	const titleRef = useRef<HTMLElement>(null);
-	const [titleSize, setTitleSize] = useState(1.2);
-	const venueRef = useRef<HTMLElement>(null);
-	const [venueSize, setVenueSize] = useState(1);
-
 	const date = new Date(event.EventDatetime);
 	const month = date.toLocaleString('default', { month: 'short' });
 	const day = date.getDate();
@@ -28,20 +20,6 @@ export function EventCard({ event }: EventCardProps) {
 
 	const dateUpper = `${month} ${day}, ${date.getFullYear()}`;
 	const dateLower = `${dayOfWeek} ${time}`;
-
-	useEffect(() => {
-		if (!titleRef.current) return;
-		if (titleRef.current.getClientRects().length > 1) {
-			setTitleSize(titleSize - 0.1);
-		}
-	}, [titleRef, titleSize]);
-
-	useEffect(() => {
-		if (!venueRef.current) return;
-		if (venueRef.current.getClientRects().length > 1) {
-			setVenueSize(venueSize - 0.1);
-		}
-	}, [venueRef, venueSize]);
 
 	return (
 		<Card
@@ -90,25 +68,31 @@ export function EventCard({ event }: EventCardProps) {
 				<Box mx="2" mt="2" mb="4">
 					<Text
 						style={{
-							fontSize: `${titleSize}em`,
+							fontSize: `1em`,
 							fontWeight: 'bold'
 						}}
-						ref={titleRef}
 					>
 						{event.Name}
 					</Text>
-					<Flex
-						justify="between"
-						style={{ fontSize: `${venueSize}em` }}
-					>
-						<Box style={{ width: '50%' }}>
+					<Flex justify="between">
+						<Box style={{ width: '60%', fontSize: `.85em` }}>
 							<Text>{event.Venuename}</Text>
 						</Box>
 						<Flex direction="column" align="end">
-							<Box style={{ textAlign: 'right' }}>
-								<Text ref={venueRef}>{dateUpper}</Text>
+							<Box
+								style={{
+									textAlign: 'right',
+									fontSize: `.85em`
+								}}
+							>
+								<Text>{dateUpper}</Text>
 							</Box>
-							<Box style={{ textAlign: 'right' }}>
+							<Box
+								style={{
+									textAlign: 'right',
+									fontSize: `.85em`
+								}}
+							>
 								<Text weight="light">{dateLower}</Text>
 							</Box>
 						</Flex>
