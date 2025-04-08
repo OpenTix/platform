@@ -1,14 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { AllEventTypesArray, UserEventResponse } from '@platform/types';
-import {
-	Text,
-	Card,
-	Box,
-	Button,
-	Flex,
-	Select,
-	TextField
-} from '@radix-ui/themes';
+import { Text, Box, Button, Flex, Select, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -30,71 +22,47 @@ function getTimestamp() {
 }
 
 export default function EventSearchPage() {
-	const [searchParams, setSearchParams] = useSearchParams();
+	const defaultCost = 1000000;
+
 	const [showSidebar, setShowSidebar] = useState(false);
-	const [page, setPage] = useSessionStorage('Page', 1);
-	const [zip, setZip] = useSessionStorage('Zip', '');
-	const [type, setType] = useSessionStorage('Type', '');
-	const [ename, setEname] = useSessionStorage('Name', '');
-	const [cost, setCost] = useSessionStorage('Cost', 1000000);
-	const [resetCalled, setResetCalled] = useState<boolean>(false);
+	const [params, setParams] = useSearchParams();
+
+	const [timeoutId, setTimeoutID] = useState<NodeJS.Timeout>();
 	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
-	const [pageSize, setPageSize] = useState(1);
+	const [pageSize] = useState(1);
 
-	const [eventDate, setEventDate] = useSessionStorage(
-		'Date',
-		new Date().toISOString()
-	);
-
-	const [displayedDate, setDisplayedDate] = useSessionStorage(
-		'DisplayedDate',
-		getTimestamp()
-	);
-
-	const [shouldFetch, setShouldFetch] = useSessionStorage(
-		'ShouldFetch',
-		true
-	);
-	const [dataChanged, setDataChanged] = useSessionStorage(
-		'DataChanged',
-		true
-	);
-
-	const applyFilters = () => {
-		try {
-			setEventDate(new Date(displayedDate).toISOString());
-		} catch {
-			setEventDate(new Date().toISOString());
-			setDisplayedDate(getTimestamp());
-		}
-		setShouldFetch(true);
-	};
+	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 
 	useEffect(() => {
-		const requests = [];
-		const cards: JSX.Element[][] = [];
-		for (let i = 0; i < pageSize; i++) {
-			requests.push(
-				getEvents(
-					i + page * pageSize,
-					zip,
-					type,
-					ename,
-					cost,
-					eventDate
-				)
-			);
-		}
-		Promise.allSettled(requests).then((responses) => {
-			responses.map((response: PromiseSettledResult<JSX.Element[]>) =>
-				response.status === 'fulfilled' && response.value
-					? cards.push(response.value)
-					: 0
-			);
-			setEventCards(cards);
-		});
-		return;
-	}, [zip, type, ename, cost, eventDate, page, pageSize]);
+		clearTimeout(timeoutId);
+		setTimeoutID(
+			setTimeout(() => {
+				const requests = [];
+				const cards: JSX.Element[][] = [];
+				for (let i = 0; i < pageSize; i++) {
+					requests.push(
+						getEvents(
+							i + Number(params.get('Page') ?? 1) * pageSize,
+							params.get('Zip') ?? '',
+							params.get('Type') ?? '',
+							params.get('Name') ?? '',
+							Number(params.get('Cost') ?? defaultCost),
+							params.get('Date') ?? ''
+						)
+					);
+				}
+				Promise.allSettled(requests).then((responses) => {
+					responses.map(
+						(response: PromiseSettledResult<JSX.Element[]>) =>
+							response.status === 'fulfilled' && response.value
+								? cards.push(response.value)
+								: 0
+					);
+					setEventCards(cards);
+				});
+			}, 500)
+		);
+	}, [params, pageSize]);
 
 	return (
 		<Flex pt="3" justify={'center'} gap="3">
@@ -131,15 +99,23 @@ export default function EventSearchPage() {
 								Type
 							</Text>
 							<Select.Root
-								value={type}
+								value={params.get('Type') ?? ''}
 								onValueChange={(value) => {
-									setType(value);
+									if (value !== 'all') {
+										params.set('Type', value);
+									} else {
+										params.delete('Type');
+									}
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 							>
 								<Select.Trigger placeholder="Select Event Type" />
 								<Select.Content>
 									<Select.Group>
+										<Select.Item key="all" value="all">
+											All
+										</Select.Item>
 										{AllEventTypesArray.map((event) => (
 											<Select.Item
 												key={event}
@@ -159,10 +135,19 @@ export default function EventSearchPage() {
 							</Text>
 							<TextField.Root
 								name="Cost"
-								placeholder="1000000"
-								value={cost}
+								placeholder={String(defaultCost)}
+								value={Number(
+									params.get('Cost') ?? defaultCost
+								)}
 								onChange={(e) => {
-									setCost(Number(e.target.value));
+									if (
+										Number(e.target.value) !== defaultCost
+									) {
+										params.set('Cost', e.target.value);
+									} else {
+										params.delete('Cost');
+									}
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 							/>
@@ -174,9 +159,17 @@ export default function EventSearchPage() {
 							</Text>
 							<TextField.Root
 								name="Time"
-								value={displayedDate}
+								value={
+									params.get('Date') ??
+									new Date().toISOString()
+								}
 								onChange={(e) => {
-									setDisplayedDate(e.target.value);
+									if (e.target.value) {
+										params.set('Date', e.target.value);
+									} else {
+										params.delete('Date');
+									}
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 								type="datetime-local"
@@ -184,25 +177,24 @@ export default function EventSearchPage() {
 						</PopoverLabel>
 
 						<PopoverLabel>
-							<Text>Zip</Text>
+							<Text as="div" size="2" mb="1" weight="bold">
+								Zip
+							</Text>
 							<TextField.Root
 								name="Zip"
-								value={zip}
+								value={params.get('Zip') ?? ''}
 								onChange={(e) => {
-									setZip(e.target.value);
+									if (e.target.value !== '') {
+										params.set('Zip', e.target.value);
+									} else {
+										params.delete('Zip');
+									}
+									setParams(params.toString());
 									setDataChanged(true);
 								}}
 								pattern={'d{5}'}
 							/>
 						</PopoverLabel>
-
-						<Button
-							onClick={() => setResetCalled(true)}
-							style={{ backgroundColor: 'red' }}
-						>
-							Clear Filters
-						</Button>
-						<Button onClick={applyFilters}>Apply Filters</Button>
 					</Box>
 				)}
 			</Box>
@@ -221,7 +213,7 @@ async function getEvents(
 	cost: number,
 	eventDate: string
 ) {
-	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate}`;
+	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate ? eventDate + ':00.000Z' : ''}`;
 	const authToken = getAuthToken();
 	const resp = await fetch(url, {
 		method: 'GET',
