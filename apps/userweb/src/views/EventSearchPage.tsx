@@ -1,14 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { AllEventTypesArray, UserEventResponse } from '@platform/types';
-import {
-	Text,
-	Card,
-	Box,
-	Button,
-	Flex,
-	Select,
-	TextField
-} from '@radix-ui/themes';
+import { Text, Box, Button, Flex, Select, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -30,35 +22,24 @@ function getTimestamp() {
 }
 
 export default function EventSearchPage() {
+	const defaultCost = 1000000;
+
 	const [showSidebar, setShowSidebar] = useState(false);
+
+	// Params //
 	const [params, setParams] = useSearchParams();
-	const [page, setPage] = useSessionStorage('Page', 1);
-	const [zip, setZip] = useSessionStorage('Zip', '');
-	const [type, setType] = useSessionStorage('Type', '');
-	const [ename, setEname] = useSessionStorage('Name', '');
-	const [cost, setCost] = useSessionStorage('Cost', 1000000);
-	const [resetCalled, setResetCalled] = useState<boolean>(false);
+	const [eventDate, setEventDate] = useState(
+		params.get('Date') ?? new Date().toISOString()
+	);
+
+	const [, setResetCalled] = useState<boolean>(false);
 	const [eventCards, setEventCards] = useState<JSX.Element[][]>([]);
-	const [pageSize, setPageSize] = useState(1);
+	const [pageSize] = useState(1);
 
-	const [eventDate, setEventDate] = useSessionStorage(
-		'Date',
-		new Date().toISOString()
-	);
+	const [displayedDate, setDisplayedDate] = useState(eventDate);
 
-	const [displayedDate, setDisplayedDate] = useSessionStorage(
-		'DisplayedDate',
-		getTimestamp()
-	);
-
-	const [shouldFetch, setShouldFetch] = useSessionStorage(
-		'ShouldFetch',
-		true
-	);
-	const [dataChanged, setDataChanged] = useSessionStorage(
-		'DataChanged',
-		true
-	);
+	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
+	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 
 	const applyFilters = () => {
 		try {
@@ -73,15 +54,16 @@ export default function EventSearchPage() {
 	useEffect(() => {
 		const requests = [];
 		const cards: JSX.Element[][] = [];
+		console.log('getting events');
 		for (let i = 0; i < pageSize; i++) {
 			requests.push(
 				getEvents(
-					i + page * pageSize,
-					zip,
-					type,
-					ename,
-					cost,
-					eventDate
+					i + Number(params.get('Page') ?? 1) * pageSize,
+					params.get('Zip') ?? '',
+					params.get('Type') ?? '',
+					params.get('Name') ?? '',
+					Number(params.get('Cost') ?? defaultCost),
+					params.get('Date') ?? ''
 				)
 			);
 		}
@@ -94,7 +76,7 @@ export default function EventSearchPage() {
 			setEventCards(cards);
 		});
 		return;
-	}, [zip, type, ename, cost, eventDate, page, pageSize]);
+	}, [params, pageSize]);
 
 	return (
 		<Flex pt="3" justify={'center'} gap="3">
@@ -133,11 +115,11 @@ export default function EventSearchPage() {
 							<Select.Root
 								value={params.get('Type') ?? ''}
 								onValueChange={(value) => {
-									setType(value === 'all' ? '' : value);
-									params.set(
-										'Type',
-										value === 'all' ? '' : value
-									);
+									if (value !== 'all') {
+										params.set('Type', value);
+									} else {
+										params.delete('Type');
+									}
 									setParams(params.toString());
 									setDataChanged(true);
 								}}
@@ -167,11 +149,18 @@ export default function EventSearchPage() {
 							</Text>
 							<TextField.Root
 								name="Cost"
-								placeholder="1000000"
-								value={Number(params.get('Cost') ?? 1000000)}
+								placeholder={String(defaultCost)}
+								value={Number(
+									params.get('Cost') ?? defaultCost
+								)}
 								onChange={(e) => {
-									setCost(Number(e.target.value));
-									params.set('Cost', e.target.value);
+									if (
+										Number(e.target.value) !== defaultCost
+									) {
+										params.set('Cost', e.target.value);
+									} else {
+										params.delete('Cost');
+									}
 									setParams(params.toString());
 									setDataChanged(true);
 								}}
@@ -185,11 +174,16 @@ export default function EventSearchPage() {
 							<TextField.Root
 								name="Time"
 								value={
-									params.get('Date') ?? Date.now().toString()
+									params.get('Date') ??
+									new Date().toISOString()
 								}
 								onChange={(e) => {
 									setDisplayedDate(e.target.value);
-									params.set('Date', e.target.value);
+									if (e.target.value) {
+										params.set('Date', e.target.value);
+									} else {
+										params.delete('Date');
+									}
 									setParams(params.toString());
 									setDataChanged(true);
 								}}
@@ -198,13 +192,18 @@ export default function EventSearchPage() {
 						</PopoverLabel>
 
 						<PopoverLabel>
-							<Text>Zip</Text>
+							<Text as="div" size="2" mb="1" weight="bold">
+								Zip
+							</Text>
 							<TextField.Root
 								name="Zip"
 								value={params.get('Zip') ?? ''}
 								onChange={(e) => {
-									setZip(e.target.value);
-									params.set('Zip', e.target.value);
+									if (e.target.value !== '') {
+										params.set('Zip', e.target.value);
+									} else {
+										params.delete('Zip');
+									}
 									setParams(params.toString());
 									setDataChanged(true);
 								}}
@@ -237,8 +236,9 @@ async function getEvents(
 	cost: number,
 	eventDate: string
 ) {
-	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate}`;
+	const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?Page=${page}&Zip=${zip}&Type=${type}&Name=${name ?? ''}&Basecost=${cost}&EventDatetime=${eventDate ? eventDate + ':00.000Z' : ''}`;
 	const authToken = getAuthToken();
+	console.log(url);
 	const resp = await fetch(url, {
 		method: 'GET',
 		headers: { Authorization: `Bearer ${authToken}` }

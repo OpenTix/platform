@@ -2,7 +2,7 @@ import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { Box } from '@radix-ui/themes';
 import { TextField } from '@radix-ui/themes';
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSessionStorage } from 'usehooks-ts';
 import { NavLink, Navbar } from '@platform/ui';
 
@@ -10,15 +10,10 @@ export default function Navigation() {
 	//const { setShowAuthFlow } = useDynamicContext();
 	//if we want to change the login button, have a button call this with 'true'
 	//to show the modal. this includes dynamic's profile modal post-login
+	const [params] = useSearchParams();
 
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState(params.get('Name') ?? '');
 
-	const [ename, setEname] = useSessionStorage('Name', '');
-	const [page] = useSessionStorage('Page', '');
-	const [zip] = useSessionStorage('Zip', '');
-	const [type] = useSessionStorage('Type', '');
-	const [cost] = useSessionStorage('Cost', '');
-	const [date] = useSessionStorage('Date', '');
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
 	const location = useLocation();
@@ -26,11 +21,10 @@ export default function Navigation() {
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
-		setEname(search);
 		setDataChanged(true);
 		setShouldFetch(true);
 		navigate(
-			`/eventSearch?Name=${ename}&Page=${page}&Zip=${zip}&Type=${type}&Cost=${cost}&Date=${date}`
+			`/eventSearch?Name=${search}${params.get('Page') ? `&Page=${params.get('Page')}` : ''}${params.get('Zip') ? `&Zip=${params.get('Zip')}` : ''}${params.get('Type') ? `&Type=${params.get('Type')}` : ''}${params.get('Cost') ? `&Cost=${params.get('Cost')}` : ''}${params.get('Date') ? `&Date=${params.get('Date')}` : ''}`
 		);
 	};
 
