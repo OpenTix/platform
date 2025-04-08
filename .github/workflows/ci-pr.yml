@@ -27,7 +27,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - id: matrix
               run: |
@@ -58,7 +58,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx prettier --check .
               env:
@@ -85,7 +85,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:lint
               env:
@@ -113,7 +113,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:test
               env:
@@ -140,7 +140,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:build
               env:
