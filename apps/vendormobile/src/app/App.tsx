@@ -17,15 +17,12 @@ export default function App() {
 	const [show, setShow] = useState(false);
 
 	client.auth.on('authFailed', () => {
-		console.log('User failed to login');
 		client.ui.auth.show();
 	});
-	client.auth.on('authSuccess', (user) => {
-		console.log('User logged in', user);
+	client.auth.on('authSuccess', () => {
 		client.ui.auth.hide();
 	});
 	client.ui.on('authFlowCancelled', () => {
-		console.log('User cancelled the flow not cool');
 		client.ui.auth.show();
 	});
 	client.auth.on('loggedOut', () => {
@@ -42,7 +39,7 @@ export default function App() {
 	}, [show]);
 
 	useEffect(() => {
-		setTimeout(() => setShow(true), 1500);
+		setTimeout(() => setShow(true), 3000);
 	}, [setShow]);
 
 	const deepLinking = {
