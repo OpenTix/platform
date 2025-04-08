@@ -12,7 +12,6 @@ on:
                     - vendorweb
                     - API
                     - EventHandler
-                    - listener
                 default: 'userweb'
             useprbackend:
                 description: 'Use deployed PR backend api. (userweb/vendorweb only)'
@@ -146,8 +145,6 @@ jobs:
                   elif [ "${{ github.event.inputs.target }}" == "API" ]; then
                       URL="https://api.pr${PRNUMBER}.dev.opentix.co"
                   elif [ "${{ github.event.inputs.target }}" == "EventHandler" ]; then
-                      URL="https://opentix.co"
-                  elif [ "${{ github.event.inputs.target }}" == "listener" ]; then
                       URL="https://opentix.co"
                   else
                       echo "Invalid target: ${{ github.event.inputs.target }}"
