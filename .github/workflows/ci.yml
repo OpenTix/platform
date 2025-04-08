@@ -174,6 +174,9 @@ jobs:
               env:
                 NODE_OPTIONS: "--max_old_space_size=4096"
 
+            - run: npm ci --legacy-peer-deps
+              working-directory: ./infra
+
             - name: configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
@@ -193,14 +196,9 @@ jobs:
                   role-skip-session-tagging: true
                   aws-region: 'us-east-1'
 
-            - run: npm ci --legacy-peer-deps
-              working-directory: ./infra
-
-            - name: synth dev
-              working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk synth --account 390403894969 --region us-east-1 --require-approval never
-
             - name: deploy dev
               working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
+              run: |
+                STACKS="dev-UserwebStack dev-VendorwebStack dev-APIStack dev-EventHandlerStack"
+                DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy $STACKS --account 390403894969 --region us-east-1 --require-approval never
 

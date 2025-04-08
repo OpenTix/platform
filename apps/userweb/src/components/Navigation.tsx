@@ -11,22 +11,22 @@ export default function Navigation() {
 	//const { setShowAuthFlow } = useDynamicContext();
 	//if we want to change the login button, have a button call this with 'true'
 	//to show the modal. this includes dynamic's profile modal post-login
+	const [params] = useSearchParams();
 
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState(params.get('Name') ?? '');
 
-	const [ename, setEname] = useSessionStorage('Name', '');
 	const [, setDataChanged] = useSessionStorage('DataChanged', true);
 	const [, setShouldFetch] = useSessionStorage('ShouldFetch', true);
-	const [searchParams, setSearchParams] = useSearchParams();
 	const location = useLocation();
 	const navigate = useNavigate();
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
-		setEname(search);
 		setDataChanged(true);
 		setShouldFetch(true);
-		navigate(`/eventSearch`);
+		navigate(
+			`/eventSearch?Name=${search}${params.get('Page') ? `&Page=${params.get('Page')}` : ''}${params.get('Zip') ? `&Zip=${params.get('Zip')}` : ''}${params.get('Type') ? `&Type=${params.get('Type')}` : ''}${params.get('Cost') ? `&Cost=${params.get('Cost')}` : ''}${params.get('Date') ? `&Date=${params.get('Date')}` : ''}`
+		);
 	};
 
 	return (

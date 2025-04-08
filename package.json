@@ -24,6 +24,7 @@
 	},
 	"private": true,
 	"dependencies": {
+		"@aws-sdk/client-sns": "^3.782.0",
 		"@dynamic-labs/ethereum": "^4.6.1",
 		"@dynamic-labs/sdk-react-core": "^4.6.1",
 		"@mantine/core": "^7.17.1",
@@ -35,7 +36,7 @@
 		"@react-native-community/cli-platform-ios": "15.0.1",
 		"@tabler/icons-react": "^3.30.0",
 		"@tanstack/react-query": "^5.66.9",
-		"aws-cdk-lib": "^2.177.0",
+		"aws-cdk-lib": ">=2.187.0",
 		"react": "18.3.1",
 		"react-device-detect": "^2.2.3",
 		"react-dom": "18.3.1",
@@ -44,13 +45,16 @@
 		"react-spinners": "^0.15.0",
 		"styled-components": "5.3.6",
 		"usehooks-ts": "^3.1.1",
+		"image-size": ">=1.2.1",
 		"viem": "^2.23.2"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.5",
+		"image-size": ">=1.2.1",
 		"@babel/preset-react": "^7.14.5",
 		"@eslint/js": "^9.8.0",
 		"@nx-go/nx-go": "^3.3.1",
+		"@nx/esbuild": "^20.4.6",
 		"@nx/eslint": "20.4.6",
 		"@nx/eslint-plugin": "20.4.6",
 		"@nx/js": "20.4.6",
@@ -82,10 +86,11 @@
 		"@types/react-dom": "18.3.5",
 		"@types/react-is": "18.3.0",
 		"@types/styled-components": "5.1.26",
-		"aws-cdk": "^2.173.2",
+		"aws-cdk": ">=2.178.2",
 		"babel-jest": "29.7.0",
 		"babel-plugin-styled-components": "1.10.7",
 		"core-js": "^3.36.1",
+		"esbuild": ">=0.25.0",
 		"eslint": "^9.8.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "2.31.0",
@@ -121,6 +126,8 @@
 	"overrides": {
 		"eciesjs": "0.4.14",
 		"koa": ">=2.15.4",
-		"cross-spawn": ">=6.0.6"
+		"cross-spawn": ">=6.0.6",
+		"esbuild": ">=0.25.0",
+		"image-size": ">=1.2.1"
 	}
 }

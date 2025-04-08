@@ -76,6 +76,11 @@ and event.vendor = (
 )
 limit 1;
 
+-- name: GetEventByUuid :one
+select * from app.event event
+where event.id = $1
+limit 1;
+
 -- name: VendorGetEventByUuid :one
 select * from app.event event
 where event.id = $1
