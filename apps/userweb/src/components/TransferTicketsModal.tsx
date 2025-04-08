@@ -27,36 +27,6 @@ export default function TransferTicketsModal({
 
 	const { primaryWallet } = useDynamicContext();
 
-	// const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
-
-	// const Disclaimer = `You are about to buy a ticket for ${NFTMintingDescription}.`;
-
-	const getTicketID = async (
-		description: string
-	): Promise<Array<bigint> | undefined> => {
-		if (primaryWallet && isEthereumWallet(primaryWallet)) {
-			try {
-				const w = await primaryWallet.getWalletClient();
-				const p = await primaryWallet.getPublicClient();
-
-				if (w && p) {
-					const data = (await p.readContract({
-						abi: ContractABI,
-						address: ContractAddress,
-						functionName: 'get_event_ids',
-						args: [description]
-					})) as [bigint[], ReturnedMetadata];
-
-					return data[0] as Array<bigint>;
-				} else {
-					console.error('Wallet client or public client not set up');
-				}
-			} catch (error) {
-				console.error('Error setting up wallet client', error);
-			}
-		}
-	};
-
 	const onSubmit = async () => {
 		setIsSubmitting(true);
 
@@ -66,18 +36,24 @@ export default function TransferTicketsModal({
 				const p = await primaryWallet.getPublicClient();
 
 				if (w && p) {
-					const { request } = await p.simulateContract({
-						abi: ContractABI,
-						address: ContractAddress,
-						functionName: 'allow_ticket_to_be_transfered',
-						account: w.account,
-						args: [TicketID]
-					});
-					const hash = await w.writeContract(request);
-					console.log(hash);
+					// const { request } = await p.simulateContract({
+					// 	abi: ContractABI,
+					// 	address: ContractAddress,
+					// 	functionName: 'allow_ticket_to_be_transfered',
+					// 	account: w.account,
+					// 	args: [TicketID]
+					// });
+					// const hash = await w.writeContract(request);
+					// console.log(hash);
+
+					// // wait for the call to be included in a block
+					// await p.waitForTransactionReceipt({
+					// 	hash: hash
+					// });
+
 					setIsSubmitting(false);
 					onClose();
-					navigate(0);
+					// navigate(0);
 				} else {
 					console.error('Wallet client or public client not set up');
 					setErrorMessage(

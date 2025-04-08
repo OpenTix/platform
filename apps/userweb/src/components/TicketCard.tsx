@@ -3,6 +3,7 @@ import { Box, Card, Flex, Inset, Text, Button } from '@radix-ui/themes';
 import { Avatar } from 'radix-ui';
 import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FullscreenLoading } from './FullscreenLoading';
 import TransferTicketsModal from './TransferTicketsModal';
 
 export interface TicketCardProps {
@@ -16,6 +17,8 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 	const venueRef = useRef<HTMLElement>(null);
 	const [venueSize, setVenueSize] = useState(1);
 	const [shouldShowTransferModal, setShouldShowTransferModal] =
+		useState<boolean>(false);
+	const [shouldShowLoadingModal, setShouldShowLoadingModal] =
 		useState<boolean>(false);
 
 	const date = new Date(event.EventDatetime);
@@ -53,10 +56,16 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 		<>
 			{shouldShowTransferModal && (
 				<TransferTicketsModal
-					onClose={() => setShouldShowTransferModal(false)}
+					onClose={async () => {
+						setShouldShowTransferModal(false);
+						setShouldShowLoadingModal(true);
+						await new Promise((f) => setTimeout(f, 5000));
+						setShouldShowLoadingModal(false);
+					}}
 					TicketID={BigInt(ticket)}
 				/>
 			)}
+			{shouldShowLoadingModal && <FullscreenLoading message="hi" />}
 			<Card
 				asChild
 				size="3"
