@@ -8,19 +8,19 @@
 		"build": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "mkdir -p dist/apps/eventhandlers && for f in apps/eventhandlers/*.go; do go build -o dist/apps/eventhandlers/$(basename \"$f\" .go) \"$f\"; done"
+				"command": "sh -c 'mkdir -p dist/apps/eventhandlers; for f in apps/eventhandlers/*.go; do go build -o dist/apps/eventhandlers/$(basename \"$f\" .go) \"$f\"; done'"
 			}
 		},
 		"lint": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "for f in apps/eventhandlers/*.go; do go vet \"$f\"; done"
+				"command": "sh -c 'for f in apps/eventhandlers/*.go; do go vet \"$f\"; done'"
 			}
 		},
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "for f in apps/eventhandlers/*.go; do go test -v \"$f\"; done"
+				"command": "sh -c 'for f in apps/eventhandlers/*.go; do go test -v \"$f\"; done'"
 			}
 		},
 		"tidy": {

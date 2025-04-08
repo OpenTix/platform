@@ -121,20 +121,16 @@ export default function Profile() {
 		}
 	};
 
-	// fetchs from oklinks api to see what tickets an account owns
-	// this is set to amoy_testnet and is not an environment variable because I am lazy
-	// also yes that is my api key I do not care I get 1 mil requests per year and they don't have my payment info 😁
-	// this only handles up to 100 tickets so thats an issue for full deployment but not a real issue for our project
-	// api doc here: https://www.oklink.com/docs/en/#fundamental-blockchain-data-address-data-get-token-balance-details-by-address
 	async function getNFTsInWallet() {
-		const url = `https://www.oklink.com/api/v5/explorer/nft/address-balance-fills?chainShortName=amoy_testnet&address=${primaryWallet?.address}&tokenContractAddress=${ContractAddress}&limit=100&protocolType=token_1155`;
+		const token = getAuthToken();
+		const url = `${process.env.NX_PUBLIC_API_BASEURL}/oklink?wallet=${primaryWallet?.address}&tokenContractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
 		const resp = await fetch(url, {
 			method: 'GET',
-			headers: { 'Ok-Access-Key': '4dc070a9-44a6-474c-afc2-e8976eae75b7' }
+			headers: { Authorization: `Bearer ${token}` }
 		});
 
 		if (!resp.ok)
-			return Error('There was an error fetching data from oklink');
+			return Error('There was an error fetching data from oklink.');
 
 		// this is nasty but it gives us what we want
 		return (await resp.json())['data'][0]['tokenList'];

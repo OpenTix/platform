@@ -1,6 +1,6 @@
 import { polygonAmoy } from 'viem/chains';
 
-export const ContractAddress = '0x4C707875c6d3c30dF7d09E32211CCffDb817E862';
+export const ContractAddress = '0xE7244Aab113cC2D06099C08669aD7dF4bFfd1Db3';
 
 export type ContractGetEventIdsReturnedMetadata = {
 	min: bigint;
@@ -33,11 +33,7 @@ export const ContractABI = [
 	{
 		inputs: [
 			{ internalType: 'uint256', name: 'idsLength', type: 'uint256' },
-			{
-				internalType: 'uint256',
-				name: 'valuesLength',
-				type: 'uint256'
-			}
+			{ internalType: 'uint256', name: 'valuesLength', type: 'uint256' }
 		],
 		name: 'ERC1155InvalidArrayLength',
 		type: 'error'
@@ -260,8 +256,15 @@ export const ContractABI = [
 		inputs: [
 			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
 		],
+		name: 'allow_ticket_to_be_transfered',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
+		inputs: [],
 		name: 'allow_user_to_user_ticket_transfer',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
@@ -277,11 +280,7 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
-			{
-				internalType: 'address[]',
-				name: 'accounts',
-				type: 'address[]'
-			},
+			{ internalType: 'address[]', name: 'accounts', type: 'address[]' },
 			{ internalType: 'uint256[]', name: 'ids', type: 'uint256[]' }
 		],
 		name: 'balanceOfBatch',
@@ -295,7 +294,7 @@ export const ContractABI = [
 			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
 		],
 		name: 'buy_ticket_from_user',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [],
 		stateMutability: 'payable',
 		type: 'function'
 	},
@@ -317,6 +316,13 @@ export const ContractABI = [
 		type: 'function'
 	},
 	{
+		inputs: [],
+		name: 'check_ticket_transfer_permission',
+		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
 		inputs: [
 			{ internalType: 'string', name: 'description', type: 'string' },
 			{ internalType: 'string', name: 'vendor_url', type: 'string' },
@@ -325,15 +331,11 @@ export const ContractABI = [
 				name: 'general_admission',
 				type: 'uint256'
 			},
-			{
-				internalType: 'uint256',
-				name: 'unique_seats',
-				type: 'uint256'
-			},
+			{ internalType: 'uint256', name: 'unique_seats', type: 'uint256' },
 			{ internalType: 'uint256[]', name: 'costs', type: 'uint256[]' }
 		],
 		name: 'create_new_event',
-		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		outputs: [],
 		stateMutability: 'nonpayable',
 		type: 'function'
 	},
@@ -367,16 +369,8 @@ export const ContractABI = [
 			{ internalType: 'uint256[]', name: '', type: 'uint256[]' },
 			{
 				components: [
-					{
-						internalType: 'uint256',
-						name: 'min',
-						type: 'uint256'
-					},
-					{
-						internalType: 'uint256',
-						name: 'max',
-						type: 'uint256'
-					},
+					{ internalType: 'uint256', name: 'min', type: 'uint256' },
+					{ internalType: 'uint256', name: 'max', type: 'uint256' },
 					{ internalType: 'bool', name: 'exists', type: 'bool' }
 				],
 				internalType: 'struct Ids',
@@ -444,11 +438,7 @@ export const ContractABI = [
 			{ internalType: 'address', name: 'from', type: 'address' },
 			{ internalType: 'address', name: 'to', type: 'address' },
 			{ internalType: 'uint256[]', name: 'ids', type: 'uint256[]' },
-			{
-				internalType: 'uint256[]',
-				name: 'values',
-				type: 'uint256[]'
-			},
+			{ internalType: 'uint256[]', name: 'values', type: 'uint256[]' },
 			{ internalType: 'bytes', name: 'data', type: 'bytes' }
 		],
 		name: 'safeBatchTransferFrom',

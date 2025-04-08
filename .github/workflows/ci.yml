@@ -30,7 +30,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - id: matrix
               run: |
@@ -61,7 +61,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx prettier --check .
               env:
@@ -88,7 +88,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:lint
               env:
@@ -116,7 +116,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:test
               env:
@@ -143,7 +143,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - run: npx nx run ${{ matrix.tasks }}:build
               env:
@@ -167,7 +167,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - name: Build
               run: NX_PUBLIC_APP_BUILD=$(node scripts/CreateBuildIdent.js) npx nx run-many -t build --no-cloud
@@ -198,5 +198,7 @@ jobs:
 
             - name: deploy dev
               working-directory: ./infra
-              run: DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy --all --account 390403894969 --region us-east-1 --require-approval never
+              run: |
+                STACKS="dev-UserwebStack dev-VendorwebStack dev-APIStack dev-EventHandlerStack"
+                DEPLOYENV=dev HOSTEDZONENAME=dev.opentix.co npx cdk deploy $STACKS --account 390403894969 --region us-east-1 --require-approval never
 
