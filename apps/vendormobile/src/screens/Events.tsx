@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { Event } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,6 +18,7 @@ export default function Events({
 	route
 }: NativeStackScreenProps<Params, 'Events'>) {
 	const { Venue } = route.params;
+	const VenueName = route.params.Name;
 	const navigation = useNavigation();
 	const client = useDynamic();
 
@@ -55,25 +57,103 @@ export default function Events({
 				}}
 			>
 				{data.map((event: Event, idx: number) => {
+					const date = new Date(event.EventDatetime);
+					const month = date.toLocaleString('default', {
+						month: 'short'
+					});
+					const day = date.getDate();
+					const dayOfWeek = date.toLocaleString('default', {
+						weekday: 'short'
+					});
+					const time = date.toLocaleString('default', {
+						hour: 'numeric',
+						minute: '2-digit',
+						hour12: true
+					});
+					const displayDate = `${dayOfWeek} ${month} ${day}, ${date.getFullYear()} ${time}`;
+
+					const leftComponent = ({ size }: { size: number }) => (
+						<Image
+							source={{
+								uri:
+									event?.['Photo'] ??
+									'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+							}}
+							key={'Photo'}
+							style={{
+								width: 70,
+								height: 70,
+								borderRadius: 35
+							}}
+						/>
+					);
+
+					const rightComponent = ({ size }: { size: number }) => (
+						<AntDesign name="right" size={size} />
+					);
+
+					const subtitle = (
+						<View>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{event.Type}
+							</Text>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{displayDate}
+							</Text>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{VenueName}
+							</Text>
+							<Text
+								style={{
+									color: 'black',
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								${event.Basecost}
+							</Text>
+						</View>
+					);
+
 					return (
 						<Card
-							key={idx}
 							style={{
 								minWidth: '80%',
 								maxWidth: '80%',
-								borderRadius: 15,
-								borderColor: 'black',
-								paddingTop: 10,
-								paddingBottom: 10,
-								paddingLeft: 10,
-								paddingRight: 10,
-								display: 'flex',
-								flexDirection: 'column',
-								rowGap: 5,
 								justifyContent: 'center',
-								backgroundColor: '#8030F0',
-								shadowColor: 'white'
+								backgroundColor: 'white',
+								paddingRight: 10,
+								marginHorizontal: 10,
+								marginVertical: 5,
+								padding: 10,
+								elevation: 5,
+								shadowColor: '#000', // Shadow for iOS
+								shadowOffset: {
+									width: 0,
+									height: 2
+								},
+								shadowOpacity: 0.4,
+								shadowRadius: 6
 							}}
+							key={idx}
 							onPress={() => {
 								// @ts-expect-error This is valid code, but typescript doesn't like it
 								navigation.navigate('EventDetails', {
@@ -81,91 +161,31 @@ export default function Events({
 								});
 							}}
 						>
-							{Object.keys(event).map((key: string) => {
-								if (
-									key === 'Pk' ||
-									key === 'ID' ||
-									key === 'Venue' ||
-									key === 'Vendor'
-								) {
-									return null;
-								} else if (key === 'Photo') {
-									return !event['Photo'] ? null : (
-										<Image
-											source={{ uri: event['Photo'] }}
-											key={key}
-											style={{
-												marginTop: 5,
-												width: '100%',
-												height: undefined,
-												aspectRatio: 1,
-												maxHeight: 200,
-												alignSelf: 'center'
-											}}
-										/>
-									);
-								} else if (key === 'EventDatetime') {
-									const date = new Date(event.EventDatetime);
-									const month = date.toLocaleString(
-										'default',
-										{ month: 'short' }
-									);
-									const day = date.getDate();
-									const dayOfWeek = date.toLocaleString(
-										'default',
-										{ weekday: 'short' }
-									);
-									const time = date.toLocaleString(
-										'default',
-										{
-											hour: 'numeric',
-											minute: '2-digit',
-											hour12: true
-										}
-									);
-
-									const dateUpper =
-										new Date().getFullYear() ===
-										date.getFullYear()
-											? `${dayOfWeek}, ${month} ${day}`
-											: `${dayOfWeek}, ${month} ${day}, ${date.getFullYear()}`;
-									const dateLower = `${time}`;
-									return (
-										<View
-											key={key}
-											style={{
-												display: 'flex',
-												flexDirection: 'row',
-												justifyContent: 'center',
-												columnGap: 10
-											}}
-										>
-											<Text style={{ color: 'white' }}>
-												{dateUpper}
-											</Text>
-											<Text style={{ color: 'white' }}>
-												{dateLower}
-											</Text>
-										</View>
-									);
-								}
-								return (
-									<Text
-										key={key}
-										style={{
-											color: 'white',
-											textAlign: 'center',
-											textAlignVertical: 'center'
-										}}
-									>
-										{key}:{' '}
-										{
-											// @ts-expect-error This is valid code, but typescript doesn't like it
-											event[key as keyof typeof Event]
-										}
-									</Text>
-								);
-							})}
+							<Card.Title
+								title={event.Name}
+								titleStyle={{
+									fontSize: 16,
+									textAlign: 'center'
+								}}
+								subtitle={subtitle}
+								subtitleStyle={{
+									display: 'flex',
+									flexDirection: 'column',
+									justifyContent: 'center',
+									marginTop: 5,
+									alignItems: 'center',
+									rowGap: 7,
+									textAlign: 'center'
+								}}
+								leftStyle={{
+									marginLeft: 0,
+									justifyContent: 'center',
+									alignItems: 'center',
+									width: '20%'
+								}}
+								left={leftComponent}
+								right={rightComponent}
+							/>
 						</Card>
 					);
 				})}
@@ -175,7 +195,7 @@ export default function Events({
 
 	useEffect(() => {
 		if (shouldFetch) getEvents();
-		setTimeout(() => setTimeoutDone(true), 3000);
+		setTimeout(() => setTimeoutDone(true), 2000);
 	}, [shouldFetch]);
 
 	useEffect(() => {
@@ -208,7 +228,7 @@ export default function Events({
 			}}
 		>
 			{!cards ? (
-				<ActivityIndicator size="large" />
+				<ActivityIndicator size="large" color="purple" />
 			) : (
 				<ScrollView
 					refreshControl={
@@ -217,10 +237,11 @@ export default function Events({
 							onRefresh={onRefresh}
 						/>
 					}
-					style={{ marginTop: 10, marginBottom: 10 }}
 					contentContainerStyle={{
 						flexGrow: 1,
-						justifyContent: 'center'
+						justifyContent: 'center',
+						paddingBottom: 10,
+						paddingTop: 10
 					}}
 				>
 					{cards}
