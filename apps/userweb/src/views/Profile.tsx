@@ -92,6 +92,10 @@ export default function Profile() {
 	const isLoggedIn = useIsLoggedIn();
 	const [ticketTransfersEnabled, setTicketTransfersEnabled] =
 		useState<boolean>(false);
+	const [
+		ticketTransferStateChangeRequested,
+		setTicketTransferStateChangeRequested
+	] = useState<boolean>(false);
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -268,14 +272,95 @@ export default function Profile() {
 		await handleLogOut();
 	};
 
+	const check_if_transfers_are_enabled = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const data = (await p.readContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'check_ticket_transfer_permission',
+						account: w.account
+					})) as boolean;
+
+					setTicketTransfersEnabled(data);
+				} else {
+					console.error('Wallet client or public client not set up');
+					setTicketTransfersEnabled(false);
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+				setTicketTransfersEnabled(false);
+			}
+		}
+	};
+
+	const enable_ticket_transfers = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_user_to_user_ticket_transfer',
+						account: w.account,
+						args: []
+					});
+					const hash = await w.writeContract(request);
+					console.log(`enable ticket transfer hash ${hash}`);
+					setTicketTransferStateChangeRequested(true);
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
+	const disable_ticket_transfers = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'disallow_user_to_user_ticket_transfer',
+						account: w.account,
+						args: []
+					});
+					const hash = await w.writeContract(request);
+					console.log(`disable ticket transfer hash ${hash}`);
+					setTicketTransferStateChangeRequested(true);
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
 	useEffect(() => {
 		if (isLoggedIn) {
 			getUserBalance();
 			setIsWeb2User(userHasEmbeddedWallet());
 			getAllOwnedEvents();
-			// add function here to check if transfers are allowed
 		}
-	}, [primaryWallet]);
+	}, [primaryWallet, isLoggedIn]);
+
+	useEffect(() => {
+		check_if_transfers_are_enabled();
+	}, [ticketTransferStateChangeRequested]);
 
 	return (
 		<Container size="4">
@@ -557,11 +642,19 @@ export default function Profile() {
 													Deposit Money
 												</ActionsText>
 												{ticketTransfersEnabled ? (
-													<ActionsText>
+													<ActionsText
+														onClick={
+															disable_ticket_transfers
+														}
+													>
 														Disable Ticket Transfers
 													</ActionsText>
 												) : (
-													<ActionsText>
+													<ActionsText
+														onClick={
+															enable_ticket_transfers
+														}
+													>
 														Enable Ticket Transfers
 													</ActionsText>
 												)}

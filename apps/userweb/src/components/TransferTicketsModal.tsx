@@ -60,41 +60,32 @@ export default function TransferTicketsModal({
 	const onSubmit = async () => {
 		setIsSubmitting(true);
 
-		// const valid_TicketIDs = await getTicketID(NFTMintingDescription);
-
-		// // check that the ticket id is valid
-		// if (!valid_TicketIDs?.includes(TicketID)) {
-		// 	console.log(`${TicketID} is not a valid TicketID.`);
-		// 	throw Error;
-		// }
-
 		if (primaryWallet && isEthereumWallet(primaryWallet)) {
 			try {
 				const w = await primaryWallet.getWalletClient();
 				const p = await primaryWallet.getPublicClient();
 
-				// if (w && p) {
-				// 	const { request } = await p.simulateContract({
-				// 		abi: ContractABI,
-				// 		address: ContractAddress,
-				// 		functionName: 'buy_tickets',
-				// 		account: w.account,
-				// 		args: [NFTMintingDescription, [TicketID]],
-				// 		value: BigInt(BaseCost)
-				// 	});
-				// 	const hash = await w.writeContract(request);
-				// 	console.log(hash);
-				// 	setIsSubmitting(false);
-				// 	onClose();
-				// 	navigate(0);
-				// } else {
-				// 	console.error('Wallet client or public client not set up');
-				// 	setErrorMessage(
-				// 		'Wallet client or public client not set up'
-				// 	);
-				// 	setShowError(true);
-				// 	setIsSubmitting(false);
-				// }
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_ticket_to_be_transfered',
+						account: w.account,
+						args: [TicketID]
+					});
+					const hash = await w.writeContract(request);
+					console.log(hash);
+					setIsSubmitting(false);
+					onClose();
+					navigate(0);
+				} else {
+					console.error('Wallet client or public client not set up');
+					setErrorMessage(
+						'Wallet client or public client not set up'
+					);
+					setShowError(true);
+					setIsSubmitting(false);
+				}
 			} catch (error) {
 				console.error('Error setting up wallet client', error);
 				setErrorMessage('Error setting up wallet client');
