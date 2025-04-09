@@ -218,7 +218,11 @@ export default function EventDetails({
 						<Text>{displayDate}</Text>
 					</View>
 					<Image
-						source={{ uri: data.Photo ?? null }}
+						source={{
+							uri:
+								data.Photo ??
+								'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+						}}
 						style={{
 							width: '100%',
 							height: undefined,

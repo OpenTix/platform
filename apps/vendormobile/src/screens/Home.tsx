@@ -59,7 +59,7 @@ export default function Home() {
 							<Image
 								source={{
 									uri:
-										venue?.['Photo'] ??
+										venue.Photo ??
 										'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
 								}}
 								key={'Photo'}
