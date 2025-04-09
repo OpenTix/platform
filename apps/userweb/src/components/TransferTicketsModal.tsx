@@ -13,7 +13,7 @@ type ReturnedMetadata = {
 };
 
 export interface TransferTicketsModalProps {
-	onClose: () => void;
+	onClose: (showLoading: boolean) => void;
 	TicketID: bigint;
 }
 export default function TransferTicketsModal({
@@ -36,23 +36,23 @@ export default function TransferTicketsModal({
 				const p = await primaryWallet.getPublicClient();
 
 				if (w && p) {
-					// const { request } = await p.simulateContract({
-					// 	abi: ContractABI,
-					// 	address: ContractAddress,
-					// 	functionName: 'allow_ticket_to_be_transfered',
-					// 	account: w.account,
-					// 	args: [TicketID]
-					// });
-					// const hash = await w.writeContract(request);
-					// console.log(hash);
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_ticket_to_be_transfered',
+						account: w.account,
+						args: [TicketID]
+					});
+					const hash = await w.writeContract(request);
+					console.log(hash);
 
-					// // wait for the call to be included in a block
-					// await p.waitForTransactionReceipt({
-					// 	hash: hash
-					// });
+					// wait for the call to be included in a block
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
 
 					setIsSubmitting(false);
-					onClose();
+					onClose(true);
 					// navigate(0);
 				} else {
 					console.error('Wallet client or public client not set up');
@@ -75,18 +75,18 @@ export default function TransferTicketsModal({
 		<Dialog.Root open onOpenChange={onClose}>
 			<Dialog.Content maxWidth="40vw">
 				<Dialog.Title style={{ textAlign: 'center' }}>
-					Buy Ticket
+					Transfer Ticket {Number(TicketID)}
 				</Dialog.Title>
 				<Flex
 					gap="1"
 					direction="column"
 					style={{ marginLeft: '10%', width: '80%' }}
 				>
-					{/* <Text>{Disclaimer}</Text> */}
 					<Text>
-						Pressing 'Purchase' will open your wallet provider.
+						Pressing 'Allow Transfer' will open your wallet provider
+						and make your ticket purchasable by other users.
 					</Text>
-					<Text>TicketID: {Number(TicketID)}</Text>
+					<Text>Pressing 'Show QR' will show the QR code again.</Text>
 
 					{showError && errorMessage && (
 						<Callout.Root color="red">
@@ -97,11 +97,14 @@ export default function TransferTicketsModal({
 						</Callout.Root>
 					)}
 					<Flex gap="3" style={{ justifyContent: 'end' }}>
-						<Button onClick={onClose} variant="soft">
+						<Button onClick={() => onClose(false)} variant="soft">
 							Cancel
 						</Button>
+						<Button onClick={() => onClose(true)} variant="soft">
+							Show QR
+						</Button>
 						<Button onClick={onSubmit} loading={isSubmitting}>
-							Purchase
+							Allow Transfer
 						</Button>
 					</Flex>
 				</Flex>

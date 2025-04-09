@@ -1,3 +1,4 @@
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
 import { Box, Card, Flex, Inset, Text, Button } from '@radix-ui/themes';
 import { Avatar } from 'radix-ui';
@@ -9,9 +10,15 @@ import TransferTicketsModal from './TransferTicketsModal';
 export interface TicketCardProps {
 	event: UserEventDetailsResponse;
 	ticket: string;
+	transferEnabled: boolean;
 }
 
-export function TicketCard({ event, ticket }: TicketCardProps) {
+export function TicketCard({
+	event,
+	ticket,
+	transferEnabled
+}: TicketCardProps) {
+	const { primaryWallet } = useDynamicContext();
 	const titleRef = useRef<HTMLElement>(null);
 	const [titleSize, setTitleSize] = useState(1.2);
 	const venueRef = useRef<HTMLElement>(null);
@@ -56,16 +63,21 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 		<>
 			{shouldShowTransferModal && (
 				<TransferTicketsModal
-					onClose={async () => {
+					onClose={async (showLoading: boolean) => {
 						setShouldShowTransferModal(false);
-						setShouldShowLoadingModal(true);
-						await new Promise((f) => setTimeout(f, 5000));
-						setShouldShowLoadingModal(false);
+						setShouldShowLoadingModal(showLoading);
 					}}
 					TicketID={BigInt(ticket)}
 				/>
 			)}
-			{shouldShowLoadingModal && <FullscreenLoading message="hi" />}
+			{shouldShowLoadingModal && (
+				<FullscreenLoading
+					onClose={() => {
+						setShouldShowLoadingModal(false);
+					}}
+					message={`${JSON.stringify({ address: primaryWallet?.address, id: ticket })}`}
+				/>
+			)}
 			<Card
 				asChild
 				size="3"
@@ -113,33 +125,35 @@ export function TicketCard({ event, ticket }: TicketCardProps) {
 							</Avatar.Fallback>
 						</Avatar.Root>
 
-						<Button
-							// chatgpt gave me this and it looks nice so keep
-							style={{
-								position: 'absolute',
-								top: '0.5em', // adjust as needed for spacing
-								left: '0.5em', // adjust as needed for spacing
-								padding: '0.5em 1em',
-								backgroundColor: '#ff6347', // change button color as needed
-								color: 'purple',
-								border: 'none',
-								borderRadius: '5px',
-								cursor: 'pointer',
-								background: 'white',
-								zIndex: 10
-							}}
-							onClick={(e) => {
-								// do not remove these two lines
-								// they are required to have the button actually work
-								e.preventDefault();
-								e.stopPropagation(); // Prevents the click event from triggering the Link's onClick
+						{transferEnabled && (
+							<Button
+								// chatgpt gave me this and it looks nice so keep unless you goated with the sauce ui style
+								style={{
+									position: 'absolute',
+									top: '0.5em', // adjust as needed for spacing
+									left: '0.5em', // adjust as needed for spacing
+									padding: '0.5em 1em',
+									backgroundColor: '#ff6347', // change button color as needed
+									color: 'purple',
+									border: 'none',
+									borderRadius: '5px',
+									cursor: 'pointer',
+									background: 'white',
+									zIndex: 10
+								}}
+								onClick={(e) => {
+									// do not remove these two lines
+									// they are required to have the button actually work
+									e.preventDefault();
+									e.stopPropagation(); // Prevents the click event from triggering the Link's onClick
 
-								console.log('Button clicked');
-								setShouldShowTransferModal(true);
-							}}
-						>
-							Transfer
-						</Button>
+									console.log('Button clicked');
+									setShouldShowTransferModal(true);
+								}}
+							>
+								Transfer
+							</Button>
+						)}
 					</Inset>
 
 					<Box mx="2" mt="2" mb="4">

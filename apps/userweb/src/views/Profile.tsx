@@ -314,6 +314,9 @@ export default function Profile() {
 					});
 					const hash = await w.writeContract(request);
 					console.log(`enable ticket transfer hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
 					setTicketTransferStateChangeRequested(true);
 				} else {
 					console.error('Wallet client or public client not set up');
@@ -340,6 +343,9 @@ export default function Profile() {
 					});
 					const hash = await w.writeContract(request);
 					console.log(`disable ticket transfer hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
 					setTicketTransferStateChangeRequested(true);
 				} else {
 					console.error('Wallet client or public client not set up');
@@ -355,6 +361,7 @@ export default function Profile() {
 			getUserBalance();
 			setIsWeb2User(userHasEmbeddedWallet());
 			getAllOwnedEvents();
+			check_if_transfers_are_enabled();
 		}
 	}, [primaryWallet, isLoggedIn]);
 
@@ -841,6 +848,9 @@ export default function Profile() {
 														event={data.data}
 														ticket={
 															ticketid as string
+														}
+														transferEnabled={
+															ticketTransfersEnabled
 														}
 													/>
 												);
