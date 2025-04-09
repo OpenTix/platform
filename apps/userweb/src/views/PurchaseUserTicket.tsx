@@ -52,18 +52,10 @@ export default function PurchaseUserTicket() {
 				} else {
 					console.error('Wallet client or public client not set up');
 					setResult('Failed');
-					// setErrorMessage(
-					// 	'Wallet client or public client not set up'
-					// );
-					// setShowError(true);
-					// setIsSubmitting(false);
 				}
 			} catch (error) {
 				console.error('Error setting up wallet client', error);
 				setResult('Failed');
-				// setErrorMessage('Error setting up wallet client');
-				// setShowError(true);
-				// setIsSubmitting(false);
 			}
 		}
 	};

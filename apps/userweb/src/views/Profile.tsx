@@ -545,8 +545,17 @@ export default function Profile() {
 												>
 													<li>
 														<Text>
-															To buy download our
-															mobile app.
+															Be logged in to our
+															website and click on
+															the link the seller
+															sends you to buy.
+														</Text>
+														<Text>
+															You can also buy in
+															our mobile app by
+															scanning the QR code
+															generated for the
+															seller.
 														</Text>
 													</li>
 												</ul>
@@ -578,12 +587,10 @@ export default function Profile() {
 													</li>
 													<li>
 														<Text>
-															All Ticket sales are
-															for the same cost as
-															the ticket
-															originally was. No
-															under or over
-															charging.
+															All user to user
+															sales are for the
+															basecost of the
+															ticket.
 														</Text>
 													</li>
 												</ul>
