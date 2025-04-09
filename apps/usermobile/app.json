@@ -21,6 +21,7 @@
 				"ITSAppUsesNonExemptEncryption": false,
 				"NFCReaderUsageDescription": "We need to use NFC to check in tickets."
 			},
+			"associatedDomains": ["applinks:client.dev.opentix.co"],
 			"appleTeamId": "S726Z4H4Q3"
 		},
 		"android": {
