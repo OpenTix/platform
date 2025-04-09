@@ -75,7 +75,7 @@ export function TicketCard({
 					onClose={() => {
 						setShouldShowLoadingModal(false);
 					}}
-					message={`${JSON.stringify({ address: primaryWallet?.address, id: ticket })}`}
+					message={`${JSON.stringify({ address: primaryWallet?.address, id: ticket, basecost: event.Basecost })}`}
 				/>
 			)}
 			<Card

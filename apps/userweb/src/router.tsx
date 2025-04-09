@@ -5,6 +5,7 @@ import EventDetailsPage from './views/EventDetailsPage';
 import EventSearchPage from './views/EventSearchPage';
 import Home from './views/Home';
 import Profile from './views/Profile';
+import PurchaseUserTicket from './views/PurchaseUserTicket';
 
 // This renders <App /> with child components rendered in the <Outlet /> component in the App component
 const router = createBrowserRouter([
@@ -31,6 +32,11 @@ const router = createBrowserRouter([
 			{
 				path: '/eventSearch',
 				element: <EventSearchPage />,
+				ErrorBoundary: ErrorPage
+			},
+			{
+				path: '/buyUserTicket',
+				element: <PurchaseUserTicket />,
 				ErrorBoundary: ErrorPage
 			},
 			{
