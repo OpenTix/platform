@@ -28,7 +28,7 @@ export default function Home() {
 		const data = await resp.json();
 
 		return await (data && data.length !== 0
-			? setNear(
+			? setNear((near) =>
 					near.concat(
 						data.map((event: UserEventResponse, idx: number) => (
 							<EventCard
@@ -59,11 +59,10 @@ export default function Home() {
 					zips += pc.toString() + ', ';
 				});
 				zips = zips.slice(0, -1);
-				return await getEvents(zips);
+				if (zips.length > 3) await getEvents(zips);
 			},
 			(error) => {
 				console.error('Geolocation error:', error);
-				return error;
 			}
 		);
 	}, [getEvents]);
