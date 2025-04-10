@@ -128,7 +128,11 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
-	var zip_codes []string = strings.Split(strings.ReplaceAll(strings.ReplaceAll(params.ZipCode, " ", ""), "%20", ""), ",")
+	params.ZipCode = strings.ReplaceAll(strings.ReplaceAll(params.ZipCode, " ", ""), "%20", "")
+	var zip_codes []string = []string{}
+	if params.ZipCode != "" {
+		strings.Split(params.ZipCode, ",")
+	}
 
 	// Connect to the database
 	conn, err := database.ConnectToDatabase(ctx, connStr)
