@@ -131,9 +131,6 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	_, near_you := request.QueryStringParameters["NearYou"]
 
 	var zip_codes []string = strings.Split(strings.ReplaceAll(strings.ReplaceAll(params.ZipCode, " ", ""), "%20", ""), ",")
-	if !near_you {
-		zip_codes = append(zip_codes, "")
-	}
 
 	// Connect to the database
 	conn, err := database.ConnectToDatabase(ctx, connStr)
