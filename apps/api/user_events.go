@@ -43,7 +43,6 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 		return shared.CreateErrorResponseAndLogError(500, "Failed to connect to the database", request.Headers, err)
 	}
 	defer conn.Close(ctx)
-	
 
 	queries := query.New(conn)
 
@@ -129,6 +128,13 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		}
 	}
 
+	_, near_you := request.QueryStringParameters["NearYou"]
+
+	var zip_codes []string = strings.Split(strings.ReplaceAll(strings.ReplaceAll(params.ZipCode, " ", ""), "%20", ""), ",")
+	if !near_you {
+		zip_codes = append(zip_codes, "")
+	}
+
 	// Connect to the database
 	conn, err := database.ConnectToDatabase(ctx, connStr)
 	if err != nil {
@@ -140,7 +146,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	queries := query.New(conn)
 	dbResponse, err := queries.UserGetEventsPaginated(ctx, query.UserGetEventsPaginatedParams{
 		Column1: page,
-		Column2: params.ZipCode,
+		Column2: zip_codes,
 		Column3: params.Name,
 		Column4: params.Type,
 		Column5: cost,

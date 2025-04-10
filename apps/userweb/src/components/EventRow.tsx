@@ -1,7 +1,7 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
 import { Box, Flex, Heading, Button, Card, Text } from '@radix-ui/themes';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import { useInterval } from 'usehooks-ts';
 import { EventCard } from './EventCard';
 
@@ -14,14 +14,7 @@ interface rowProps {
 	passedData?: React.ReactNode[];
 }
 
-export default function EventRow({
-	zip,
-	type,
-	name,
-	cost,
-	eventDate,
-	passedData
-}: rowProps) {
+function EventRow({ zip, type, name, cost, eventDate, passedData }: rowProps) {
 	const flexRef = useRef(null);
 	const [cards, setCards] = useState<React.ReactNode>([]);
 	const [page, setPage] = useState(1);
@@ -118,3 +111,5 @@ async function getEvents(pageRequest: string) {
 			))
 		: undefined);
 }
+
+export default memo(EventRow);
