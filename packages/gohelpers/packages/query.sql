@@ -194,7 +194,7 @@ venue.name Venuename, venue.state_code, venue.country_code, event.photo,
 event.id
 from app.event event, app.venue venue
 where event.venue = venue.pk
-and (cardinatlity($2::text[]) = 0 or venue.zip = ANY($2::text[]))
+and (cardinality($2::text[]) = 0 or venue.zip = ANY($2::text[]))
 and ($3::text = '' or $3::text = event.name)
 and ($4::text = '' or $4::text = event.type)
 and ($5::double precision >= event.basecost)
