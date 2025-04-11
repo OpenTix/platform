@@ -1,10 +1,19 @@
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+// import Navigation from '../../components/Navigation';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-import { View } from 'react-native';
+import { Pressable, SafeAreaView, StatusBar } from 'react-native';
+import { View, Button } from 'react-native';
 import { Text } from 'react-native';
 import { useDynamic } from '../../components/DynamicSetup';
-import Navigation from '../../components/Navigation';
+import EventView from '../../components/EventView';
+import HomeStack from '../../components/Navigation';
+import HomeScreen from '../../components/TicketListing';
+import TransferScreen from '../../components/TicketTransfer';
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
 	const client = useDynamic();
@@ -39,18 +48,24 @@ export default function App() {
 		setTimeout(() => setShow(true), 1500);
 	}, [setShow]);
 
+	const deepLinking = {
+		prefixes: ['opentixusermobile://'],
+		config: {
+			initialRouteName: 'Home',
+			screens: {
+				Home: 'HomeScreen'
+				// Events: 'Event',
+				// EventDetails: 'EventDetails'
+			}
+		}
+	};
+
 	return (
-		<>
-			<View style={[{ backgroundColor: 'white' }, { flex: 1 }]}>
-				<client.reactNative.WebView />
-				<StatusBar
-					backgroundColor={'white'}
-					barStyle={'dark-content'}
-					translucent={false}
-					hidden={false}
-				/>
-				{client.auth.token != null ? <Navigation /> : <Text></Text>}
-			</View>
-		</>
+		<NavigationContainer linking={deepLinking}>
+			<Tab.Navigator screenOptions={{ headerShown: false }}>
+				<Tab.Screen name="Tickets" component={HomeStack} />
+				<Tab.Screen name="Transfer" component={TransferScreen} />
+			</Tab.Navigator>
+		</NavigationContainer>
 	);
 }

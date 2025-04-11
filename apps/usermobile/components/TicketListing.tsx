@@ -1,5 +1,5 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
-import { UserEventResponse } from '@platform/types';
+import { UserEventDetailsResponse } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import {
 	useQuery,
@@ -13,15 +13,10 @@ import {
 	RefreshControl,
 	ScrollView,
 	Image,
-	Modal,
-	Alert,
 	Pressable,
-	StyleSheet,
-	TouchableOpacity,
-	TouchableWithoutFeedbackComponent,
-	Button
+	StyleSheet
 } from 'react-native';
-import { Card, Avatar } from 'react-native-paper';
+import { Card } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from './DynamicSetup';
 
@@ -30,64 +25,7 @@ const queryClient = new QueryClient();
 const HomeScreen = () => {
 	const client = useDynamic();
 	const [refreshing, setRefreshing] = React.useState(false);
-	const [modalVisible, setModalVisible] = React.useState(false);
-	const [qrVisible, setqrVisible] = React.useState(false);
-	const [gData, setgData] = React.useState({
-		ids: Array(0) as bigint[],
-		event_data: Array(0) as UserEventResponse[]
-	});
-	const [modalData, setmodalData] = React.useState(<></>);
-	const [qrData, setqrData] = React.useState('');
-	const [currentID, setcurrentID] = React.useState(BigInt(0));
 	const navigation = useNavigation();
-
-	// call this before setting the modal visibility
-	// this loads the proper data based on the index in the page
-	// function setupModal(index: number) {
-	// 	const ids = gData['ids'];
-	// 	const events_data = gData['event_data'];
-
-	// 	const id = ids[index];
-	// 	const event_data = events_data[index];
-
-	// 	const keys = Object.keys(event_data);
-	// 	const values = Object.values(event_data);
-
-	// 	let photo_uri = '';
-
-	// 	setmodalData(
-	// 		<>
-	// 			{values?.map((value: string | number, idx2: number) => {
-	// 				if (keys[idx2] === 'Eventphoto') {
-	// 					photo_uri = value as string;
-	// 					return null;
-	// 				} else if (keys[idx2] === 'ID') {
-	// 					return null;
-	// 				} else if (keys[idx2] === 'Venuephoto') {
-	// 					return null;
-	// 				}
-	// 				return (
-	// 					<Text key={idx2} style={{ textAlign: 'center' }}>
-	// 						{keys[idx2]}:{' '}
-	// 						{keys[idx2] === 'EventDatetime'
-	// 							? new Date(value).toLocaleString()
-	// 							: keys[idx2] === 'Basecost'
-	// 								? `$${value}`
-	// 								: value}
-	// 					</Text>
-	// 				);
-	// 			})}
-	// 			<Avatar.Image
-	// 				key={2}
-	// 				style={{ alignSelf: 'center', backgroundColor: 'white' }}
-	// 				source={{ uri: photo_uri }}
-	// 			/>
-	// 			<Text style={{ textAlign: 'center' }}>
-	// 				Ticket id = {id.toString()}
-	// 			</Text>
-	// 		</>
-	// 	);
-	// }
 
 	// handle scroll up page refresh
 	const onRefresh = React.useCallback(() => {
@@ -200,7 +138,7 @@ const HomeScreen = () => {
 		}
 
 		// get the event data for all the events we have
-		const event_data = Array(ids.length) as UserEventResponse[];
+		const event_data = Array(ids.length) as UserEventDetailsResponse[];
 		for (let i = 0; i < event_names.length; i++) {
 			// minimize the number of calls to the backend api
 			if (i != 0 && event_names[i] === event_names[i - 1]) {
@@ -239,9 +177,6 @@ const HomeScreen = () => {
 		const ids = data['ids'];
 		const event_data = data['event_data'];
 
-		// set the data globally so the modal can access it
-		setgData(data);
-
 		// this happens when the user owns no tickets
 		if (event_data.length === 0) {
 			return (
@@ -258,127 +193,78 @@ const HomeScreen = () => {
 
 		return (
 			<>
-				{/* <Modal
-					animationType="slide"
-					transparent={true}
-					visible={qrVisible}
-				></Modal>
-				<Modal
-					animationType="slide"
-					transparent={true}
-					visible={modalVisible}
-					onRequestClose={() => {
-						Alert.alert('Modal has been closed.');
-						setModalVisible(!modalVisible);
-					}}
-				>
-					<TouchableOpacity
-						activeOpacity={1}
-						style={styles.centeredView}
-						onPress={() => setModalVisible(!modalVisible)}
-					>
-						<View style={styles.centeredView}>
-							<View style={styles.modalView}>
-								<ScrollView>
-									<TouchableOpacity activeOpacity={1}>
-										{modalData}
-									</TouchableOpacity>
-								</ScrollView>
-								<TouchableOpacity activeOpacity={1}>
-									<Pressable
-										style={[
-											styles.button,
-											styles.buttonClose
-										]}
-										onPress={() => {
-											checkin();
-										}}
-									>
-										<Text style={styles.textStyle}>
-											Check In
-										</Text>
-									</Pressable>
-								</TouchableOpacity>
-							</View>
-						</View>
-					</TouchableOpacity>
-				</Modal> */}
-				{event_data?.map((data: UserEventResponse, idx: number) => {
-					// this should never happen but keeps the app from blowing up if it does
-					if (data == undefined) {
-						return null;
-					}
+				{event_data?.map(
+					(data: UserEventDetailsResponse, idx: number) => {
+						// this should never happen but keeps the app from blowing up if it does
+						if (data == undefined) {
+							return null;
+						}
+						// these make the code read better
+						const photo_uri = data['Eventphoto'];
+						const ticketid = ids[idx].toString();
+						const eventdate = new Date(data['EventDatetime']);
 
-					// these make the code read better
-					const keys = Object.keys(data);
-					const values = Object.values(data);
-					let photo_uri = '';
-					const ticketid = ids[idx].toString();
-
-					return (
-						<Pressable
-							onPress={() => {
-								// setupModal(idx);
-								// setcurrentID(BigInt(ticketid));
-								// @ts-expect-error This is valid code, but typescript doesn't like it
-								navigation.navigate('Event', {
-									Event: ticketid
-								});
-								// setModalVisible(!modalVisible);
-							}}
-							style={{ width: '100%' }}
-						>
-							<Card
-								key={idx}
-								style={{ display: 'flex', width: '100%' }}
+						return (
+							<Pressable
+								onPress={() => {
+									// @ts-expect-error This is valid code, but typescript doesn't like it
+									navigation.navigate('Event', {
+										Event: ticketid
+									});
+								}}
+								style={{ width: '100%' }}
 							>
-								{values?.map(
-									(value: string | number, idx2: number) => {
-										if (keys[idx2] === 'Eventphoto') {
-											photo_uri = value as string;
-											return null;
-										} else if (keys[idx2] === 'Eventname') {
-											return (
-												<Card.Title
-													title={`${value}`}
-												/>
-											);
-										}
-										// return (
-										// 	<Text key={idx2}>
-										// 		{keys[idx2]}:{' '}
-										// 		{keys[idx2] === 'EventDatetime'
-										// 			? new Date(
-										// 					value
-										// 				).toLocaleString()
-										// 			: keys[idx2] === 'Basecost'
-										// 				? `$${value}`
-										// 				: value}
-										// 	</Text>
-										// );
-									}
-								)}
-								<Text style={{ flex: 1 }}>
-									Ticket id: {ticketid}
-								</Text>
-								<Image
-									source={{
-										uri: photo_uri
-									}}
-									style={{
-										height: undefined,
-										width: '100%',
-										aspectRatio: 1,
-										maxHeight: 200,
-										alignSelf: 'flex-end',
-										flex: 2
-									}}
-								/>
-								{/* <Avatar.Image source={{ uri: photo_uri }} /> */}
-							</Card>
-						</Pressable>
-					);
-				}) ?? (
+								<Card
+									key={idx}
+									style={{ display: 'flex', width: '100%' }}
+								>
+									<View style={styles.container}>
+										<View style={styles.leftcolumn}>
+											<Image
+												source={{
+													uri: photo_uri
+												}}
+												style={{
+													aspectRatio: 1,
+													maxHeight: 200,
+													width: '80%',
+													display: 'flex',
+													flexDirection: 'column',
+													alignItems: 'center'
+												}}
+											/>
+										</View>
+										<View style={styles.rightcolumn}>
+											<Text style={{ fontSize: 20 }}>
+												{data['Eventname']}
+											</Text>
+											<Text
+												style={{ fontStyle: 'italic' }}
+											>
+												{data['Description']}
+											</Text>
+											<Text
+												style={{ fontStyle: 'italic' }}
+											>
+												{'\n'}
+												{eventdate.toLocaleTimeString()}{' '}
+												{eventdate.toLocaleDateString()}
+											</Text>
+											<Text
+												style={{
+													flex: 1,
+													textAlign: 'right'
+												}}
+											>
+												#{ticketid}
+											</Text>
+										</View>
+									</View>
+								</Card>
+							</Pressable>
+						);
+					}
+				) ?? (
 					<Card>
 						<Text>You don't own any tickets :\</Text>
 					</Card>
@@ -416,47 +302,17 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center'
+	container: {
+		flexDirection: 'row', // This makes the container a row
+		justifyContent: 'space-between', // Optional: Adds space between columns
+		padding: 10
 	},
-	modalView: {
-		margin: 20,
-		backgroundColor: 'white',
-		borderRadius: 20,
-		padding: 35,
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: 5,
-		width: '80%',
-		maxHeight: '75%'
+	rightcolumn: {
+		flex: 1
 	},
-	button: {
-		borderRadius: 20,
-		padding: 10,
-		elevation: 2
-	},
-	buttonOpen: {
-		backgroundColor: '#F194FF'
-	},
-	buttonClose: {
-		backgroundColor: '#2196F3'
-	},
-	textStyle: {
-		color: 'white',
-		fontWeight: 'bold',
-		textAlign: 'center'
-	},
-	modalText: {
-		marginBottom: 15,
-		textAlign: 'center'
+	leftcolumn: {
+		flex: 0.45,
+		marginRight: 10 // Optional: Adds spacing between columns
 	}
 });
 
