@@ -4,6 +4,7 @@ import {
 	DynamicContextProvider
 } from '@dynamic-labs/sdk-react-core';
 import { Theme } from '@radix-ui/themes';
+import { ThemeProvider } from 'next-themes';
 import { StrictMode } from 'react';
 import { isMobile } from 'react-device-detect';
 import * as ReactDOM from 'react-dom/client';
@@ -34,11 +35,16 @@ if (isMobile) {
 } else {
 	root.render(
 		<StrictMode>
-			<Theme>
-				<DynamicContextProvider settings={dynamicSettings}>
-					<AppRouter />
-				</DynamicContextProvider>
-			</Theme>
+			<ThemeProvider attribute="class" defaultTheme="system">
+				<Theme accentColor={'purple'}>
+					<DynamicContextProvider
+						theme="auto"
+						settings={dynamicSettings}
+					>
+						<AppRouter />
+					</DynamicContextProvider>
+				</Theme>
+			</ThemeProvider>
 		</StrictMode>
 	);
 }

@@ -3,6 +3,10 @@ import { Link, LinkProps } from 'react-router-dom';
 import styled from 'styled-components';
 
 const StyledNavLink = styled(Link)`
+	.dark & {
+		color: #fff;
+	}
+
 	color: #333;
 	text-decoration: none;
 	margin: 0 8px;

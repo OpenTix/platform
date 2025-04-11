@@ -5,6 +5,7 @@ import {
 } from '@dynamic-labs/sdk-react-core';
 import { MantineProvider } from '@mantine/core';
 import { Theme } from '@radix-ui/themes';
+import { ThemeProvider } from 'next-themes';
 import { StrictMode } from 'react';
 import { isMobile } from 'react-device-detect';
 import * as ReactDOM from 'react-dom/client';
@@ -25,6 +26,7 @@ const dynamicSettings: DynamicContextProps['settings'] = {
 	walletConnectors: [EthereumWalletConnectors],
 	initialAuthenticationMode: 'connect-and-sign'
 };
+
 if (isMobile) {
 	root.render(
 		<StrictMode>
@@ -34,13 +36,18 @@ if (isMobile) {
 } else {
 	root.render(
 		<StrictMode>
-			<Theme accentColor="purple">
-				<MantineProvider>
-					<DynamicContextProvider settings={dynamicSettings}>
-						<AppRouter />
-					</DynamicContextProvider>
-				</MantineProvider>
-			</Theme>
+			<ThemeProvider attribute="class" defaultTheme="system">
+				<Theme accentColor={'purple'}>
+					<MantineProvider>
+						<DynamicContextProvider
+							theme="auto"
+							settings={dynamicSettings}
+						>
+							<AppRouter />
+						</DynamicContextProvider>
+					</MantineProvider>
+				</Theme>
+			</ThemeProvider>
 		</StrictMode>
 	);
 }
