@@ -1,7 +1,14 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, LightTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { Text, Pressable, SafeAreaView, View } from 'react-native';
+import {
+	Text,
+	Pressable,
+	SafeAreaView,
+	View,
+	useColorScheme
+} from 'react-native';
+import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
 import EventDetails from '../screens/EventDetails';
 import Events from '../screens/Events';
@@ -13,9 +20,10 @@ global.TextEncoder = require('text-encoding').TextEncoder;
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-	const theme = {
+	const is_dark = useColorScheme() === 'dark';
+	const DarkTheme = {
 		colors: {
-			background: 'rgb(0, 0, 0)',
+			background: colors.darkBackground,
 			border: 'rgb(0, 0, 0)',
 			card: 'rgb(0, 0, 0)',
 			notification: 'rgb(255, 255, 255)',
@@ -73,7 +81,10 @@ export default function App() {
 	};
 
 	return (
-		<NavigationContainer linking={deepLinking} theme={theme}>
+		<NavigationContainer
+			linking={deepLinking}
+			theme={is_dark ? DarkTheme : LightTheme}
+		>
 			<client.reactNative.WebView />
 			<Stack.Navigator initialRouteName="Home">
 				<Stack.Screen
@@ -91,7 +102,9 @@ export default function App() {
 								>
 									<Pressable
 										style={{
-											backgroundColor: '#000000',
+											backgroundColor: is_dark
+												? colors.darkPrimary
+												: colors.lightPrimary,
 											borderRadius: 20, // Make it round
 											padding: 7,
 											elevation: 5, // Shadow for Android
@@ -113,7 +126,9 @@ export default function App() {
 									>
 										<Text
 											style={{
-												color: '#b3b3b3',
+												color: is_dark
+													? colors.darkSecondary
+													: colors.lightSecondary,
 												textAlign: 'center'
 											}}
 										>
@@ -122,7 +137,9 @@ export default function App() {
 									</Pressable>
 									<Pressable
 										style={{
-											backgroundColor: '#000000',
+											backgroundColor: is_dark
+												? colors.darkPrimary
+												: colors.lightPrimary,
 											borderRadius: 20, // Make it round
 											padding: 7,
 											elevation: 5, // Shadow for Android
@@ -144,7 +161,9 @@ export default function App() {
 									>
 										<Text
 											style={{
-												color: '#b3b3b3',
+												color: is_dark
+													? colors.darkSecondary
+													: colors.lightSecondary,
 												textAlign: 'center'
 											}}
 										>
