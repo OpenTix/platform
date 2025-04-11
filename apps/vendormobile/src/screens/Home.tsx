@@ -8,12 +8,15 @@ import {
 	View,
 	StatusBar,
 	RefreshControl,
-	Image
+	Image,
+	useColorScheme
 } from 'react-native';
 import { Card, ActivityIndicator } from 'react-native-paper';
+import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
 
 export default function Home() {
+	const is_dark = useColorScheme() === 'dark';
 	const client = useDynamic();
 	const navigation = useNavigation();
 
@@ -73,14 +76,24 @@ export default function Home() {
 					);
 
 					const rightComponent = ({ size }: { size: number }) => (
-						<AntDesign name="right" size={size} />
+						<AntDesign
+							name="right"
+							size={size}
+							color={
+								is_dark
+									? colors.darkSecondary
+									: colors.lightSecondary
+							}
+						/>
 					);
 
 					const subtitle = (
 						<View>
 							<Text
 								style={{
-									color: 'black',
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
 									textAlign: 'center',
 									textAlignVertical: 'center'
 								}}
@@ -89,7 +102,9 @@ export default function Home() {
 							</Text>
 							<Text
 								style={{
-									color: 'black',
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
 									textAlign: 'center',
 									textAlignVertical: 'center'
 								}}
@@ -105,7 +120,9 @@ export default function Home() {
 								minWidth: '90%',
 								maxWidth: '90%',
 								justifyContent: 'center',
-								backgroundColor: 'white',
+								backgroundColor: is_dark
+									? colors.darkPrimary
+									: colors.lightPrimary,
 								marginHorizontal: 5,
 								marginVertical: 5,
 								padding: 10,
@@ -135,7 +152,10 @@ export default function Home() {
 								}
 								titleStyle={{
 									fontSize: 16,
-									textAlign: 'center'
+									textAlign: 'center',
+									color: is_dark
+										? colors.darkText
+										: colors.lightText
 								}}
 								subtitle={subtitle}
 								subtitleStyle={{
@@ -176,14 +196,18 @@ export default function Home() {
 		<>
 			<View
 				style={{
-					backgroundColor: 'white',
+					backgroundColor: is_dark
+						? colors.darkBackground
+						: colors.lightBackground,
 					height: '100%',
 					justifyContent: 'center'
 				}}
 			>
 				<StatusBar
-					backgroundColor={'white'}
-					barStyle={'dark-content'}
+					backgroundColor={
+						is_dark ? colors.darkBackground : colors.lightBackground
+					}
+					barStyle={is_dark ? 'light-content' : 'dark-content'}
 					translucent={false}
 					hidden={false}
 				/>

@@ -3,10 +3,17 @@ import { Event } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { Text, View, Image, TouchableOpacity } from 'react-native';
-import { ActivityIndicator, Button } from 'react-native-paper';
+import {
+	Text,
+	View,
+	Image,
+	TouchableOpacity,
+	useColorScheme
+} from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
 import { Address } from 'viem';
 import { polygonAmoy } from 'viem/chains';
+import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
 
 type Params = {
@@ -18,6 +25,7 @@ type Params = {
 export default function EventDetails({
 	route
 }: NativeStackScreenProps<Params, 'EventDetails'>) {
+	const is_dark = useColorScheme() === 'dark';
 	const client = useDynamic();
 	const { Event } = route.params;
 	const [view, setView] = useState<React.ReactNode>(null);
@@ -73,7 +81,7 @@ export default function EventDetails({
 		const tosubmit = { Event: UUID, TicketID: ticket_id };
 
 		const resp = await fetch(
-			`https://api.dev.opentix.co/vendor/events/tickets`,
+			`${process.env.EXPO_PUBLIC_API_BASEURL}/vendor/events/tickets`,
 			{
 				method: 'PATCH',
 				headers: { Authorization: `Bearer ${client.auth.token}` },
@@ -151,7 +159,6 @@ export default function EventDetails({
 	}
 
 	const navigateToQRCamera = () => {
-		// @ts-expect-error This is valid code, but typescript doesn't like it
 		navigation.navigate('QRCamera', {
 			onGoBack: (data: string) => {
 				setIntermediate(data);
@@ -188,7 +195,9 @@ export default function EventDetails({
 				style={{
 					flex: 1,
 					justifyContent: 'center',
-					backgroundColor: 'white',
+					backgroundColor: is_dark
+						? colors.darkBackground
+						: colors.lightBackground,
 					height: '100%'
 				}}
 			>
@@ -200,13 +209,55 @@ export default function EventDetails({
 						justifyContent: 'center'
 					}}
 				>
-					<Text>Name: {data.Name}</Text>
-					<Text>Cost: ${data.Basecost}</Text>
-					<Text>Unique Seats: {data.NumUnique}</Text>
-					<Text>General Admission: {data.NumGa}</Text>
-					<Text>Event Type: {data.Type}</Text>
-					<Text>Description: {data.Description}</Text>
-					<Text>Disclaimer: {data.Disclaimer}</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Name: {data.Name}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Cost: ${data.Basecost}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Unique Seats: {data.NumUnique}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						General Admission: {data.NumGa}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Event Type: {data.Type}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Description: {data.Description}
+					</Text>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
+						Disclaimer: {data.Disclaimer}
+					</Text>
 					<View
 						style={{
 							display: 'flex',
@@ -215,7 +266,15 @@ export default function EventDetails({
 							columnGap: 10
 						}}
 					>
-						<Text>{displayDate}</Text>
+						<Text
+							style={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText
+							}}
+						>
+							{displayDate}
+						</Text>
 					</View>
 					<Image
 						source={{
@@ -238,28 +297,52 @@ export default function EventDetails({
 					)}
 				</View>
 				<View style={{ marginBottom: 30, alignItems: 'center' }}>
-					<TouchableOpacity
-						onPress={navigateToQRCamera}
-						style={{
-							backgroundColor: 'white',
-							borderRadius: 15,
-							paddingTop: 5,
-							paddingBottom: 5,
-							width: '50%',
-							elevation: 5,
-							shadowColor: '#000', // Shadow for iOS
-							shadowOffset: {
-								width: 0,
-								height: 2
-							},
-							shadowOpacity: 0.4,
-							shadowRadius: 6
-						}}
-					>
-						<Text style={{ color: 'black', textAlign: 'center' }}>
-							Check in
+					{data.TransactionHash === null ? (
+						<Text
+							style={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText,
+								textAlign: 'center'
+							}}
+						>
+							You do not have any tickets for this event yet.{' '}
+							{'\n'} Please visit vendor.dev.opentix.co to create
+							some.
 						</Text>
-					</TouchableOpacity>
+					) : (
+						<TouchableOpacity
+							onPress={navigateToQRCamera}
+							style={{
+								backgroundColor: is_dark
+									? colors.darkPrimary
+									: colors.lightPrimary,
+								borderRadius: 15,
+								paddingTop: 5,
+								paddingBottom: 5,
+								width: '50%',
+								elevation: 5,
+								shadowColor: '#000', // Shadow for iOS
+								shadowOffset: {
+									width: 0,
+									height: 2
+								},
+								shadowOpacity: 0.4,
+								shadowRadius: 6
+							}}
+						>
+							<Text
+								style={{
+									color: is_dark
+										? colors.darkText
+										: colors.lightText,
+									textAlign: 'center'
+								}}
+							>
+								Check in
+							</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 			</View>
 		);

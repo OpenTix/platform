@@ -3,8 +3,16 @@ import { Event } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useCallback, useState } from 'react';
-import { ScrollView, Text, View, Image, RefreshControl } from 'react-native';
+import {
+	ScrollView,
+	Text,
+	View,
+	Image,
+	RefreshControl,
+	useColorScheme
+} from 'react-native';
 import { ActivityIndicator, Card } from 'react-native-paper';
+import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
 
 type Params = {
@@ -17,6 +25,7 @@ type Params = {
 export default function Events({
 	route
 }: NativeStackScreenProps<Params, 'Events'>) {
+	const is_dark = useColorScheme() === 'dark';
 	const { Venue } = route.params;
 	const VenueName = route.params.Name;
 	const navigation = useNavigation();
@@ -89,14 +98,24 @@ export default function Events({
 					);
 
 					const rightComponent = ({ size }: { size: number }) => (
-						<AntDesign name="right" size={size} />
+						<AntDesign
+							name="right"
+							size={size}
+							color={
+								is_dark
+									? colors.darkSecondary
+									: colors.lightSecondary
+							}
+						/>
 					);
 
 					const subtitle = (
 						<View>
 							<Text
 								style={{
-									color: 'black',
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
 									textAlign: 'center',
 									textAlignVertical: 'center'
 								}}
@@ -105,7 +124,9 @@ export default function Events({
 							</Text>
 							<Text
 								style={{
-									color: 'black',
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
 									textAlign: 'center',
 									textAlignVertical: 'center'
 								}}
@@ -114,7 +135,9 @@ export default function Events({
 							</Text>
 							<Text
 								style={{
-									color: 'black',
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
 									textAlign: 'center',
 									textAlignVertical: 'center'
 								}}
@@ -130,7 +153,9 @@ export default function Events({
 								minWidth: '90%',
 								maxWidth: '90%',
 								justifyContent: 'center',
-								backgroundColor: 'white',
+								backgroundColor: is_dark
+									? colors.darkPrimary
+									: colors.lightPrimary,
 								marginHorizontal: 5,
 								marginVertical: 5,
 								padding: 10,
@@ -159,7 +184,10 @@ export default function Events({
 								}
 								titleStyle={{
 									fontSize: 16,
-									textAlign: 'center'
+									textAlign: 'center',
+									color: is_dark
+										? colors.darkText
+										: colors.lightText
 								}}
 								subtitle={subtitle}
 								subtitleStyle={{
@@ -205,7 +233,12 @@ export default function Events({
 						justifyContent: 'center'
 					}}
 				>
-					<Text style={{ textAlign: 'center' }}>
+					<Text
+						style={{
+							textAlign: 'center',
+							color: is_dark ? colors.darkText : colors.lightText
+						}}
+					>
 						You do not have any upcoming events for this venue
 					</Text>
 				</View>
@@ -216,7 +249,9 @@ export default function Events({
 	return (
 		<View
 			style={{
-				backgroundColor: 'white',
+				backgroundColor: is_dark
+					? colors.darkBackground
+					: colors.lightBackground,
 				height: '100%',
 				justifyContent: 'center',
 				alignContent: 'center'
