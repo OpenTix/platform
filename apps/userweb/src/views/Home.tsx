@@ -1,45 +1,12 @@
-import { AllEventTypesArray, UserEventResponse } from '@platform/types';
-import { Box, Card, Flex, Text } from '@radix-ui/themes';
-import { useState, useEffect, useCallback } from 'react';
-import { EventCard } from '../components/EventCard';
+import { AllEventTypesArray } from '@platform/types';
+import { Box, Flex } from '@radix-ui/themes';
+import { useState, useEffect } from 'react';
 import EventRow from '../components/EventRow';
 
 export default function Home() {
 	const [cards, setCards] = useState<React.ReactNode>(null);
-	const [near, setNear] = useState<React.ReactNode[]>([]);
+	const [nearZips, setNearZips] = useState<string>('');
 	const [shouldShow, setShouldShow] = useState<boolean>(true);
-
-	const getEvents = useCallback(async (postcode: string) => {
-		const url = `${process.env.NX_PUBLIC_API_BASEURL}/user/events?zip=${postcode}&EventDatetime=${new Date().toISOString()}&NearYou`;
-
-		const resp = await fetch(url, {
-			method: 'GET'
-		});
-
-		if (!resp.ok) {
-			console.error('There was an error fetching data');
-			return (
-				<Card>
-					<Text>There was an error fetching data</Text>
-				</Card>
-			);
-		}
-
-		const data = await resp.json();
-
-		return await (data && data.length !== 0
-			? setNear((near) =>
-					near.concat(
-						data.map((event: UserEventResponse, idx: number) => (
-							<EventCard
-								key={`${idx}:${event.Name}`}
-								event={event}
-							/>
-						))
-					)
-				)
-			: undefined);
-	}, []);
 
 	useEffect(() => {
 		navigator?.geolocation?.getCurrentPosition(
@@ -59,13 +26,13 @@ export default function Home() {
 					zips += pc.toString() + ', ';
 				});
 				zips = zips.slice(0, -1);
-				if (zips.length > 3) await getEvents(zips);
+				if (zips.length > 3) setNearZips(zips);
 			},
 			(error) => {
 				console.error('Geolocation error:', error);
 			}
 		);
-	}, [getEvents]);
+	}, []);
 
 	useEffect(() => {
 		async function showEvents() {
@@ -86,7 +53,7 @@ export default function Home() {
 			setShouldShow(false);
 			showEvents();
 		}
-	}, [shouldShow, setShouldShow, near]);
+	}, [shouldShow, setShouldShow, nearZips]);
 
 	return (
 		<Flex
@@ -96,15 +63,14 @@ export default function Home() {
 			justify={'center'}
 		>
 			<Box style={{ width: '72vw' }}>
-				{near ? (
+				{nearZips !== '' ? (
 					<EventRow
 						key={'Near You'}
-						zip={''}
+						zip={nearZips}
 						type={'Near You'}
 						name={''}
 						cost={'1000000'}
 						eventDate={new Date().toISOString()}
-						passedData={near}
 					/>
 				) : null}
 				{cards}

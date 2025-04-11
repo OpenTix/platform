@@ -11,7 +11,7 @@ interface rowProps {
 	name: string;
 	cost: string;
 	eventDate: string;
-	passedData?: React.ReactNode[];
+	passedData?: React.ReactNode;
 }
 
 function EventRow({ zip, type, name, cost, eventDate, passedData }: rowProps) {
