@@ -38,7 +38,7 @@ export default function Events({
 
 	const getEvents = useCallback(async () => {
 		const resp = await fetch(
-			`${process.env.EXPO_PUBLIC_API_BASEURL}/vendor/events?Venue=${Venue}`,
+			`${process.env.EXPO_PUBLIC_API_BASEURL}/vendor/events?Venue=${Venue}&EventDatetime=${new Date().toISOString()}`,
 			{
 				headers: { Authorization: `Bearer ${client.auth.token}` }
 			}
@@ -206,7 +206,7 @@ export default function Events({
 					}}
 				>
 					<Text style={{ textAlign: 'center' }}>
-						You do not have any events for this venue
+						You do not have any upcoming events for this venue
 					</Text>
 				</View>
 			);
