@@ -39,7 +39,7 @@ function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 				}
 			})
 			.catch((error) => console.error('EventRow: ', error));
-	}, [page, zip, type, name, cost, eventDate, passedData]);
+	}, [page, zip, type, name, cost, eventDate]);
 
 	return (
 		<Box>
