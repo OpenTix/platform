@@ -13,6 +13,24 @@ global.TextEncoder = require('text-encoding').TextEncoder;
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+	const theme = {
+		colors: {
+			background: 'rgb(0, 0, 0)',
+			border: 'rgb(0, 0, 0)',
+			card: 'rgb(0, 0, 0)',
+			notification: 'rgb(255, 255, 255)',
+			primary: 'rgb(255, 255, 255)',
+			text: 'rgb(229, 229, 231)'
+		},
+		dark: true,
+		fonts: {
+			bold: { fontFamily: 'sans-serif', fontWeight: '600' },
+			heavy: { fontFamily: 'sans-serif', fontWeight: '700' },
+			medium: { fontFamily: 'sans-serif-medium', fontWeight: 'normal' },
+			regular: { fontFamily: 'sans-serif', fontWeight: 'normal' }
+		}
+	};
+
 	const client = useDynamic();
 	const [show, setShow] = useState(false);
 
@@ -55,7 +73,7 @@ export default function App() {
 	};
 
 	return (
-		<NavigationContainer linking={deepLinking}>
+		<NavigationContainer linking={deepLinking} theme={theme}>
 			<client.reactNative.WebView />
 			<Stack.Navigator initialRouteName="Home">
 				<Stack.Screen
@@ -73,7 +91,7 @@ export default function App() {
 								>
 									<Pressable
 										style={{
-											backgroundColor: 'white',
+											backgroundColor: '#000000',
 											borderRadius: 20, // Make it round
 											padding: 7,
 											elevation: 5, // Shadow for Android
@@ -93,11 +111,18 @@ export default function App() {
 											}
 										}}
 									>
-										<Text>Profile</Text>
+										<Text
+											style={{
+												color: '#b3b3b3',
+												textAlign: 'center'
+											}}
+										>
+											Profile
+										</Text>
 									</Pressable>
 									<Pressable
 										style={{
-											backgroundColor: 'white',
+											backgroundColor: '#000000',
 											borderRadius: 20, // Make it round
 											padding: 7,
 											elevation: 5, // Shadow for Android
@@ -117,7 +142,14 @@ export default function App() {
 											}
 										}}
 									>
-										<Text>Logout</Text>
+										<Text
+											style={{
+												color: '#b3b3b3',
+												textAlign: 'center'
+											}}
+										>
+											Logout
+										</Text>
 									</Pressable>
 								</View>
 							</SafeAreaView>
