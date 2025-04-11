@@ -5,32 +5,27 @@ import { useEffect, useState } from 'react';
 import {
 	View,
 	Text,
-	RefreshControl,
 	ScrollView,
 	Image,
-	Modal,
-	Alert,
 	Pressable,
 	StyleSheet,
-	TouchableOpacity,
-	Button
+	TouchableOpacity
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { polygonAmoy } from 'viem/chains';
 import { useDynamic } from './DynamicSetup';
 
 type Params = {
-	EventDetails: {
+	Event: {
 		Event: string;
 	};
 };
 
 export default function EventView({
 	route
-}: NativeStackScreenProps<Params, 'EventDetails'>) {
+}: NativeStackScreenProps<Params, 'Event'>) {
 	const client = useDynamic();
 	const { Event } = route.params; // this is the event id
-	const [EventData, setEventData] = useState<UserEventResponse>();
 	const [qrData, setqrData] = useState('');
 	const [displayData, setdisplayData] = useState(<Text>Loading...</Text>);
 
@@ -40,7 +35,6 @@ export default function EventView({
 		const split = name.split(' ');
 		const uuid = split[split.length - 1];
 		const data = await getEventByUUID(uuid);
-		setEventData(data);
 
 		const keys = Object.keys(data as UserEventResponse);
 		const values = Object.values(data as UserEventResponse);
@@ -84,8 +78,6 @@ export default function EventView({
 			</>
 		);
 	};
-
-	// runner();
 
 	useEffect(() => {
 		runner();

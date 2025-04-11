@@ -1,43 +1,61 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStaticNavigation } from '@react-navigation/native';
-import { Button } from 'react-native';
-import { dynamicClient } from './DynamicSetup';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Button, SafeAreaView, View } from 'react-native';
+import { useDynamic } from './DynamicSetup';
 import EventView from './EventView';
-import ProfileScreen from './Profile';
 import HomeScreen from './TicketListing';
-import TransferScreen from './TicketTransfer';
 
-const logUserOut = () => {
-	console.log('LOGGED OUT');
-	dynamicClient.auth.logout();
-};
+const Stack = createNativeStackNavigator();
 
-const showProfile = () => {
-	console.log('showing profile');
-	dynamicClient.ui.userProfile.show();
-};
+function HomeStack() {
+	const client = useDynamic();
+	return (
+		<>
+			<client.reactNative.WebView />
+			<Stack.Navigator initialRouteName="Home">
+				<Stack.Screen
+					name="Home"
+					component={HomeScreen}
+					options={{
+						headerRight: () => (
+							<SafeAreaView>
+								<View
+									style={{
+										flex: 1,
+										flexDirection: 'row',
+										columnGap: 5
+									}}
+								>
+									<Button
+										title="Profile"
+										onPress={() => {
+											if (client?.auth?.token !== null) {
+												client.ui.userProfile.show();
+											}
+										}}
+									/>
+									<Button
+										title="Logout"
+										onPress={() => {
+											if (client?.auth?.token !== null) {
+												client.auth.logout();
+											}
+										}}
+									/>
+								</View>
+							</SafeAreaView>
+						)
+					}}
+				/>
+				<Stack.Screen
+					name="Event"
+					component={EventView}
+					initialParams={{ Venue: undefined }}
+					// @ts-expect-error This is valid code, but typescript doesn't like it
+					options={({ route }) => ({ title: route?.params?.Name })}
+				/>
+			</Stack.Navigator>
+		</>
+	);
+}
 
-const MyTabs = createBottomTabNavigator({
-	screens: {
-		Tickets: HomeScreen,
-		Transfer: TransferScreen,
-		Profile: ProfileScreen,
-		Event: EventView
-	},
-	screenOptions: {
-		headerRight: () => (
-			// <TouchableOpacity>
-			// 	{
-			// 	<Avatar.Icon size={30} icon="login" />
-			//     }
-			// </TouchableOpacity>
-			<Button title="logout" onPress={logUserOut} />
-		),
-		headerLeft: () => <Button title="profile" onPress={showProfile} />
-	},
-	initialRouteName: 'Tickets'
-});
-
-const Navigation = createStaticNavigation(MyTabs);
-
-export default Navigation;
+export default HomeStack;
