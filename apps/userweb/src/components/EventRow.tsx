@@ -14,7 +14,7 @@ interface rowProps {
 
 function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 	const flexRef = useRef(null);
-	const [cards, setCards] = useState<React.ReactNode>([]);
+	const [cards, setCards] = useState<React.ReactNode>(null);
 	const [page, setPage] = useState(1);
 
 	const moveCards = (dist: number, pageDist: number) => {
@@ -41,6 +41,7 @@ function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 			.catch((error) => console.error('EventRow: ', error));
 	}, [page, zip, type, name, cost, eventDate]);
 
+	if (cards === null) return null;
 	return (
 		<Box>
 			<Flex gap="1">
