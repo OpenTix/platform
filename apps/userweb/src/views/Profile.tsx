@@ -20,11 +20,13 @@ import {
 	Dialog,
 	Flex,
 	Heading,
+	Select,
 	Separator,
 	Skeleton,
 	Text,
 	Container
 } from '@radix-ui/themes';
+import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { TicketCard } from '../components/TicketCard';
@@ -48,6 +50,10 @@ const USDBalance = styled.div`
 	font-weight: bold;
 `;
 const TokenBalance = styled.div`
+	.dark & {
+		color: #fff;
+	}
+
 	color: black;
 	font-size: 1.5em;
 	font-weight: light;
@@ -95,6 +101,7 @@ export default function Profile() {
 		ticketTransferStateChangeRequested,
 		setTicketTransferStateChangeRequested
 	] = useState<boolean>(false);
+	const { theme, setTheme } = useTheme();
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -637,6 +644,35 @@ export default function Profile() {
 														</TokenBalance>
 													)}
 												</Flex>
+											</Flex>
+										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Settings
+												</Heading>
+												<ActionsText>
+													Color Mode
+												</ActionsText>
+												<Select.Root
+													defaultValue="system"
+													onValueChange={(value) => {
+														setTheme(value);
+													}}
+												>
+													<Select.Trigger />
+													<Select.Content>
+														<Select.Item value="system">
+															System
+														</Select.Item>
+														<Select.Item value="dark">
+															Dark
+														</Select.Item>
+														<Select.Item value="light">
+															Light
+														</Select.Item>
+													</Select.Content>
+												</Select.Root>
 											</Flex>
 										</Card>
 										<Card>
