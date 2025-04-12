@@ -1,4 +1,4 @@
-import { Container, Theme } from '@radix-ui/themes';
+import { Container } from '@radix-ui/themes';
 import React, { FC } from 'react';
 import styled from 'styled-components';
 
@@ -23,11 +23,9 @@ export interface NavbarProps {
 export const Navbar: FC<NavbarProps> = ({ children }) => {
 	return (
 		<NavWrapper>
-			<Theme accentColor={'purple'}>
-				<Container size={'4'}>
-					<NavContent>{children}</NavContent>
-				</Container>
-			</Theme>
+			<Container size={'4'}>
+				<NavContent>{children}</NavContent>
+			</Container>
 		</NavWrapper>
 	);
 };
