@@ -15,7 +15,7 @@
 		"test": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "npx jest apps/userweb --passWithNoTests"
+				"command": "npx jest apps/userweb --passWithNoTests --forceExit"
 			}
 		}
 	}
