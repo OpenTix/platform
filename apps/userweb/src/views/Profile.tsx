@@ -24,7 +24,6 @@ import {
 	Skeleton,
 	Text,
 	Container
-	// TextField
 } from '@radix-ui/themes';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -90,6 +89,12 @@ export default function Profile() {
 		TicketInfo[] | null | undefined
 	>(undefined);
 	const isLoggedIn = useIsLoggedIn();
+	const [ticketTransfersEnabled, setTicketTransfersEnabled] =
+		useState<boolean>(false);
+	const [
+		ticketTransferStateChangeRequested,
+		setTicketTransferStateChangeRequested
+	] = useState<boolean>(false);
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -266,13 +271,102 @@ export default function Profile() {
 		await handleLogOut();
 	};
 
+	const check_if_transfers_are_enabled = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const data = (await p.readContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'check_ticket_transfer_permission',
+						account: w.account
+					})) as boolean;
+
+					setTicketTransfersEnabled(data);
+				} else {
+					console.error('Wallet client or public client not set up');
+					setTicketTransfersEnabled(false);
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+				setTicketTransfersEnabled(false);
+			}
+		}
+	};
+
+	const enable_ticket_transfers = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_user_to_user_ticket_transfer',
+						account: w.account,
+						args: []
+					});
+					const hash = await w.writeContract(request);
+					console.log(`enable ticket transfer hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
+					setTicketTransferStateChangeRequested(true);
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
+	const disable_ticket_transfers = async () => {
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			try {
+				const w = await primaryWallet.getWalletClient();
+				const p = await primaryWallet.getPublicClient();
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'disallow_user_to_user_ticket_transfer',
+						account: w.account,
+						args: []
+					});
+					const hash = await w.writeContract(request);
+					console.log(`disable ticket transfer hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
+					setTicketTransferStateChangeRequested(true);
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
 	useEffect(() => {
 		if (isLoggedIn) {
 			getUserBalance();
 			setIsWeb2User(userHasEmbeddedWallet());
 			getAllOwnedEvents();
+			check_if_transfers_are_enabled();
 		}
-	}, [primaryWallet]);
+	}, [primaryWallet, isLoggedIn]);
+
+	useEffect(() => {
+		check_if_transfers_are_enabled();
+	}, [ticketTransferStateChangeRequested]);
 
 	return (
 		<Container size="4">
@@ -386,6 +480,121 @@ export default function Profile() {
 												</ul>
 											</Flex>
 										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
+													Ticket Transfers
+												</Heading>
+												<Text>
+													Ticket Transfers allow you
+													to let another user buy your
+													ticket from you.
+												</Text>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														Selling
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															To sell your ticket
+															you must first
+															enable ticket
+															transfers on your
+															account.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															Enabling ticket
+															transfers allows
+															your ticket to be
+															moved from your
+															account to another
+															users account when
+															they purchase your
+															ticket.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															After enabling you
+															will be able to
+															initiate a ticket
+															transfer below.
+														</Text>
+													</li>
+												</ul>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														Buying
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															Be logged in to our
+															website and click on
+															the link the seller
+															sends you to buy.
+														</Text>
+														<Text>
+															You can also buy in
+															our mobile app by
+															scanning the QR code
+															generated for the
+															seller.
+														</Text>
+													</li>
+												</ul>
+												<Flex align="center" gap="2">
+													<Text weight="light">
+														FAQ
+													</Text>
+												</Flex>
+												<ul
+													style={{
+														paddingLeft: '1.5rem',
+														margin: 0
+													}}
+												>
+													<li>
+														<Text>
+															Enabling/Disabling
+															Ticket Transfer
+															requires a small
+															fee.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															Selling a Ticket
+															requires a small
+															fee.
+														</Text>
+													</li>
+													<li>
+														<Text>
+															All user to user
+															sales are for the
+															basecost of the
+															ticket.
+														</Text>
+													</li>
+												</ul>
+											</Flex>
+										</Card>
 									</Flex>
 								</Box>
 							</LeftColumn>
@@ -445,6 +654,23 @@ export default function Profile() {
 												>
 													Deposit Money
 												</ActionsText>
+												{ticketTransfersEnabled ? (
+													<ActionsText
+														onClick={
+															disable_ticket_transfers
+														}
+													>
+														Disable Ticket Transfers
+													</ActionsText>
+												) : (
+													<ActionsText
+														onClick={
+															enable_ticket_transfers
+														}
+													>
+														Enable Ticket Transfers
+													</ActionsText>
+												)}
 												<ActionsText
 													onClick={() =>
 														handleLogOut()
@@ -628,6 +854,9 @@ export default function Profile() {
 														event={data.data}
 														ticket={
 															ticketid as string
+														}
+														transferEnabled={
+															ticketTransfersEnabled
 														}
 													/>
 												);

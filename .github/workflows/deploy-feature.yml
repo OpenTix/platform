@@ -86,7 +86,7 @@ jobs:
                 key: ${{ hashFiles('package-lock.json') }}
 
             - run: npm i
-              if: steps.local-cache.outputs.cache-hit != 'true'
+              # if: steps.local-cache.outputs.cache-hit != 'true'
 
             - name: Build
               run: |
