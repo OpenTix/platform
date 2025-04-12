@@ -3,8 +3,7 @@
 		"plugins": [
 			"expo-secure-store",
 			"expo-router",
-			"react-native-nfc-manager",
-			"expo-barcode-scanner"
+			"react-native-nfc-manager"
 		]
 	}
 }
