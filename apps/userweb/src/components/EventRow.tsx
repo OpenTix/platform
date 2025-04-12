@@ -1,8 +1,7 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventResponse } from '@platform/types';
 import { Box, Flex, Heading, Button, Card, Text } from '@radix-ui/themes';
-import { useEffect, useState, useRef } from 'react';
-import { useInterval } from 'usehooks-ts';
+import { useEffect, useState, useRef, memo } from 'react';
 import { EventCard } from './EventCard';
 
 interface rowProps {
@@ -11,19 +10,11 @@ interface rowProps {
 	name: string;
 	cost: string;
 	eventDate: string;
-	passedData?: React.ReactNode[];
 }
 
-export default function EventRow({
-	zip,
-	type,
-	name,
-	cost,
-	eventDate,
-	passedData
-}: rowProps) {
+function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 	const flexRef = useRef(null);
-	const [cards, setCards] = useState<React.ReactNode>([]);
+	const [cards, setCards] = useState<React.ReactNode>(null);
 	const [page, setPage] = useState(1);
 
 	const moveCards = (dist: number, pageDist: number) => {
@@ -33,10 +24,6 @@ export default function EventRow({
 	};
 
 	useEffect(() => {
-		if (passedData) {
-			setCards(passedData);
-			return;
-		}
 		Promise.resolve(
 			getEvents(
 				`Page=${page}&Zip=${zip}&Type=${type === 'Near You' ? '' : type}&Name=${''}&Basecost=${cost}&EventDatetime=${eventDate}`
@@ -52,8 +39,9 @@ export default function EventRow({
 				}
 			})
 			.catch((error) => console.error('EventRow: ', error));
-	}, [page, zip, type, name, cost, eventDate, passedData]);
+	}, [page, zip, type, name, cost, eventDate]);
 
+	if (cards === null) return null;
 	return (
 		<Box>
 			<Flex gap="1">
@@ -118,3 +106,5 @@ async function getEvents(pageRequest: string) {
 			))
 		: undefined);
 }
+
+export default memo(EventRow);

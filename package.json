@@ -83,6 +83,8 @@
 		"react-native-svg": "15.8.0",
 		"react-native-wallet-manager": "^1.1.1",
 		"react-native-webview": "13.12.5",
+		"image-size": ">=1.2.1",
+		"react-qr-code": "^2.0.15",
 		"react-router-dom": "^6.28.1",
 		"react-spinners": "^0.15.0",
 		"styled-components": "5.3.6",
