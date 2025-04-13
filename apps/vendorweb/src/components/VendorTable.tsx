@@ -80,6 +80,9 @@ export default function VendorTable({ rowData, tableType }: tableData) {
 			<Table.Row
 				key={idx}
 				onClick={() => navigate(tableType + '/' + row.ID)}
+				style={{
+					cursor: 'pointer'
+				}}
 			>
 				{tableRow}
 			</Table.Row>
