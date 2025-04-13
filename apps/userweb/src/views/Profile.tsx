@@ -660,10 +660,8 @@ export default function Profile() {
 													defaultValue={theme}
 													onValueChange={(value) => {
 														setTheme(value);
-														const widget: any =
-															document.querySelector(
-																'#dynamic-widget'
-															);
+														const widget: Element =
+															document.body;
 														if (widget) {
 															widget.setAttribute(
 																'data-dynamic-theme',
