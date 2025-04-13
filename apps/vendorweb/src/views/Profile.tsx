@@ -315,8 +315,8 @@ export default function Profile() {
 										defaultValue={theme}
 										onValueChange={(value) => {
 											setTheme(value);
-											const widget: Element =
-												document.body;
+											const widget: any =
+												document.querySelector('#root');
 											if (widget) {
 												widget.setAttribute(
 													'data-dynamic-theme',
