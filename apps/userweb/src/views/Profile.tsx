@@ -69,6 +69,9 @@ const ActionsText = styled(Text)`
 	&:hover {
 		background-color: #f0f0f0;
 	}
+	.dark &:hover {
+		background-color: var(--accent-a3);
+	}
 `;
 
 interface TicketInfo {
@@ -651,9 +654,7 @@ export default function Profile() {
 												<Heading size="4">
 													Settings
 												</Heading>
-												<ActionsText>
-													Color Mode
-												</ActionsText>
+												Color Mode
 												<Select.Root
 													defaultValue="system"
 													onValueChange={(value) => {
@@ -681,17 +682,20 @@ export default function Profile() {
 													Actions
 												</Heading>
 												<ActionsText
+													color="gray"
 													onClick={handleSendbalance}
 												>
 													Send Money
 												</ActionsText>
 												<ActionsText
+													color="gray"
 													onClick={openFundingOptions}
 												>
 													Deposit Money
 												</ActionsText>
 												{ticketTransfersEnabled ? (
 													<ActionsText
+														color="gray"
 														onClick={
 															disable_ticket_transfers
 														}
@@ -700,6 +704,7 @@ export default function Profile() {
 													</ActionsText>
 												) : (
 													<ActionsText
+														color="gray"
 														onClick={
 															enable_ticket_transfers
 														}
@@ -708,6 +713,7 @@ export default function Profile() {
 													</ActionsText>
 												)}
 												<ActionsText
+													color="gray"
 													onClick={() =>
 														handleLogOut()
 													}
