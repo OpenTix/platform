@@ -50,7 +50,8 @@ function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 					onClick={() => moveCards(0, -1)}
 					style={{
 						backgroundColor: 'rgba(0,0,0,0)',
-						color: 'darkgray'
+						color: 'darkgray',
+						cursor: 'pointer'
 					}}
 				>
 					{' <'}
@@ -59,7 +60,8 @@ function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 					onClick={() => moveCards(0, 1)}
 					style={{
 						backgroundColor: 'rgba(0,0,0,0)',
-						color: 'darkgrey'
+						color: 'darkgrey',
+						cursor: 'pointer'
 					}}
 				>
 					{'> '}
