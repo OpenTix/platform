@@ -45,6 +45,10 @@ const USDBalance = styled.div`
 	font-weight: bold;
 `;
 const TokenBalance = styled.div`
+	.dark & {
+		color: #fff;
+	}
+
 	color: black;
 	font-size: 1.5em;
 	font-weight: light;
