@@ -656,7 +656,7 @@ export default function Profile() {
 												</Heading>
 												Color Mode
 												<Select.Root
-													defaultValue="system"
+													defaultValue={theme}
 													onValueChange={(value) => {
 														setTheme(value);
 													}}
