@@ -9,6 +9,7 @@ import {
 	useSendBalance,
 	useIsLoggedIn
 } from '@dynamic-labs/sdk-react-core';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import {
@@ -27,7 +28,7 @@ import {
 	Container
 } from '@radix-ui/themes';
 import { useTheme } from 'next-themes';
-import React, { useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { TicketCard } from '../components/TicketCard';
 
@@ -659,6 +660,20 @@ export default function Profile() {
 													defaultValue={theme}
 													onValueChange={(value) => {
 														setTheme(value);
+														const widget: any =
+															document.querySelector(
+																'#dynamic-widget'
+															);
+														if (widget) {
+															widget.setAttribute(
+																'data-dynamic-theme',
+																value ===
+																	'system'
+																	? 'auto'
+																	: (value ??
+																			'auto')
+															);
+														}
 													}}
 												>
 													<Select.Trigger />
