@@ -39,10 +39,7 @@ if (isMobile) {
 
 	root.render(
 		<StrictMode>
-			<ThemeProvider
-				attribute={['class', 'data-dynamic-theme']}
-				defaultTheme="system"
-			>
+			<ThemeProvider attribute={'class'} defaultTheme="system">
 				<Theme accentColor={'purple'}>
 					<DynamicContextProvider
 						theme={theme as ThemeSetting}
