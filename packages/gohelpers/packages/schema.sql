@@ -70,7 +70,7 @@ create table app.event(
             on delete cascade,
     name text not null,
     type text not null,
-    event_datetime timestamp not null,
+    event_datetime timestamptz not null,
     description text not null,
     disclaimer text,
     basecost double precision not null,

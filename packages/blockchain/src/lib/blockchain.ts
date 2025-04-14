@@ -1,6 +1,6 @@
 import { polygonAmoy } from 'viem/chains';
 
-export const ContractAddress = '0xE7244Aab113cC2D06099C08669aD7dF4bFfd1Db3';
+export const ContractAddress = '0x41c3462A19a267D8F5690D5b411c4e46aCf0bbcB';
 
 export type ContractGetEventIdsReturnedMetadata = {
 	min: bigint;
@@ -324,6 +324,15 @@ export const ContractABI = [
 	},
 	{
 		inputs: [
+			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+		],
+		name: 'check_ticket_transferable',
+		outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		inputs: [
 			{ internalType: 'string', name: 'description', type: 'string' },
 			{ internalType: 'string', name: 'vendor_url', type: 'string' },
 			{
@@ -335,6 +344,15 @@ export const ContractABI = [
 			{ internalType: 'uint256[]', name: 'costs', type: 'uint256[]' }
 		],
 		name: 'create_new_event',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{ internalType: 'uint256', name: 'ticketid', type: 'uint256' }
+		],
+		name: 'disallow_ticket_to_be_transfered',
 		outputs: [],
 		stateMutability: 'nonpayable',
 		type: 'function'
