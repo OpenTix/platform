@@ -130,7 +130,7 @@ export default function EventDetails({
 			}
 		}
 
-		if (hasID == false) {
+		if (hasID === false) {
 			return 'Sender does not own the ticket.';
 		}
 
@@ -184,7 +184,7 @@ export default function EventDetails({
 			hour12: true
 		});
 
-		if (intermediate != '') {
+		if (intermediate !== '') {
 			const ret = await verifyScanIn(intermediate);
 			qrData2 = ret;
 		}
@@ -290,10 +290,44 @@ export default function EventDetails({
 							borderRadius: 10
 						}}
 					/>
-					{qrData2 !== '' && qrData2 !== 'success' ? (
-						<ActivityIndicator size="small" color="purple" />
+					{qrData2 === '' && intermediate !== '' ? (
+						<>
+							<Text
+								style={{
+									color: is_dark
+										? colors.darkText
+										: colors.lightText,
+									textAlign: 'center'
+								}}
+							>
+								Checking in...
+							</Text>
+							<ActivityIndicator size="small" color="purple" />
+						</>
+					) : qrData2 !== 'success' ? (
+						<Text
+							style={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText,
+								textAlign: 'center'
+							}}
+						>
+							{qrData2}
+						</Text>
 					) : (
-						<Text>{qrData2}</Text>
+						qrData2 === 'success' && (
+							<Text
+								style={{
+									color: is_dark
+										? colors.darkText
+										: colors.lightText,
+									textAlign: 'center'
+								}}
+							>
+								You have been checked in
+							</Text>
+						)
 					)}
 				</View>
 				<View style={{ marginBottom: 30, alignItems: 'center' }}>

@@ -9,7 +9,8 @@ import {
 	StatusBar,
 	RefreshControl,
 	Image,
-	useColorScheme
+	useColorScheme,
+	LayoutChangeEvent
 } from 'react-native';
 import { Card, ActivityIndicator } from 'react-native-paper';
 import * as colors from '../constants/colors';
@@ -22,8 +23,16 @@ export default function Home() {
 
 	const [refreshing, setRefreshing] = useState(false);
 	const [shouldFetch, setShouldFetch] = useState<boolean>(false);
-	const [cards, setCards] = useState<React.ReactNode>(null);
+	const [timeoutDone, setTimeoutDone] = useState<boolean>(false);
+	const [venues, setVenues] = useState<Venue[]>([]);
 	const [page, setPage] = useState<number>(1);
+
+	const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
+
+	const handleLayout = (index: number, layoutEvent: LayoutChangeEvent) => {
+		const { height } = layoutEvent.nativeEvent.layout;
+		setCardHeights((prev) => ({ ...prev, [index]: height }));
+	};
 
 	// handle scroll up page refresh
 	const onRefresh = useCallback(() => {
@@ -34,162 +43,26 @@ export default function Home() {
 		}, 1000);
 	}, []);
 
-	const getFunc = useCallback(async () => {
+	const getVenues = useCallback(async () => {
 		const resp = await fetch(
 			`${process.env.EXPO_PUBLIC_API_BASEURL}/vendor/venues?Page=${page}`,
-			{
-				headers: { Authorization: `Bearer ${client.auth.token}` }
-			}
+			{ headers: { Authorization: `Bearer ${client.auth.token}` } }
 		);
-		setShouldFetch(false);
 
 		const data = await resp.json();
-		if (!data || data.length === 0) setCards(null);
+		setShouldFetch(false);
 
-		setCards(
-			<View
-				style={{
-					alignItems: 'center',
-					display: 'flex',
-					flexDirection: 'column',
-					rowGap: 10,
-					justifyContent: 'center'
-				}}
-			>
-				{data.map((venue: Venue, idx: number) => {
-					const leftComponent = ({ size }: { size: number }) => (
-						<View>
-							<Image
-								source={{
-									uri:
-										venue.Photo ??
-										'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
-								}}
-								key={'Photo'}
-								style={{
-									width: 70,
-									height: 70,
-									borderRadius: 35
-								}}
-							/>
-						</View>
-					);
-
-					const rightComponent = ({ size }: { size: number }) => (
-						<AntDesign
-							name="right"
-							size={size}
-							color={
-								is_dark
-									? colors.darkSecondary
-									: colors.lightSecondary
-							}
-						/>
-					);
-
-					const subtitle = (
-						<View>
-							<Text
-								style={{
-									color: is_dark
-										? colors.darkSecondary
-										: colors.lightSecondary,
-									textAlign: 'center',
-									textAlignVertical: 'center'
-								}}
-							>
-								{venue.StreetAddress}
-							</Text>
-							<Text
-								style={{
-									color: is_dark
-										? colors.darkSecondary
-										: colors.lightSecondary,
-									textAlign: 'center',
-									textAlignVertical: 'center'
-								}}
-							>
-								{venue.City}, {venue.StateName} {venue.Zip}
-							</Text>
-						</View>
-					);
-
-					return (
-						<Card
-							style={{
-								minWidth: '90%',
-								maxWidth: '90%',
-								justifyContent: 'center',
-								backgroundColor: is_dark
-									? colors.darkPrimary
-									: colors.lightPrimary,
-								marginHorizontal: 5,
-								marginVertical: 5,
-								padding: 10,
-								paddingBottom: 12,
-								elevation: 5,
-								shadowColor: '#000', // Shadow for iOS
-								shadowOffset: {
-									width: 0,
-									height: 2
-								},
-								shadowOpacity: 0.4,
-								shadowRadius: 6
-							}}
-							key={idx}
-							onPress={() =>
-								navigation.navigate('Events', {
-									Venue: venue.Pk,
-									Name: venue.Name
-								})
-							}
-						>
-							<Card.Title
-								title={
-									venue.Name.length > 25
-										? venue.Name.slice(0, 22) + '...'
-										: venue.Name
-								}
-								titleStyle={{
-									fontSize: 16,
-									textAlign: 'center',
-									color: is_dark
-										? colors.darkText
-										: colors.lightText
-								}}
-								subtitle={subtitle}
-								subtitleStyle={{
-									display: 'flex',
-									flexDirection: 'column',
-									justifyContent: 'center',
-									marginTop: 5,
-									alignItems: 'center',
-									rowGap: 7,
-									textAlign: 'center',
-									fontSize: 10
-								}}
-								leftStyle={{
-									marginLeft: 0,
-									justifyContent: 'center',
-									alignItems: 'center',
-									width: '20%'
-								}}
-								left={leftComponent}
-								right={rightComponent}
-							/>
-						</Card>
-					);
-				})}
-			</View>
-		);
+		setVenues(data);
 	}, []);
 
 	useEffect(() => {
-		if (shouldFetch) getFunc();
+		setTimeoutDone(false);
+		if (shouldFetch) getVenues();
+		setTimeout(() => setTimeoutDone(true), 2000);
 	}, [shouldFetch]);
 
 	useEffect(() => {
-		getFunc();
+		if (client?.auth?.token) setShouldFetch(true);
 	}, [client.auth.token]);
 
 	return (
@@ -211,7 +84,7 @@ export default function Home() {
 					translucent={false}
 					hidden={false}
 				/>
-				{client.auth.token != null ? (
+				{client.auth.token !== null ? (
 					<ScrollView
 						refreshControl={
 							<RefreshControl
@@ -226,7 +99,179 @@ export default function Home() {
 							paddingTop: 10
 						}}
 					>
-						{cards}
+						{venues && venues.length > 0 ? (
+							<View
+								style={{
+									alignItems: 'center',
+									display: 'flex',
+									flexDirection: 'column',
+									rowGap: 10,
+									justifyContent: 'center'
+								}}
+							>
+								{venues.map((venue: Venue, idx: number) => {
+									const leftComponent = () => (
+										<Image
+											source={{
+												uri:
+													venue.Photo ??
+													'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+											}}
+											key={'Photo'}
+											style={{
+												height: cardHeights[idx] || 90,
+												aspectRatio: 1,
+												borderTopLeftRadius: 10,
+												borderBottomLeftRadius: 10
+											}}
+										/>
+									);
+
+									const rightComponent = ({
+										size
+									}: {
+										size: number;
+									}) => (
+										<AntDesign
+											name="right"
+											size={size}
+											color={
+												is_dark
+													? colors.darkSecondary
+													: colors.lightSecondary
+											}
+										/>
+									);
+
+									const subtitle = (
+										<View>
+											<Text
+												style={{
+													color: is_dark
+														? colors.darkSecondary
+														: colors.lightSecondary,
+													textAlign: 'center',
+													textAlignVertical: 'center'
+												}}
+											>
+												{venue.StreetAddress}
+											</Text>
+											<Text
+												style={{
+													color: is_dark
+														? colors.darkSecondary
+														: colors.lightSecondary,
+													textAlign: 'center',
+													textAlignVertical: 'center'
+												}}
+											>
+												{venue.City}, {venue.StateName}{' '}
+												{venue.Zip}
+											</Text>
+										</View>
+									);
+
+									return (
+										<Card
+											onLayout={(e) =>
+												handleLayout(idx, e)
+											}
+											style={{
+												minWidth: '90%',
+												maxWidth: '90%',
+												justifyContent: 'center',
+												backgroundColor: is_dark
+													? colors.darkPrimary
+													: colors.lightPrimary,
+												marginRight: 5,
+												marginVertical: 5,
+												paddingVertical: 10,
+												elevation: 5,
+												shadowColor: '#000', // Shadow for iOS
+												shadowOffset: {
+													width: 0,
+													height: 2
+												},
+												shadowOpacity: 0.4,
+												shadowRadius: 6
+											}}
+											key={idx}
+											onPress={() =>
+												navigation.navigate('Events', {
+													Venue: venue.Pk,
+													Name: venue.Name
+												})
+											}
+										>
+											<Card.Title
+												style={{
+													paddingLeft: 0, // This removes internal padding in the Card.Title
+													marginLeft: 0 // This ensures the component aligns with the edge
+												}}
+												title={
+													venue.Name.length > 25
+														? venue.Name.slice(
+																0,
+																22
+															) + '...'
+														: venue.Name
+												}
+												titleStyle={{
+													fontSize: 16,
+													textAlign: 'center',
+													color: is_dark
+														? colors.darkText
+														: colors.lightText
+												}}
+												subtitle={subtitle}
+												subtitleStyle={{
+													display: 'flex',
+													flexDirection: 'column',
+													justifyContent: 'center',
+													marginTop: 5,
+													alignItems: 'center',
+													rowGap: 7,
+													textAlign: 'center',
+													fontSize: 10
+												}}
+												leftStyle={{
+													marginLeft: 0,
+													paddingLeft: 0,
+													marginVertical: 0,
+													width: '20%'
+												}}
+												left={leftComponent}
+												right={rightComponent}
+											/>
+										</Card>
+									);
+								})}
+							</View>
+						) : timeoutDone ? (
+							<View
+								style={{
+									alignItems: 'center',
+									display: 'flex',
+									flexDirection: 'column',
+									rowGap: 10,
+									justifyContent: 'center'
+								}}
+							>
+								<Text
+									style={{
+										textAlign: 'center',
+										color: is_dark
+											? colors.darkText
+											: colors.lightText
+									}}
+								>
+									You do not have any upcoming events for this
+									venue
+								</Text>
+							</View>
+						) : (
+							<ActivityIndicator size="large" color="purple" />
+						)}
 					</ScrollView>
 				) : (
 					<ActivityIndicator size="large" color="purple" />
