@@ -285,10 +285,16 @@ export default function Home() {
 							</QueryClientProvider>
 						</Tabs.Content>
 						<Flex justify="between" width="100px">
-							<Button onClick={() => updatePage(false)}>
+							<Button
+								onClick={() => updatePage(false)}
+								style={{ cursor: 'pointer' }}
+							>
 								{'<'}
 							</Button>
-							<Button onClick={() => updatePage(true)}>
+							<Button
+								onClick={() => updatePage(true)}
+								style={{ cursor: 'pointer' }}
+							>
 								{'>'}
 							</Button>
 						</Flex>

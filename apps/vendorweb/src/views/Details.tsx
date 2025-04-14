@@ -51,6 +51,9 @@ const ActionsText = styled(Text)`
 	&:hover {
 		background-color: #f0f0f0;
 	}
+	.dark &:hover {
+		background-color: var(--accent-a3);
+	}
 `;
 
 export interface DetailsProps {
@@ -417,6 +420,7 @@ export default function Details({ typestring }: DetailsProps) {
 										onClick={() => {
 											setShouldShowEditModal(true);
 										}}
+										color="gray"
 									>
 										Edit
 									</ActionsText>
@@ -428,6 +432,7 @@ export default function Details({ typestring }: DetailsProps) {
 														true
 													);
 												}}
+												color="gray"
 											>
 												Mint
 											</ActionsText>

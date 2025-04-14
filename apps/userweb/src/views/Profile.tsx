@@ -9,6 +9,7 @@ import {
 	useSendBalance,
 	useIsLoggedIn
 } from '@dynamic-labs/sdk-react-core';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import {
@@ -20,12 +21,14 @@ import {
 	Dialog,
 	Flex,
 	Heading,
+	Select,
 	Separator,
 	Skeleton,
 	Text,
 	Container
 } from '@radix-ui/themes';
-import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import React, { ReactElement, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { TicketCard } from '../components/TicketCard';
 
@@ -48,6 +51,10 @@ const USDBalance = styled.div`
 	font-weight: bold;
 `;
 const TokenBalance = styled.div`
+	.dark & {
+		color: #fff;
+	}
+
 	color: black;
 	font-size: 1.5em;
 	font-weight: light;
@@ -62,6 +69,9 @@ const ActionsText = styled(Text)`
 	padding: 5px;
 	&:hover {
 		background-color: #f0f0f0;
+	}
+	.dark &:hover {
+		background-color: var(--accent-a3);
 	}
 `;
 
@@ -95,6 +105,7 @@ export default function Profile() {
 		ticketTransferStateChangeRequested,
 		setTicketTransferStateChangeRequested
 	] = useState<boolean>(false);
+	const { theme, setTheme } = useTheme();
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -648,20 +659,55 @@ export default function Profile() {
 										<Card>
 											<Flex gap="3" direction={'column'}>
 												<Heading size="4">
+													Settings
+												</Heading>
+												Color Mode
+												<Select.Root
+													defaultValue={theme}
+													onValueChange={(value) => {
+														setTheme(value);
+														window.dispatchEvent(
+															new Event(
+																'local-storage'
+															)
+														);
+													}}
+												>
+													<Select.Trigger />
+													<Select.Content>
+														<Select.Item value="system">
+															System
+														</Select.Item>
+														<Select.Item value="dark">
+															Dark
+														</Select.Item>
+														<Select.Item value="light">
+															Light
+														</Select.Item>
+													</Select.Content>
+												</Select.Root>
+											</Flex>
+										</Card>
+										<Card>
+											<Flex gap="3" direction={'column'}>
+												<Heading size="4">
 													Actions
 												</Heading>
 												<ActionsText
+													color="gray"
 													onClick={handleSendbalance}
 												>
 													Send Money
 												</ActionsText>
 												<ActionsText
+													color="gray"
 													onClick={openFundingOptions}
 												>
 													Deposit Money
 												</ActionsText>
 												{ticketTransfersEnabled ? (
 													<ActionsText
+														color="gray"
 														onClick={
 															disable_ticket_transfers
 														}
@@ -670,6 +716,7 @@ export default function Profile() {
 													</ActionsText>
 												) : (
 													<ActionsText
+														color="gray"
 														onClick={
 															enable_ticket_transfers
 														}
@@ -678,6 +725,7 @@ export default function Profile() {
 													</ActionsText>
 												)}
 												<ActionsText
+													color="gray"
 													onClick={() =>
 														handleLogOut()
 													}

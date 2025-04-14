@@ -3,7 +3,7 @@
 exports[`NavLink matches snapshot 1`] = `
 <DocumentFragment>
   <a
-    class="NavLink__StyledNavLink-sc-8cdbnb-0 ekhGfy"
+    class="NavLink__StyledNavLink-sc-8cdbnb-0 bcjHjZ"
     href="/"
   >
     Snapshot Test

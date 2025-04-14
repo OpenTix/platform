@@ -1,6 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { AllEventTypesArray, UserEventResponse } from '@platform/types';
-import { Text, Box, Button, Flex, Select, TextField } from '@radix-ui/themes';
+import { Text, Box, Flex, Select, TextField, Progress } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -24,7 +24,6 @@ function getTimestamp() {
 export default function EventSearchPage() {
 	const defaultCost = 1000000;
 
-	const [showSidebar, setShowSidebar] = useState(false);
 	const [params, setParams] = useSearchParams();
 
 	const [timeoutId, setTimeoutID] = useState<NodeJS.Timeout>();
@@ -81,7 +80,6 @@ export default function EventSearchPage() {
 						display: 'flex',
 						flexDirection: 'column',
 						rowGap: '10px',
-						backgroundColor: 'white',
 						boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
 						borderRadius: '6px'
 					}}
@@ -89,13 +87,11 @@ export default function EventSearchPage() {
 					<Text align={'center'} weight={'bold'}>
 						Filter
 					</Text>
-					<Box
-						style={{
-							height: '4px',
-							backgroundColor: 'purple',
-							borderRadius: '2px',
-							marginBottom: '4px'
-						}}
+					<Progress
+						color="purple"
+						my="2"
+						value={100}
+						style={{ height: '3px' }}
 					/>
 					<PopoverLabel>
 						<Text as="div" size="2" mb="1" weight="bold">
@@ -154,6 +150,7 @@ export default function EventSearchPage() {
 							Time
 						</Text>
 						<TextField.Root
+							size="2"
 							name="Time"
 							value={
 								params.get('Date') ?? new Date().toISOString()

@@ -1,10 +1,5 @@
-import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
-import {
-	DynamicContextProps,
-	DynamicContextProvider
-} from '@dynamic-labs/sdk-react-core';
-import { MantineProvider } from '@mantine/core';
 import { Theme } from '@radix-ui/themes';
+import { ThemeProvider } from 'next-themes';
 import { StrictMode } from 'react';
 import { isMobile } from 'react-device-detect';
 import * as ReactDOM from 'react-dom/client';
@@ -20,11 +15,6 @@ if (!process.env.NX_PUBLIC_DYNAMIC_ENVIRONMENT_ID) {
 	throw new Error('Missing Dynamic Environment ID');
 }
 
-const dynamicSettings: DynamicContextProps['settings'] = {
-	environmentId: process.env.NX_PUBLIC_DYNAMIC_ENVIRONMENT_ID,
-	walletConnectors: [EthereumWalletConnectors],
-	initialAuthenticationMode: 'connect-and-sign'
-};
 if (isMobile) {
 	root.render(
 		<StrictMode>
@@ -34,13 +24,11 @@ if (isMobile) {
 } else {
 	root.render(
 		<StrictMode>
-			<Theme accentColor="purple">
-				<MantineProvider>
-					<DynamicContextProvider settings={dynamicSettings}>
-						<AppRouter />
-					</DynamicContextProvider>
-				</MantineProvider>
-			</Theme>
+			<ThemeProvider attribute="class" defaultTheme="system">
+				<Theme accentColor={'purple'}>
+					<AppRouter />
+				</Theme>
+			</ThemeProvider>
 		</StrictMode>
 	);
 }

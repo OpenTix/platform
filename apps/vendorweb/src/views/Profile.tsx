@@ -19,8 +19,10 @@ import {
 	Separator,
 	Skeleton,
 	Text,
-	TextField
+	TextField,
+	Select
 } from '@radix-ui/themes';
+import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -43,6 +45,10 @@ const USDBalance = styled.div`
 	font-weight: bold;
 `;
 const TokenBalance = styled.div`
+	.dark & {
+		color: #fff;
+	}
+
 	color: black;
 	font-size: 1.5em;
 	font-weight: light;
@@ -57,6 +63,10 @@ const ActionsText = styled(Text)`
 	padding: 5px;
 	&:hover {
 		background-color: #f0f0f0;
+	}
+
+	.dark &:hover {
+		background-color: var(--accent-a3);
 	}
 `;
 
@@ -77,6 +87,7 @@ export default function Profile() {
 	const [isWeb2User, setIsWeb2User] = useState<boolean>(false);
 	const [vendorName, setVendorName] = useState<string>('');
 	const [newVendorName, setNewVendorName] = useState<string>('');
+	const { theme, setTheme } = useTheme();
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -298,10 +309,38 @@ export default function Profile() {
 							</Card>
 							<Card>
 								<Flex gap="3" direction={'column'}>
+									<Heading size="4">Settings</Heading>
+									Color Mode
+									<Select.Root
+										defaultValue={theme}
+										onValueChange={(value) => {
+											setTheme(value);
+											window.dispatchEvent(
+												new Event('local-storage')
+											);
+										}}
+									>
+										<Select.Trigger />
+										<Select.Content>
+											<Select.Item value="system">
+												System
+											</Select.Item>
+											<Select.Item value="dark">
+												Dark
+											</Select.Item>
+											<Select.Item value="light">
+												Light
+											</Select.Item>
+										</Select.Content>
+									</Select.Root>
+								</Flex>
+							</Card>
+							<Card>
+								<Flex gap="3" direction={'column'}>
 									<Heading size="4">Actions</Heading>
 									<Dialog.Root>
 										<Dialog.Trigger>
-											<ActionsText>
+											<ActionsText color="gray">
 												Change Name
 											</ActionsText>
 										</Dialog.Trigger>
@@ -370,14 +409,23 @@ export default function Profile() {
 											</form>
 										</Dialog.Content>
 									</Dialog.Root>
-									<ActionsText onClick={handleSendbalance}>
+									<ActionsText
+										onClick={handleSendbalance}
+										color="gray"
+									>
 										Send Money
 									</ActionsText>
-									<ActionsText onClick={openFundingOptions}>
+									<ActionsText
+										onClick={openFundingOptions}
+										color="gray"
+									>
 										Deposit Money
 									</ActionsText>
-									<ActionsText onClick={() => handleLogOut()}>
-										Log Out
+									<ActionsText
+										onClick={() => handleLogOut()}
+										color="gray"
+									>
+										Logout
 									</ActionsText>
 									{isWeb2User && (
 										<>

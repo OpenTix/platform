@@ -75,7 +75,7 @@ export function EventCard({ event }: EventCardProps) {
 						{event.Name}
 					</Text>
 					<Flex justify="between">
-						<Box style={{ width: '60%', fontSize: `.85em` }}>
+						<Box style={{ width: '50%', fontSize: `.85em` }}>
 							<Text>{event.Venuename}</Text>
 						</Box>
 						<Flex direction="column" align="end">
