@@ -150,7 +150,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	// Return all events as paginated response
 
 	tmp, ok = request.QueryStringParameters["EventDatetime"]
-	var tstamp pgtype.Timestamp
+	var tstamp pgtype.Timestamptz
 	// Set time to a really low value to show all events if not provided
 	if !ok || tmp == "" {
 		tstamp.Scan(time.Time{})
@@ -262,7 +262,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Parse the parameters that are not strings
-	var tstamp pgtype.Timestamp
+	var tstamp pgtype.Timestamptz
 	var disclaimer pgtype.Text
 
 	// Set time to a really low value to show all events if not provided
@@ -370,7 +370,7 @@ func handlePatch(ctx context.Context, request events.APIGatewayProxyRequest) (ev
 	queries := query.New(conn)
 
 	// Process timestamp conversion for Column5.
-	var eventTime pgtype.Timestamp
+	var eventTime pgtype.Timestamptz
 	if params.Time != "" {
 		tmps := strings.Trim(params.Time, "\x0d\x0a")
 		t, err := time.Parse(time_layout, tmps)
