@@ -15,7 +15,6 @@ import (
 	"github.com/opentix/platform/apps/api/shared"
 	"github.com/opentix/platform/packages/gohelpers/packages/database"
 	"github.com/opentix/platform/packages/gohelpers/packages/query"
-	"github.com/opentix/platform/packages/gohelpers/packages/times"
 )
 
 var connStr string
@@ -58,13 +57,6 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 		return shared.CreateErrorResponseAndLogError(500, "Unable to get response from database or malformed query", request.Headers, err)
 	}
 
-	normalized := times.NormalizeISO8601Time(dbResponse.EventDatetime.Time)
-	t, err := time.Parse(time.RFC3339, normalized)
-	if err != nil {
-		return shared.CreateErrorResponseAndLogError(500, "Failed to parse normalized time", request.Headers, err)
-	}
-	dbResponse.EventDatetime.Time = t
-
 	responseBody, err := json.Marshal(dbResponse)
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
@@ -100,7 +92,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Parse the parameters that are not strings
-	var tstamp pgtype.Timestamp
+	var tstamp pgtype.Timestamptz
 	var page int32
 	var cost float64
 

@@ -61,7 +61,7 @@ where event.vendor = (
     where vendor.wallet = $2
 )
 and ($3::int = -1 or $3::int = event.venue)
-and ($4::timestamp <= event.event_datetime)
+and ($4::timestamptz <= event.event_datetime)
 and ($5::text = '' or $5::text like LOWER(event.name) or $5::text like LOWER(event.type))
 order by event.event_datetime, event.name
 limit 25
@@ -105,7 +105,7 @@ update app.event
 set
   name = coalesce(nullif($3::text, ''), name),
   type = coalesce(nullif($4::text, ''), type),
-  event_datetime = coalesce($5::timestamp, event_datetime),
+  event_datetime = coalesce($5::timestamptz, event_datetime),
   description = coalesce(nullif($6::text, ''), description),
   disclaimer = coalesce(nullif($7::text, ''), disclaimer),
   photo = coalesce(nullif($8::text, ''), photo),
@@ -198,7 +198,7 @@ and (cardinality($2::text[]) = 0 or venue.zip = ANY($2::text[]))
 and ($3::text = '' or $3::text = event.name)
 and ($4::text = '' or $4::text = event.type)
 and ($5::double precision >= event.basecost)
-and ($6::timestamp <= event.event_datetime)
+and ($6::timestamptz <= event.event_datetime)
 order by event.event_datetime, event.name
 limit 5
 offset (($1::int - 1) * 5);
