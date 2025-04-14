@@ -377,10 +377,18 @@ export default function Profile() {
 										Deposit Money
 									</ActionsText>
 									<ActionsText onClick={() => handleLogOut()}>
-										Logout
+										Log Out
 									</ActionsText>
 									{isWeb2User && (
 										<>
+											<ActionsText
+												color="yellow"
+												onClick={() =>
+													initExportProcess()
+												}
+											>
+												Export Private Key
+											</ActionsText>
 											<Dialog.Root>
 												<Dialog.Trigger>
 													<ActionsText color="red">
@@ -481,14 +489,6 @@ export default function Profile() {
 													</Flex>
 												</Dialog.Content>
 											</Dialog.Root>
-											<ActionsText
-												color="red"
-												onClick={() =>
-													initExportProcess()
-												}
-											>
-												Export Private Key
-											</ActionsText>
 										</>
 									)}
 								</Flex>

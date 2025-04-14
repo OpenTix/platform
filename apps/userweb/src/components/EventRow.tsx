@@ -43,27 +43,33 @@ function EventRow({ zip, type, name, cost, eventDate }: rowProps) {
 
 	if (cards === null) return null;
 	return (
-		<Box>
-			<Flex gap="1">
+		<Box my="6">
+			<Flex mb="2" justify={'between'}>
 				<Heading> {type} </Heading>
-				<Button
-					onClick={() => moveCards(0, -1)}
-					style={{
-						backgroundColor: 'rgba(0,0,0,0)',
-						color: 'darkgray'
-					}}
-				>
-					{' <'}
-				</Button>
-				<Button
-					onClick={() => moveCards(0, 1)}
-					style={{
-						backgroundColor: 'rgba(0,0,0,0)',
-						color: 'darkgrey'
-					}}
-				>
-					{'> '}
-				</Button>
+				<Flex gap="1">
+					<Button
+						onClick={() => moveCards(0, -1)}
+						style={{
+							backgroundColor: 'rgba(0,0,0,0)',
+							color: 'darkgray',
+							fontWeight: 'bold',
+							cursor: 'pointer'
+						}}
+					>
+						{' <'}
+					</Button>
+					<Button
+						onClick={() => moveCards(0, 1)}
+						style={{
+							backgroundColor: 'rgba(0,0,0,0)',
+							color: 'darkgrey',
+							fontWeight: 'bold',
+							cursor: 'pointer'
+						}}
+					>
+						{'> '}
+					</Button>
+				</Flex>
 			</Flex>
 			<Flex width="100%">
 				<Flex
