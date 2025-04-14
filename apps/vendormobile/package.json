@@ -51,7 +51,10 @@
 		"react-native-permissions": "^2.0.2",
 		"viem": "^2.23.2",
 		"web-streams-polyfill": "^4.1.0",
-		"expo-camera": "~16.0.18"
+		"expo-camera": "~16.0.18",
+		"react-native-svg": "15.8.0",
+		"react-native-svg-transformer": "1.5.0",
+		"react-native-svg-web": "~1.0.9"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.14.5",
