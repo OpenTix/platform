@@ -315,16 +315,9 @@ export default function Profile() {
 										defaultValue={theme}
 										onValueChange={(value) => {
 											setTheme(value);
-											const widget: any =
-												document.querySelector('#root');
-											if (widget) {
-												widget.setAttribute(
-													'data-dynamic-theme',
-													value === 'system'
-														? 'auto'
-														: (value ?? 'auto')
-												);
-											}
+											window.dispatchEvent(
+												new Event('local-storage')
+											);
 										}}
 									>
 										<Select.Trigger />

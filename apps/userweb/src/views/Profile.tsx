@@ -660,18 +660,11 @@ export default function Profile() {
 													defaultValue={theme}
 													onValueChange={(value) => {
 														setTheme(value);
-														const widget: Element =
-															document.body;
-														if (widget) {
-															widget.setAttribute(
-																'data-dynamic-theme',
-																value ===
-																	'system'
-																	? 'auto'
-																	: (value ??
-																			'auto')
-															);
-														}
+														window.dispatchEvent(
+															new Event(
+																'local-storage'
+															)
+														);
 													}}
 												>
 													<Select.Trigger />
