@@ -59,7 +59,7 @@ export default function Home() {
 		<Flex
 			align="start"
 			gap="4"
-			style={{ marginTop: '10px' }}
+			style={{ marginTop: '10px', alignItems: 'center' }}
 			justify={'center'}
 		>
 			<Box style={{ maxWidth: '72vw' }}>
