@@ -16,7 +16,7 @@ type AppEvent struct {
 	Venue           int32
 	Name            string
 	Type            string
-	EventDatetime   pgtype.Timestamp
+	EventDatetime   pgtype.Timestamptz
 	Description     string
 	Disclaimer      pgtype.Text
 	Basecost        float64

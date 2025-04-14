@@ -84,7 +84,7 @@ type CreateEventParams struct {
 	Venue         int32
 	Name          string
 	Type          string
-	EventDatetime pgtype.Timestamp
+	EventDatetime pgtype.Timestamptz
 	Description   string
 	Disclaimer    pgtype.Text
 	Basecost      float64
@@ -512,7 +512,7 @@ limit 1
 type UserGetEventByUuidRow struct {
 	Eventname     string
 	Type          string
-	EventDatetime pgtype.Timestamp
+	EventDatetime pgtype.Timestamptz
 	ID            uuid.UUID
 	Description   string
 	Disclaimer    pgtype.Text
@@ -586,7 +586,7 @@ type UserGetEventsPaginatedParams struct {
 type UserGetEventsPaginatedRow struct {
 	Name          string
 	Type          string
-	EventDatetime pgtype.Timestamp
+	EventDatetime pgtype.Timestamptz
 	Venuename     string
 	StateCode     string
 	CountryCode   string
