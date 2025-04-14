@@ -821,8 +821,10 @@ export default function Profile() {
 						</Flex>
 
 						<Box py={'5'}>
-							<Heading size={'4'}>Your Tickets</Heading>
 							<Card>
+								<Heading size={'4'} mb="4">
+									Your Tickets
+								</Heading>
 								<Flex
 									style={{
 										display: 'flex',
@@ -832,15 +834,22 @@ export default function Profile() {
 									flexGrow="1"
 								>
 									{ticketData === undefined ? (
-										<Card>
-											<Text>Loading...</Text>
-										</Card>
+										Array.from({ length: 8 }).map(
+											(_, idx) => (
+												<Skeleton
+													key={idx}
+													style={{
+														width: '17em',
+														height: '14.5em',
+														borderRadius: '8px'
+													}}
+												/>
+											)
+										)
 									) : ticketData == null ? (
-										<Card>
-											<Text>
-												You don't own any tickets :\
-											</Text>
-										</Card>
+										<Text>
+											You don't own any tickets :\
+										</Text>
 									) : (
 										ticketData?.map(
 											(data: TicketInfo, idx: number) => {

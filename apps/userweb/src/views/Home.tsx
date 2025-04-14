@@ -62,7 +62,7 @@ export default function Home() {
 			style={{ marginTop: '10px' }}
 			justify={'center'}
 		>
-			<Box style={{ width: '72vw' }}>
+			<Box style={{ maxWidth: '72vw' }}>
 				{nearZips !== '' ? (
 					<EventRow
 						key={'Near You'}
