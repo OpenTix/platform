@@ -262,7 +262,7 @@ func handlePost(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 	}
 
 	// Parse the parameters that are not strings
-	var tstamp pgtype.Timestamp
+	var tstamp pgtype.Timestamptz
 	var disclaimer pgtype.Text
 
 	// Set time to a really low value to show all events if not provided
