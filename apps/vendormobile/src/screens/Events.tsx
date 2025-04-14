@@ -36,7 +36,7 @@ export default function Events({
 
 	const handleLayout = (index: number, layoutEvent: LayoutChangeEvent) => {
 		const { height } = layoutEvent.nativeEvent.layout;
-		setCardHeights((prev) => ({ ...prev, [index]: height }));
+		setCardHeights((prev) => ({ ...prev, [index]: height + 1 }));
 	};
 
 	// handle scroll up page refresh
@@ -238,6 +238,7 @@ export default function Events({
 											width: '20%'
 										}}
 										left={leftComponent}
+										rightStyle={{ marginRight: 10 }}
 										right={rightComponent}
 									/>
 								</Card>
