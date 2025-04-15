@@ -88,29 +88,47 @@ export default function EventDetailsPage() {
 					<EventDetailsHeader data={data} />
 					<ColumnsContainer>
 						<LeftColumn>
-							<Card style={{ width: '90%', margin: 'auto' }}>
-								<Heading size={'4'} mb="2">
-									Tickets for this event:
-								</Heading>
+							<Flex
+								direction="column"
+								gap="5"
+								justify={'center'}
+								style={{ width: '80%', margin: 'auto' }}
+							>
+								<Card>
+									<Heading size={'4'} mb="2">
+										Event Details:
+									</Heading>
+									<Text as="p" size="3" mb="2">
+										{data.Description}
+									</Text>
+								</Card>
+								<Card>
+									<Heading size={'4'} mb="2">
+										Tickets for this event:
+									</Heading>
 
-								<ListOfNFTsForEvent
-									Title={
-										(data as UserEventDetailsResponse)
-											?.Eventname
-									}
-									EventDatetime={
-										(data as UserEventDetailsResponse)
-											?.EventDatetime
-									}
-									ID={(data as UserEventDetailsResponse)?.ID}
-									setTicketId={(num: bigint) =>
-										setTicketID(num)
-									}
-									setShouldShowBuyModal={(bool: boolean) =>
-										setShouldShowBuyModal(bool)
-									}
-								/>
-							</Card>
+									<ListOfNFTsForEvent
+										Title={
+											(data as UserEventDetailsResponse)
+												?.Eventname
+										}
+										EventDatetime={
+											(data as UserEventDetailsResponse)
+												?.EventDatetime
+										}
+										ID={
+											(data as UserEventDetailsResponse)
+												?.ID
+										}
+										setTicketId={(num: bigint) =>
+											setTicketID(num)
+										}
+										setShouldShowBuyModal={(
+											bool: boolean
+										) => setShouldShowBuyModal(bool)}
+									/>
+								</Card>
+							</Flex>
 						</LeftColumn>
 
 						<RightColumn>
@@ -149,19 +167,12 @@ export default function EventDetailsPage() {
 								<Card>
 									<EventDetailsMap data={data} />
 								</Card>
-								<Card>
-									<Heading size={'4'} mb="2">
-										Event Details:
-									</Heading>
-									<Text size="3" mb="2">
-										{data.Description}
-									</Text>
-								</Card>
+
 								<Card>
 									<Heading size={'4'} mb="2">
 										Disclaimers:
 									</Heading>
-									<Text size="3" mb="2">
+									<Text as="p" size="3" mb="2">
 										{data.Disclaimer}
 									</Text>
 								</Card>
