@@ -1,9 +1,11 @@
-import { getAuthToken } from '@dynamic-labs/sdk-react-core';
+import { isEthereumWallet } from '@dynamic-labs/ethereum';
+import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
 import { Card, Flex, Heading, Inset, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { FullscreenLoadingMessage } from '@platform/ui';
 import BuyTicketsModal from '../components/BuyTicketsModal';
 import EventDetailsHeader from '../components/EventDetailsHeader';
 import EventDetailsMap from '../components/EventDetailsMap';
@@ -54,8 +56,11 @@ export default function EventDetailsPage() {
 	const id = useParams().id!;
 	const [shouldShowBuyModal, setShouldShowBuyModal] =
 		useState<boolean>(false);
+	const [shouldGrayOutPage, setShouldGrayOutPage] = useState<boolean>(false);
 	const [data, setData] = useState<UserEventDetailsResponse>();
 	const [TicketID, setTicketID] = useState<bigint>(BigInt(0));
+	const [nftRefreshCounter, setNftRefreshCounter] = useState<number>(0);
+	const { primaryWallet } = useDynamicContext();
 
 	const fallbackURL =
 		'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg';
@@ -76,6 +81,30 @@ export default function EventDetailsPage() {
 			setData(d);
 		});
 	}
+
+	const waitForInclusion = async (hash: string) => {
+		setShouldGrayOutPage(true);
+		try {
+			if (primaryWallet && isEthereumWallet(primaryWallet)) {
+				const p = await primaryWallet.getPublicClient();
+				if (p) {
+					if (hash.startsWith('0x')) {
+						hash = hash.slice(2);
+					}
+					await p.waitForTransactionReceipt({
+						hash: `0x${hash}`
+					});
+					setShouldGrayOutPage(false);
+					setNftRefreshCounter((prev) => prev + 1);
+				}
+			} else {
+				throw new Error('Failed to confirm ethereum wallet.');
+			}
+		} catch (error) {
+			console.error(error);
+			throw new Error('Failed to wait for block inclusion.');
+		}
+	};
 
 	useEffect(() => {
 		getEventDetails();
@@ -108,6 +137,7 @@ export default function EventDetailsPage() {
 									</Heading>
 
 									<ListOfNFTsForEvent
+										key={`nft-${nftRefreshCounter}`}
 										Title={
 											(data as UserEventDetailsResponse)
 												?.Eventname
@@ -189,6 +219,7 @@ export default function EventDetailsPage() {
 			{shouldShowBuyModal && (
 				<BuyTicketsModal
 					onClose={() => setShouldShowBuyModal(false)}
+					passTransactionHash={(hash) => waitForInclusion(hash)}
 					Title={(data as UserEventDetailsResponse)?.Eventname}
 					EventDatetime={
 						(data as UserEventDetailsResponse)?.EventDatetime
@@ -197,6 +228,10 @@ export default function EventDetailsPage() {
 					TicketID={TicketID}
 					BaseCost={(data as UserEventDetailsResponse)?.Basecost}
 				/>
+			)}
+
+			{shouldGrayOutPage && (
+				<FullscreenLoadingMessage message="Waiting for your ticket to be included in a block..." />
 			)}
 		</div>
 	);

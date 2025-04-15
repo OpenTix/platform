@@ -1,3 +1,4 @@
+import { Text } from '@radix-ui/themes';
 import styled, { keyframes } from 'styled-components';
 
 const LoadingOverlay = styled.div`
@@ -39,15 +40,19 @@ const Loader = styled.div`
 	margin: 0 auto 10px;
 `;
 
-export interface FullscreenLoadingProps {
+export interface FullscreenLoadingMessageProps {
 	message: string;
 }
-export const FullscreenLoading = ({ message }: FullscreenLoadingProps) => {
+export const FullscreenLoadingMessage = ({
+	message
+}: FullscreenLoadingMessageProps) => {
 	return (
 		<LoadingOverlay>
 			<LoadingPopup>
 				<Loader />
-				<p>{message}</p>
+				<Text as="p" style={{ color: '#000' }}>
+					{message}
+				</Text>
 			</LoadingPopup>
 		</LoadingOverlay>
 	);

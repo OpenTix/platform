@@ -5,3 +5,4 @@ export * from './lib/error';
 export * from './lib/BaseModalForm';
 export * from './lib/SuccessAlert';
 export * from './lib/ViewingOnMobile';
+export * from './lib/FullscreenLoadingMessage';

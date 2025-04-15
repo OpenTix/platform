@@ -23,9 +23,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { SuccessAlert } from '@platform/ui';
+import { FullscreenLoadingMessage } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
-import { FullscreenLoading } from '../components/FullscreenLoading';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
 import MintTicketsModal from '../components/MintTicketsModal';
 
@@ -500,7 +500,7 @@ export default function Details({ typestring }: DetailsProps) {
 			)}
 
 			{shouldGrayOutPage && (
-				<FullscreenLoading message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
+				<FullscreenLoadingMessage message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
 			)}
 		</>
 	);
