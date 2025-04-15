@@ -1,6 +1,6 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
-import { Box, Card, Flex, Heading, Inset, Text } from '@radix-ui/themes';
+import { Card, Flex, Heading, Inset, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -164,7 +164,9 @@ export default function EventDetailsPage() {
 										{data.City}, {data.StateCode} {data.Zip}
 									</Text>
 								</Card>
-								<Card>
+								<Card
+									style={{ padding: 0, overflow: 'hidden' }}
+								>
 									<EventDetailsMap data={data} />
 								</Card>
 

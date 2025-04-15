@@ -80,7 +80,7 @@ export default function EventDetailsMap({ data }: EventDetailsMapProps) {
 				/>
 				{/* Drop a pin at the center */}
 				<Marker position={[lat, lon]}>
-					<Popup>This is the center</Popup>
+					<Popup>{data.Venuename}</Popup>
 				</Marker>
 				<MapResizeHandler />
 				<RecenterMap lat={lat} lon={lon} />
