@@ -46,7 +46,7 @@ export default function EventDetailsHeader({ data }: EventDetailsHeaderProps) {
 							height: '10em',
 							objectFit: 'contain',
 							display: 'block',
-							borderRadius: '5px'
+							borderRadius: '10px'
 						}}
 					/>
 					<Box>

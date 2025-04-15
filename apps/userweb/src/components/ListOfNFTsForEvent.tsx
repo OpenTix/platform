@@ -99,7 +99,8 @@ export default function ListOfNFTsForEvent({
 											{NFTs.includes(current) && (
 												<Badge
 													style={{
-														cursor: 'pointer'
+														cursor: 'pointer',
+														marginLeft: '1em'
 													}}
 													color="sky"
 													variant="surface"

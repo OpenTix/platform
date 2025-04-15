@@ -1,11 +1,12 @@
 import { getAuthToken } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
-import { Box, Card, Heading, Text } from '@radix-ui/themes';
+import { Box, Card, Flex, Heading, Inset, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import BuyTicketsModal from '../components/BuyTicketsModal';
 import EventDetailsHeader from '../components/EventDetailsHeader';
+import EventDetailsMap from '../components/EventDetailsMap';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
 
 const ColumnsContainer = styled.div`
@@ -26,7 +27,6 @@ const ColumnsContainer = styled.div`
 
 const LeftColumn = styled.div`
 	flex: 0 0 60%;
-	background: #f5f5f5;
 	min-width: 300px;
 	margin-top: 2em;
 
@@ -38,9 +38,8 @@ const LeftColumn = styled.div`
 
 const RightColumn = styled.div`
 	flex: 0 0 40%;
-	background: #fafafa;
 	position: relative;
-	top: -5em;
+	top: -12em;
 	min-width: 250px;
 
 	@media (max-width: 768px) {
@@ -57,6 +56,9 @@ export default function EventDetailsPage() {
 		useState<boolean>(false);
 	const [data, setData] = useState<UserEventDetailsResponse>();
 	const [TicketID, setTicketID] = useState<bigint>(BigInt(0));
+
+	const fallbackURL =
+		'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg';
 
 	async function getEventDetails() {
 		const authToken = getAuthToken();
@@ -87,7 +89,7 @@ export default function EventDetailsPage() {
 					<ColumnsContainer>
 						<LeftColumn>
 							<Card style={{ width: '90%', margin: 'auto' }}>
-								<Heading size={'4'}>
+								<Heading size={'4'} mb="2">
 									Tickets for this event:
 								</Heading>
 
@@ -112,12 +114,58 @@ export default function EventDetailsPage() {
 						</LeftColumn>
 
 						<RightColumn>
-							<Heading size="4">Right Column Content</Heading>
-							<Text>
-								This right column overlaps the header by moving
-								upward.
-							</Text>
-							{/* ...other content... */}
+							<Flex
+								direction="column"
+								gap="5"
+								justify={'center'}
+								style={{ width: '80%', margin: 'auto' }}
+							>
+								<Card>
+									<Inset
+										clip="padding-box"
+										side="top"
+										pb="current"
+									>
+										<img
+											src={data.Venuephoto || fallbackURL}
+											alt="Venue"
+											style={{
+												width: '100%',
+												objectFit: 'contain',
+												display: 'block'
+											}}
+										/>
+									</Inset>
+									<Heading size="4" mb="3">
+										{data.Venuename}
+									</Heading>
+									<Text as="p" size="3">
+										{data.StreetAddress}
+									</Text>
+									<Text as="p" size="3">
+										{data.City}, {data.StateCode} {data.Zip}
+									</Text>
+								</Card>
+								<Card>
+									<EventDetailsMap data={data} />
+								</Card>
+								<Card>
+									<Heading size={'4'} mb="2">
+										Event Details:
+									</Heading>
+									<Text size="3" mb="2">
+										{data.Description}
+									</Text>
+								</Card>
+								<Card>
+									<Heading size={'4'} mb="2">
+										Disclaimers:
+									</Heading>
+									<Text size="3" mb="2">
+										{data.Disclaimer}
+									</Text>
+								</Card>
+							</Flex>
 						</RightColumn>
 					</ColumnsContainer>
 				</>
