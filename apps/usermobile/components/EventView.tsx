@@ -9,10 +9,12 @@ import {
 	Image,
 	Pressable,
 	StyleSheet,
-	TouchableOpacity
+	TouchableOpacity,
+	useColorScheme
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { polygonAmoy } from 'viem/chains';
+import * as colors from '../constants/colors';
 import { useDynamic } from './DynamicSetup';
 
 type Params = {
@@ -24,9 +26,10 @@ type Params = {
 export default function EventView({
 	route
 }: NativeStackScreenProps<Params, 'Event'>) {
+	const is_dark = useColorScheme() === 'dark';
 	const client = useDynamic();
 	const { Event } = route.params; // this is the event id
-	const [qrData, setqrData] = useState('');
+	const [qrData, setqrData] = useState('test');
 	const [displayData, setdisplayData] = useState(<Text>Loading...</Text>);
 
 	const runner = async () => {
@@ -153,29 +156,115 @@ export default function EventView({
 		console.log(qrData);
 	}
 
+	async function transfer() {
+		console.log('transfer');
+	}
+
 	return (
-		<View>
-			<View>
+		<View
+			style={{
+				flex: 1,
+				justifyContent: 'center',
+				backgroundColor: is_dark
+					? colors.darkBackground
+					: colors.lightBackground,
+				height: '100%'
+			}}
+		>
+			<View
+				style={{
+					flex: 1,
+					rowGap: 10,
+					alignItems: 'center',
+					justifyContent: 'center'
+				}}
+			>
 				<ScrollView>
-					<TouchableOpacity activeOpacity={1}>
-						{displayData}
-					</TouchableOpacity>
-				</ScrollView>
-				{qrData == '' ? (
-					<Text>Please press checkin to create QR code.</Text>
-				) : (
-					<Text>Show the QR code to the vendor.</Text>
-				)}
-				{qrData == '' ? <Text></Text> : <QRCode value={qrData} />}
-				<TouchableOpacity activeOpacity={1}>
-					<Pressable
-						style={[styles.button, styles.buttonClose]}
-						onPress={() => {
-							checkin();
+					{displayData}
+					<View
+						style={{
+							flex: 1,
+							marginTop: 10,
+							// rowGap: 10,
+							alignItems: 'center',
+							justifyContent: 'center'
 						}}
 					>
-						<Text>Check In</Text>
-					</Pressable>
+						{qrData == '' ? (
+							<Text></Text>
+						) : (
+							<QRCode size={200} value={qrData} />
+						)}
+					</View>
+				</ScrollView>
+			</View>
+			<View
+				style={{
+					marginBottom: 30,
+					alignItems: 'center',
+					flexDirection: 'row',
+					justifyContent: 'center'
+				}}
+			>
+				<TouchableOpacity
+					onPress={transfer}
+					style={{
+						backgroundColor: is_dark
+							? colors.darkPrimary
+							: colors.lightPrimary,
+						borderRadius: 15,
+						paddingTop: 5,
+						paddingBottom: 5,
+						width: '35%',
+						elevation: 5,
+						shadowColor: '#000', // Shadow for iOS
+						shadowOffset: {
+							width: 0,
+							height: 2
+						},
+						shadowOpacity: 0.4,
+						shadowRadius: 6,
+						marginHorizontal: 10
+					}}
+				>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText,
+							textAlign: 'center'
+						}}
+					>
+						Transfer
+					</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					onPress={checkin}
+					style={{
+						backgroundColor: is_dark
+							? colors.darkPrimary
+							: colors.lightPrimary,
+						borderRadius: 15,
+						paddingTop: 5,
+						paddingBottom: 5,
+						width: '35%',
+						elevation: 5,
+						shadowColor: '#000', // Shadow for iOS
+						shadowOffset: {
+							width: 0,
+							height: 2
+						},
+						shadowOpacity: 0.4,
+						shadowRadius: 6,
+						marginHorizontal: 10
+					}}
+				>
+					<Text
+						style={{
+							color: is_dark ? colors.darkText : colors.lightText,
+							textAlign: 'center'
+						}}
+					>
+						Check in
+					</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
