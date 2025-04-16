@@ -14,6 +14,7 @@ type ReturnedMetadata = {
 
 export interface BuyTicketsModalProps {
 	onClose: () => void;
+	passTransactionHash: (hash: string) => void;
 	Title: string;
 	EventDatetime: string;
 	ID: string;
@@ -22,6 +23,7 @@ export interface BuyTicketsModalProps {
 }
 export default function BuyTicketsModal({
 	onClose,
+	passTransactionHash,
 	Title,
 	EventDatetime,
 	ID,
@@ -93,8 +95,8 @@ export default function BuyTicketsModal({
 					const hash = await w.writeContract(request);
 					console.log(hash);
 					setIsSubmitting(false);
+					passTransactionHash(hash);
 					onClose();
-					navigate(0);
 				} else {
 					console.error('Wallet client or public client not set up');
 					setErrorMessage(

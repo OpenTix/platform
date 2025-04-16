@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 const NavWrapper = styled.nav`
 	width: 100%;
-	background-color: #fff;
 	border-bottom: 1px solid #ddd;
 `;
 

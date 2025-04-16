@@ -23,9 +23,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { SuccessAlert } from '@platform/ui';
+import { FullscreenLoadingMessage } from '@platform/ui';
 import EditEventModal from '../components/EditEventModal';
 import EditVenueModal from '../components/EditVenueModal';
-import { FullscreenLoading } from '../components/FullscreenLoading';
 import ListOfNFTsForEvent from '../components/ListOfNFTsForEvent';
 import MintTicketsModal from '../components/MintTicketsModal';
 
@@ -50,6 +50,9 @@ const ActionsText = styled(Text)`
 	padding: 5px;
 	&:hover {
 		background-color: #f0f0f0;
+	}
+	.dark &:hover {
+		background-color: var(--accent-a3);
 	}
 `;
 
@@ -417,6 +420,7 @@ export default function Details({ typestring }: DetailsProps) {
 										onClick={() => {
 											setShouldShowEditModal(true);
 										}}
+										color="gray"
 									>
 										Edit
 									</ActionsText>
@@ -428,6 +432,7 @@ export default function Details({ typestring }: DetailsProps) {
 														true
 													);
 												}}
+												color="gray"
 											>
 												Mint
 											</ActionsText>
@@ -495,7 +500,7 @@ export default function Details({ typestring }: DetailsProps) {
 			)}
 
 			{shouldGrayOutPage && (
-				<FullscreenLoading message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
+				<FullscreenLoadingMessage message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
 			)}
 		</>
 	);

@@ -1,3 +1,10 @@
+import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
+import {
+	DynamicContextProps,
+	DynamicContextProvider
+} from '@dynamic-labs/sdk-react-core';
+import { ThemeSetting } from '@dynamic-labs/sdk-react-core/src/lib/context/ThemeContext';
+import { useEffect, useState } from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorPage } from '@platform/ui';
 import App from './App';
@@ -6,6 +13,12 @@ import EventSearchPage from './views/EventSearchPage';
 import Home from './views/Home';
 import Profile from './views/Profile';
 import PurchaseUserTicket from './views/PurchaseUserTicket';
+
+const dynamicSettings: DynamicContextProps['settings'] = {
+	environmentId: process.env.NX_PUBLIC_DYNAMIC_ENVIRONMENT_ID ?? '',
+	walletConnectors: [EthereumWalletConnectors],
+	initialAuthenticationMode: 'connect-and-sign'
+};
 
 // This renders <App /> with child components rendered in the <Outlet /> component in the App component
 const router = createBrowserRouter([
@@ -48,7 +61,26 @@ const router = createBrowserRouter([
 ]);
 
 const AppRouter = () => {
-	return <RouterProvider router={router} />;
+	const [theme, setTheme] = useState<string>(
+		localStorage.getItem('theme') === 'system'
+			? 'auto'
+			: (localStorage.getItem('theme') ?? 'auto')
+	);
+	useEffect(() => {
+		window.addEventListener('local-storage', () => {
+			const tmp = localStorage.getItem('theme');
+			setTheme(tmp === 'system' ? 'auto' : (tmp ?? 'auto'));
+		});
+	}, [setTheme]);
+
+	return (
+		<DynamicContextProvider
+			theme={theme as ThemeSetting}
+			settings={dynamicSettings}
+		>
+			<RouterProvider router={router} />
+		</DynamicContextProvider>
+	);
 };
 
 export default AppRouter;

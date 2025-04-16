@@ -3,9 +3,7 @@ import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Dialog, Flex, Text } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FullscreenLoading } from './FullscreenLoading';
+import { useState } from 'react';
 
 export interface MintTicketsModalProps {
 	onClose: () => void;
@@ -29,7 +27,6 @@ export default function MintTicketsModal({
 	ID,
 	Pk
 }: MintTicketsModalProps) {
-	const navigate = useNavigate();
 	const [showError, setShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);

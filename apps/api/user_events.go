@@ -61,6 +61,7 @@ func handleGetByUuid(ctx context.Context, request events.APIGatewayProxyRequest,
 	if err != nil {
 		return shared.CreateErrorResponseAndLogError(500, "Failed to marshal response", request.Headers, err)
 	}
+
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(responseBody),
@@ -91,7 +92,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	// Parse the parameters that are not strings
-	var tstamp pgtype.Timestamp
+	var tstamp pgtype.Timestamptz
 	var page int32
 	var cost float64
 

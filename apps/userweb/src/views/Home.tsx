@@ -59,10 +59,10 @@ export default function Home() {
 		<Flex
 			align="start"
 			gap="4"
-			style={{ marginTop: '10px' }}
+			style={{ marginTop: '10px', alignItems: 'center' }}
 			justify={'center'}
 		>
-			<Box style={{ width: '72vw' }}>
+			<Box style={{ maxWidth: '80vw' }}>
 				{nearZips !== '' ? (
 					<EventRow
 						key={'Near You'}
