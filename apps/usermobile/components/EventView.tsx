@@ -1,5 +1,5 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
-import { UserEventResponse } from '@platform/types';
+import { UserEventDetailsResponse } from '@platform/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import {
@@ -29,21 +29,24 @@ export default function EventView({
 	const is_dark = useColorScheme() === 'dark';
 	const client = useDynamic();
 	const { Event } = route.params; // this is the event id
-	const [qrData, setqrData] = useState('test');
+	const [qrData, setqrData] = useState('');
 	const [displayData, setdisplayData] = useState(<Text>Loading...</Text>);
+	const [ticketAvailableForSale, setTicketAvailableForSale] = useState(false);
+	const [eventData, setEventData] = useState<UserEventDetailsResponse>();
 
 	const runner = async () => {
-		console.log(`Event ${Event}`);
 		const name = await getEventNameFromId(BigInt(Event));
 		const split = name.split(' ');
 		const uuid = split[split.length - 1];
 		const data = await getEventByUUID(uuid);
 
-		const keys = Object.keys(data as UserEventResponse);
-		const values = Object.values(data as UserEventResponse);
+		const data2 = data as UserEventDetailsResponse;
+		setEventData(data2);
+
+		const keys = Object.keys(data as UserEventDetailsResponse);
+		const values = Object.values(data as UserEventDetailsResponse);
 
 		let photo_uri = '';
-		console.log();
 
 		setdisplayData(
 			<>
@@ -82,7 +85,13 @@ export default function EventView({
 		);
 	};
 
+	const setTransferButton = async () => {
+		setTicketAvailableForSale(await checkIfTicketIsTransferable());
+	};
+
 	useEffect(() => {
+		setTransferButton();
+		setqrData('');
 		runner();
 	}, []);
 
@@ -156,8 +165,154 @@ export default function EventView({
 		console.log(qrData);
 	}
 
+	const checkIfTransfersEnabled = async () => {
+		if (client.wallets.primary) {
+			const publicViemClient = client.viem.createPublicClient({
+				chain: polygonAmoy
+			});
+			const w = await client.viem.createWalletClient({
+				wallet: client.wallets.primary
+			});
+
+			// get the events description from the id
+			if (publicViemClient) {
+				const data = (await publicViemClient.readContract({
+					abi: ContractABI,
+					address: ContractAddress,
+					functionName: 'check_ticket_transfer_permission',
+					account: w.account
+				})) as boolean;
+
+				console.log(`data ${data}`);
+
+				return data;
+			} else {
+				console.log(
+					'Failed to create the public viem client when trying to get the event description.'
+				);
+				return false;
+			}
+		}
+		return false;
+	};
+
+	const checkIfTicketIsTransferable = async () => {
+		if (client.wallets.primary) {
+			const publicViemClient = client.viem.createPublicClient({
+				chain: polygonAmoy
+			});
+			const w = await client.viem.createWalletClient({
+				wallet: client.wallets.primary
+			});
+
+			// get the events description from the id
+			if (publicViemClient) {
+				const data = (await publicViemClient.readContract({
+					abi: ContractABI,
+					address: ContractAddress,
+					functionName: 'check_ticket_transferable',
+					args: [BigInt(Event)],
+					account: w.account
+				})) as boolean;
+
+				return data;
+			} else {
+				console.log(
+					'Failed to create the public viem client when trying to get the event description.'
+				);
+				return false;
+			}
+		}
+		return false;
+	};
+
+	const enable_ticket_transfers = async () => {
+		if (client.wallets.primary) {
+			try {
+				const p = await client.viem.createPublicClient({
+					chain: polygonAmoy
+				});
+				const w = await client.viem.createWalletClient({
+					wallet: client.wallets.primary
+				});
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_user_to_user_ticket_transfer',
+						account: w.account,
+						args: []
+					});
+					const hash = await w.writeContract(request);
+					console.log(`enable ticket transfer hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
+	const makeTicketTransferable = async () => {
+		if (client.wallets.primary) {
+			try {
+				const p = await client.viem.createPublicClient({
+					chain: polygonAmoy
+				});
+				const w = await client.viem.createWalletClient({
+					wallet: client.wallets.primary
+				});
+
+				if (w && p) {
+					const { request } = await p.simulateContract({
+						abi: ContractABI,
+						address: ContractAddress,
+						functionName: 'allow_ticket_to_be_transfered',
+						account: w.account,
+						args: [BigInt(Event)]
+					});
+					const hash = await w.writeContract(request);
+					console.log(`allow ticket to be transfered hash ${hash}`);
+					await p.waitForTransactionReceipt({
+						hash: hash
+					});
+				} else {
+					console.error('Wallet client or public client not set up');
+				}
+			} catch (error) {
+				console.error('Error setting up wallet client', error);
+			}
+		}
+	};
+
 	async function transfer() {
 		console.log('transfer');
+		const transfers_enabled = await checkIfTransfersEnabled();
+
+		if (!transfers_enabled) {
+			// do a modal here
+			// but for now we are just gonna do it
+			await enable_ticket_transfers();
+		}
+
+		console.log('transfers enabled');
+
+		const ticket_transferable = await checkIfTicketIsTransferable();
+
+		console.log(`transferable: ${ticket_transferable}`);
+
+		if (!ticket_transferable) {
+			await makeTicketTransferable();
+		}
+
+		setqrData(
+			`${JSON.stringify({ address: client.auth.authenticatedUser?.verifiedCredentials[0].address, id: Event, basecost: eventData?.Basecost })}`
+		);
 	}
 
 	return (
@@ -270,17 +425,3 @@ export default function EventView({
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	button: {
-		borderRadius: 20,
-		padding: 10,
-		elevation: 2
-	},
-	buttonOpen: {
-		backgroundColor: '#F194FF'
-	},
-	buttonClose: {
-		backgroundColor: '#2196F3'
-	}
-});

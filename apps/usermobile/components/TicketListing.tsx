@@ -176,12 +176,9 @@ const HomeScreen = () => {
 		if (event_data.length === 0) {
 			return (
 				<>
-					<Image
-						source={{
-							uri: 'https://i.imgur.com/qoh1EKk.jpeg'
-						}}
-						style={{ width: 400, height: 600 }}
-					/>
+					<View>
+						<Text>You don't own any tickets</Text>
+					</View>
 				</>
 			);
 		}
