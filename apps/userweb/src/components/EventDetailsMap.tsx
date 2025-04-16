@@ -80,7 +80,6 @@ export default function EventDetailsMap({ data }: EventDetailsMapProps) {
 					subdomains="abcd"
 					maxZoom={20}
 				/>
-				{/* Drop a pin at the center */}
 				<Marker position={[lat, lon]}>
 					<Popup>{data.Venuename}</Popup>
 				</Marker>
