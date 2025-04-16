@@ -266,8 +266,13 @@ export default function Home() {
 											: colors.lightText
 									}}
 								>
-									You do not have any upcoming events for this
-									venue
+									You do not have any venues.
+									{'\n'} Please visit{' '}
+									{process.env.EXPO_PUBLIC_API_BASEURL?.replace(
+										'api',
+										'vendor'
+									)}{' '}
+									to create some.
 								</Text>
 							</View>
 						) : (

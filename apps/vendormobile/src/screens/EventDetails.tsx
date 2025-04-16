@@ -341,8 +341,12 @@ export default function EventDetails({
 							}}
 						>
 							You do not have any tickets for this event yet.{' '}
-							{'\n'} Please visit vendor.dev.opentix.co to create
-							some.
+							{'\n'} Please visit{' '}
+							{process.env.EXPO_PUBLIC_API_BASEURL?.replace(
+								'api',
+								'vendor'
+							)}{' '}
+							to create some.
 						</Text>
 					) : (
 						<TouchableOpacity
