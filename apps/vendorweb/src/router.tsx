@@ -55,7 +55,11 @@ const router = createBrowserRouter([
 ]);
 
 const AppRouter = () => {
-	const [theme, setTheme] = useState<string>('auto');
+	const [theme, setTheme] = useState<string>(
+		localStorage.getItem('theme') === 'system'
+			? 'auto'
+			: (localStorage.getItem('theme') ?? 'auto')
+	);
 	useEffect(() => {
 		window.addEventListener('local-storage', () => {
 			const tmp = localStorage.getItem('theme');
