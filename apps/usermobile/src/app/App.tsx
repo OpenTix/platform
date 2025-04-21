@@ -1,3 +1,5 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Octicons from '@expo/vector-icons/Octicons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import * as React from 'react';
@@ -56,8 +58,22 @@ export default function App() {
 	return (
 		<NavigationContainer linking={deepLinking}>
 			<Tab.Navigator screenOptions={{ headerShown: false }}>
-				<Tab.Screen name="Tickets" component={HomeStack} />
-				<Tab.Screen name="TransferStack" component={TransferStack} />
+				<Tab.Screen
+					name="Tickets"
+					component={HomeStack}
+					options={{
+						tabBarIcon: () => <FontAwesome name="home" size={18} />
+					}}
+				/>
+				<Tab.Screen
+					name="Transfer"
+					component={TransferStack}
+					options={{
+						tabBarIcon: () => (
+							<Octicons name="arrow-switch" size={18} />
+						)
+					}}
+				/>
 			</Tab.Navigator>
 		</NavigationContainer>
 	);
