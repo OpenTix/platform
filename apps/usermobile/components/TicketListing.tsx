@@ -2,12 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
-import {
-	useQuery,
-	QueryClient,
-	QueryClientProvider
-} from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	View,
 	Text,
@@ -24,7 +19,10 @@ import { polygonAmoy } from 'viem/chains';
 import * as colors from '../constants/colors';
 import { useDynamic } from './DynamicSetup';
 
-const queryClient = new QueryClient();
+type dataType = {
+	ids: bigint[];
+	event_data: UserEventDetailsResponse[];
+};
 
 const HomeScreen = () => {
 	const is_dark = useColorScheme() === 'dark';
@@ -32,19 +30,40 @@ const HomeScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
 	const navigation = useNavigation();
 	const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
+	const [isPending, setIsPending] = useState<boolean>(true);
+	const [gdata, setGData] = useState<dataType>();
+	const [running, setRunning] = useState<boolean>(false);
 
 	const handleLayout = (index: number, layoutEvent: LayoutChangeEvent) => {
 		const { height } = layoutEvent.nativeEvent.layout;
+		console.log(`height=${height}`);
 		setCardHeights((prev) => ({ ...prev, [index]: height + 1 }));
 	};
 
 	// handle scroll up page refresh
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
+		setIsPending(true);
 		setTimeout(() => {
 			setRefreshing(false);
 		}, 2000);
 	}, []);
+
+	const updateData = async () => {
+		setGData(await getAllOwnedEvents());
+		setRunning(false);
+		setIsPending(false);
+	};
+
+	useEffect(() => {
+		if (isPending) {
+			if (!running) {
+				console.log('running!');
+				setRunning(true);
+				updateData();
+			}
+		}
+	}, [isPending]);
 
 	async function getNFTsInWallet() {
 		const url = `${process.env.EXPO_PUBLIC_API_BASEURL}/oklink?wallet=${client.auth.authenticatedUser?.verifiedCredentials[0].address}&tokenContractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
@@ -161,191 +180,6 @@ const HomeScreen = () => {
 		return { ids, event_data };
 	}
 
-	// display events we own tickets to
-	// will display multiple cards for the same event if you own multiple tickets to that event
-	function Events() {
-		// grab all our owned events
-		const { isPending, isError, data, error } = useQuery({
-			queryKey: ['getAllOwnedEvents'],
-			queryFn: getAllOwnedEvents
-		});
-
-		if (isPending) {
-			return <Text> Loading ... </Text>;
-		}
-
-		if (isError) {
-			console.error(error.message);
-			return <Text>Error: {error.message}</Text>;
-		}
-
-		// grab our ticket ids and event data
-		const ids = data['ids'];
-		const event_data = data['event_data'];
-
-		// this happens when the user owns no tickets
-		if (event_data.length === 0) {
-			return (
-				<>
-					<View>
-						<Text>You don't own any tickets</Text>
-					</View>
-				</>
-			);
-		}
-
-		return (
-			<>
-				{event_data?.map(
-					(data: UserEventDetailsResponse, idx: number) => {
-						// this should never happen but keeps the app from blowing up if it does
-						if (data == undefined) {
-							return null;
-						}
-						// these make the code read better
-						const photo_uri = data['Eventphoto'];
-						const ticketid = ids[idx].toString();
-						const date = new Date(data['EventDatetime']);
-						const month = date.toLocaleString('default', {
-							month: 'short'
-						});
-						const day = date.getDate();
-						const dayOfWeek = date.toLocaleString('default', {
-							weekday: 'short'
-						});
-						const time = date.toLocaleString('default', {
-							hour: 'numeric',
-							minute: '2-digit',
-							hour12: true
-						});
-						const displayDate = `${dayOfWeek} ${month} ${day}, ${date.getFullYear()} ${time}`;
-
-						const leftComponent = () => (
-							<Image
-								source={{
-									uri:
-										photo_uri ??
-										'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
-								}}
-								key={'Photo'}
-								style={{
-									height: cardHeights[idx] || 90,
-									aspectRatio: 1,
-									borderTopLeftRadius: 10,
-									borderBottomLeftRadius: 10
-								}}
-							/>
-						);
-
-						const rightComponent = ({ size }: { size: number }) => (
-							<AntDesign
-								name="right"
-								size={size}
-								color={
-									is_dark
-										? colors.darkSecondary
-										: colors.lightSecondary
-								}
-							/>
-						);
-
-						const subtitle = (
-							<Text
-								style={{
-									color: is_dark
-										? colors.darkSecondary
-										: colors.lightSecondary,
-									textAlign: 'center',
-									textAlignVertical: 'center'
-								}}
-							>
-								{data['Type']}
-								{'\n'}
-								{displayDate}
-								{'\n'}#{ticketid}
-							</Text>
-						);
-
-						return (
-							<Card
-								onLayout={(e) => handleLayout(idx, e)}
-								style={{
-									minWidth: '90%',
-									maxWidth: '90%',
-									justifyContent: 'center',
-									backgroundColor: is_dark
-										? colors.darkPrimary
-										: colors.lightPrimary,
-									marginRight: 5,
-									marginVertical: 5,
-									paddingVertical: 10,
-									elevation: 5,
-									shadowColor: '#000', // Shadow for iOS
-									shadowOffset: { width: 0, height: 2 },
-									shadowOpacity: 0.4,
-									shadowRadius: 6
-								}}
-								key={idx}
-								onPress={() => {
-									console.log('hi');
-									// @ts-expect-error This is valid code, but typescript doesn't like it
-									navigation.navigate('Event', {
-										Event: ticketid
-									});
-								}}
-							>
-								<Card.Title
-									style={{
-										paddingLeft: 0, // This removes internal padding in the Card.Title
-										marginLeft: 0 // This ensures the component aligns with the edge
-									}}
-									title={
-										data['Eventname'].length > 25
-											? data['Eventname'].slice(0, 22) +
-												'...'
-											: data['Eventname']
-									}
-									titleStyle={{
-										fontSize: 16,
-										textAlign: 'center',
-										color: is_dark
-											? colors.darkText
-											: colors.lightText
-									}}
-									subtitle={subtitle}
-									subtitleStyle={{
-										display: 'flex',
-										flexDirection: 'column',
-										justifyContent: 'center',
-										marginTop: 5,
-										alignItems: 'center',
-										rowGap: 7,
-										textAlign: 'center',
-										fontSize: 12
-									}}
-									subtitleNumberOfLines={3}
-									leftStyle={{
-										marginLeft: 0,
-										paddingLeft: 0,
-										marginVertical: 0,
-										width: '20%'
-									}}
-									left={leftComponent}
-									rightStyle={{ marginRight: 10 }}
-									right={rightComponent}
-								/>
-							</Card>
-						);
-					}
-				) ?? (
-					<Card>
-						<Text>You don't own any tickets :\</Text>
-					</Card>
-				)}
-			</>
-		);
-	}
-
 	return (
 		<ScrollView
 			refreshControl={
@@ -362,31 +196,165 @@ const HomeScreen = () => {
 					rowGap: 10
 				}}
 			>
-				{client.auth.authenticatedUser != null ? (
-					<QueryClientProvider client={queryClient}>
-						<Events />
-					</QueryClientProvider>
-				) : (
-					<></>
-				)}
+				{client.auth.authenticatedUser != null &&
+					gdata &&
+					(gdata['event_data']?.map(
+						(data: UserEventDetailsResponse, idx: number) => {
+							// this should never happen but keeps the app from blowing up if it does
+							if (data == undefined) {
+								return null;
+							}
+
+							const ids = gdata['ids'];
+							// these make the code read better
+							const photo_uri = data['Eventphoto'];
+							const ticketid = ids[idx];
+							const date = new Date(data['EventDatetime']);
+							const month = date.toLocaleString('default', {
+								month: 'short'
+							});
+							const day = date.getDate();
+							const dayOfWeek = date.toLocaleString('default', {
+								weekday: 'short'
+							});
+							const time = date.toLocaleString('default', {
+								hour: 'numeric',
+								minute: '2-digit',
+								hour12: true
+							});
+							const displayDate = `${dayOfWeek} ${month} ${day}, ${date.getFullYear()} ${time}`;
+
+							const leftComponent = () => (
+								<Image
+									source={{
+										uri:
+											photo_uri ??
+											'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+									}}
+									key={'Photo'}
+									style={{
+										height: cardHeights[idx] || 115,
+										aspectRatio: 1,
+										borderTopLeftRadius: 10,
+										borderBottomLeftRadius: 10
+									}}
+								/>
+							);
+
+							const rightComponent = ({
+								size
+							}: {
+								size: number;
+							}) => (
+								<AntDesign
+									name="right"
+									size={size}
+									color={
+										is_dark
+											? colors.darkSecondary
+											: colors.lightSecondary
+									}
+								/>
+							);
+
+							const subtitle = (
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkSecondary
+											: colors.lightSecondary,
+										textAlign: 'center',
+										textAlignVertical: 'center'
+									}}
+								>
+									{data['Type']}
+									{'\n'}
+									{displayDate}
+									{'\n'}#{ticketid}
+								</Text>
+							);
+
+							return (
+								<Card
+									onLayout={(e) => handleLayout(idx, e)}
+									style={{
+										minWidth: '90%',
+										maxWidth: '90%',
+										justifyContent: 'center',
+										backgroundColor: is_dark
+											? colors.darkPrimary
+											: colors.lightPrimary,
+										marginRight: 5,
+										marginVertical: 5,
+										paddingVertical: 10,
+										elevation: 5,
+										shadowColor: '#000', // Shadow for iOS
+										shadowOffset: { width: 0, height: 2 },
+										shadowOpacity: 0.4,
+										shadowRadius: 6
+									}}
+									key={idx}
+									onPress={() => {
+										console.log('hi');
+										// @ts-expect-error This is valid code, but typescript doesn't like it
+										navigation.navigate('Event', {
+											Event: ticketid
+										});
+									}}
+								>
+									<Card.Title
+										style={{
+											paddingLeft: 0, // This removes internal padding in the Card.Title
+											marginLeft: 0 // This ensures the component aligns with the edge
+										}}
+										title={
+											data['Eventname'].length > 25
+												? data['Eventname'].slice(
+														0,
+														22
+													) + '...'
+												: data['Eventname']
+										}
+										titleStyle={{
+											fontSize: 16,
+											textAlign: 'center',
+											color: is_dark
+												? colors.darkText
+												: colors.lightText
+										}}
+										subtitle={subtitle}
+										subtitleStyle={{
+											display: 'flex',
+											flexDirection: 'column',
+											justifyContent: 'center',
+											marginTop: 5,
+											alignItems: 'center',
+											rowGap: 7,
+											textAlign: 'center',
+											fontSize: 12
+										}}
+										subtitleNumberOfLines={3}
+										leftStyle={{
+											marginLeft: 0,
+											paddingLeft: 0,
+											marginVertical: 0,
+											width: '20%'
+										}}
+										left={leftComponent}
+										rightStyle={{ marginRight: 10 }}
+										right={rightComponent}
+									/>
+								</Card>
+							);
+						}
+					) ?? (
+						<Card>
+							<Text>You don't own any tickets :\</Text>
+						</Card>
+					))}
 			</View>
 		</ScrollView>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flexDirection: 'row', // This makes the container a row
-		justifyContent: 'space-between', // Optional: Adds space between columns
-		padding: 10
-	},
-	rightcolumn: {
-		flex: 1
-	},
-	leftcolumn: {
-		flex: 0.45,
-		marginRight: 10 // Optional: Adds spacing between columns
-	}
-});
 
 export default HomeScreen;
