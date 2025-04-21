@@ -6,7 +6,8 @@ import {
 	Pressable,
 	SafeAreaView,
 	View,
-	useColorScheme
+	useColorScheme,
+	Button
 } from 'react-native';
 import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
@@ -100,6 +101,22 @@ export default function App() {
 										columnGap: 5
 									}}
 								>
+									{/* <Button
+										title="Profile"
+										onPress={() => {
+											if (client?.auth?.token !== null) {
+												client.ui.userProfile.show();
+											}
+										}}
+									/>
+									<Button
+										title="Logout"
+										onPress={() => {
+											if (client?.auth?.token !== null) {
+												client.auth.logout();
+											}
+										}}
+									/> */}
 									<Pressable
 										style={{
 											backgroundColor: is_dark

@@ -144,31 +144,20 @@ export default function Home() {
 									);
 
 									const subtitle = (
-										<View>
-											<Text
-												style={{
-													color: is_dark
-														? colors.darkSecondary
-														: colors.lightSecondary,
-													textAlign: 'center',
-													textAlignVertical: 'center'
-												}}
-											>
-												{venue.StreetAddress}
-											</Text>
-											<Text
-												style={{
-													color: is_dark
-														? colors.darkSecondary
-														: colors.lightSecondary,
-													textAlign: 'center',
-													textAlignVertical: 'center'
-												}}
-											>
-												{venue.City}, {venue.StateName}{' '}
-												{venue.Zip}
-											</Text>
-										</View>
+										<Text
+											style={{
+												color: is_dark
+													? colors.darkSecondary
+													: colors.lightSecondary,
+												textAlign: 'center',
+												textAlignVertical: 'center'
+											}}
+										>
+											{venue.StreetAddress}
+											{'\n'}
+											{venue.City}, {venue.StateName}{' '}
+											{venue.Zip}
+										</Text>
 									);
 
 									return (
@@ -232,8 +221,9 @@ export default function Home() {
 													alignItems: 'center',
 													rowGap: 7,
 													textAlign: 'center',
-													fontSize: 10
+													fontSize: 12
 												}}
+												subtitleNumberOfLines={2}
 												leftStyle={{
 													marginLeft: 0,
 													paddingLeft: 0,

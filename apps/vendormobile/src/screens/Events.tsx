@@ -150,30 +150,43 @@ export default function Events({
 							);
 
 							const subtitle = (
-								<View>
-									<Text
-										style={{
-											color: is_dark
-												? colors.darkSecondary
-												: colors.lightSecondary,
-											textAlign: 'center',
-											textAlignVertical: 'center'
-										}}
-									>
-										{event.Type}
-									</Text>
-									<Text
-										style={{
-											color: is_dark
-												? colors.darkSecondary
-												: colors.lightSecondary,
-											textAlign: 'center',
-											textAlignVertical: 'center'
-										}}
-									>
-										{displayDate}
-									</Text>
-								</View>
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkSecondary
+											: colors.lightSecondary,
+										textAlign: 'center',
+										textAlignVertical: 'center'
+									}}
+								>
+									{event.Type}
+									{'\n'}
+									{displayDate}
+								</Text>
+								// <View>
+								// 	<Text
+								// 		style={{
+								// 			color: is_dark
+								// 				? colors.darkSecondary
+								// 				: colors.lightSecondary,
+								// 			textAlign: 'center',
+								// 			textAlignVertical: 'center'
+								// 		}}
+								// 	>
+								// 		{event.Type}
+								// 	</Text>
+								// 	<Text
+								// 		style={{
+								// 			color: is_dark
+								// 				? colors.darkSecondary
+								// 				: colors.lightSecondary,
+								// 			textAlign: 'center',
+								// 			textAlignVertical: 'center'
+								// 		}}
+								// 	>
+								// 		{displayDate}
+								// 	</Text>
+								// </View>
 							);
 
 							return (
@@ -229,8 +242,9 @@ export default function Events({
 											alignItems: 'center',
 											rowGap: 7,
 											textAlign: 'center',
-											fontSize: 10
+											fontSize: 12
 										}}
+										subtitleNumberOfLines={2}
 										leftStyle={{
 											marginLeft: 0,
 											paddingLeft: 0,
