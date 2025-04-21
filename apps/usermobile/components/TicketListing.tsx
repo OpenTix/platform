@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import { useNavigation } from '@react-navigation/native';
@@ -6,7 +7,7 @@ import {
 	QueryClient,
 	QueryClientProvider
 } from '@tanstack/react-query';
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	View,
 	Text,
@@ -14,18 +15,28 @@ import {
 	ScrollView,
 	Image,
 	Pressable,
-	StyleSheet
+	StyleSheet,
+	useColorScheme,
+	LayoutChangeEvent
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
+import * as colors from '../constants/colors';
 import { useDynamic } from './DynamicSetup';
 
 const queryClient = new QueryClient();
 
 const HomeScreen = () => {
+	const is_dark = useColorScheme() === 'dark';
 	const client = useDynamic();
-	const [refreshing, setRefreshing] = React.useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const navigation = useNavigation();
+	const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
+
+	const handleLayout = (index: number, layoutEvent: LayoutChangeEvent) => {
+		const { height } = layoutEvent.nativeEvent.layout;
+		setCardHeights((prev) => ({ ...prev, [index]: height + 1 }));
+	};
 
 	// handle scroll up page refresh
 	const onRefresh = React.useCallback(() => {
@@ -194,66 +205,136 @@ const HomeScreen = () => {
 						// these make the code read better
 						const photo_uri = data['Eventphoto'];
 						const ticketid = ids[idx].toString();
-						const eventdate = new Date(data['EventDatetime']);
+						const date = new Date(data['EventDatetime']);
+						const month = date.toLocaleString('default', {
+							month: 'short'
+						});
+						const day = date.getDate();
+						const dayOfWeek = date.toLocaleString('default', {
+							weekday: 'short'
+						});
+						const time = date.toLocaleString('default', {
+							hour: 'numeric',
+							minute: '2-digit',
+							hour12: true
+						});
+						const displayDate = `${dayOfWeek} ${month} ${day}, ${date.getFullYear()} ${time}`;
+
+						const leftComponent = () => (
+							<Image
+								source={{
+									uri:
+										photo_uri ??
+										'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg'
+								}}
+								key={'Photo'}
+								style={{
+									height: cardHeights[idx] || 90,
+									aspectRatio: 1,
+									borderTopLeftRadius: 10,
+									borderBottomLeftRadius: 10
+								}}
+							/>
+						);
+
+						const rightComponent = ({ size }: { size: number }) => (
+							<AntDesign
+								name="right"
+								size={size}
+								color={
+									is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary
+								}
+							/>
+						);
+
+						const subtitle = (
+							<Text
+								style={{
+									color: is_dark
+										? colors.darkSecondary
+										: colors.lightSecondary,
+									textAlign: 'center',
+									textAlignVertical: 'center'
+								}}
+							>
+								{data['Type']}
+								{'\n'}
+								{displayDate}
+								{'\n'}#{ticketid}
+							</Text>
+						);
 
 						return (
-							<Pressable
+							<Card
+								onLayout={(e) => handleLayout(idx, e)}
+								style={{
+									minWidth: '90%',
+									maxWidth: '90%',
+									justifyContent: 'center',
+									backgroundColor: is_dark
+										? colors.darkPrimary
+										: colors.lightPrimary,
+									marginRight: 5,
+									marginVertical: 5,
+									paddingVertical: 10,
+									elevation: 5,
+									shadowColor: '#000', // Shadow for iOS
+									shadowOffset: { width: 0, height: 2 },
+									shadowOpacity: 0.4,
+									shadowRadius: 6
+								}}
+								key={idx}
 								onPress={() => {
+									console.log('hi');
 									// @ts-expect-error This is valid code, but typescript doesn't like it
 									navigation.navigate('Event', {
 										Event: ticketid
 									});
 								}}
-								style={{ width: '100%' }}
 							>
-								<Card
-									key={idx}
-									style={{ display: 'flex', width: '100%' }}
-								>
-									<View style={styles.container}>
-										<View style={styles.leftcolumn}>
-											<Image
-												source={{
-													uri: photo_uri
-												}}
-												style={{
-													aspectRatio: 1,
-													maxHeight: 200,
-													width: '80%',
-													display: 'flex',
-													flexDirection: 'column',
-													alignItems: 'center'
-												}}
-											/>
-										</View>
-										<View style={styles.rightcolumn}>
-											<Text style={{ fontSize: 20 }}>
-												{data['Eventname']}
-											</Text>
-											<Text
-												style={{ fontStyle: 'italic' }}
-											>
-												{data['Description']}
-											</Text>
-											<Text
-												style={{ fontStyle: 'italic' }}
-											>
-												{'\n'}
-												{eventdate.toLocaleTimeString()}{' '}
-												{eventdate.toLocaleDateString()}
-											</Text>
-											<Text
-												style={{
-													flex: 1,
-													textAlign: 'right'
-												}}
-											>
-												#{ticketid}
-											</Text>
-										</View>
-									</View>
-								</Card>
-							</Pressable>
+								<Card.Title
+									style={{
+										paddingLeft: 0, // This removes internal padding in the Card.Title
+										marginLeft: 0 // This ensures the component aligns with the edge
+									}}
+									title={
+										data['Eventname'].length > 25
+											? data['Eventname'].slice(0, 22) +
+												'...'
+											: data['Eventname']
+									}
+									titleStyle={{
+										fontSize: 16,
+										textAlign: 'center',
+										color: is_dark
+											? colors.darkText
+											: colors.lightText
+									}}
+									subtitle={subtitle}
+									subtitleStyle={{
+										display: 'flex',
+										flexDirection: 'column',
+										justifyContent: 'center',
+										marginTop: 5,
+										alignItems: 'center',
+										rowGap: 7,
+										textAlign: 'center',
+										fontSize: 12
+									}}
+									subtitleNumberOfLines={3}
+									leftStyle={{
+										marginLeft: 0,
+										paddingLeft: 0,
+										marginVertical: 0,
+										width: '20%'
+									}}
+									left={leftComponent}
+									rightStyle={{ marginRight: 10 }}
+									right={rightComponent}
+								/>
+							</Card>
 						);
 					}
 				) ?? (

@@ -163,30 +163,6 @@ export default function Events({
 									{'\n'}
 									{displayDate}
 								</Text>
-								// <View>
-								// 	<Text
-								// 		style={{
-								// 			color: is_dark
-								// 				? colors.darkSecondary
-								// 				: colors.lightSecondary,
-								// 			textAlign: 'center',
-								// 			textAlignVertical: 'center'
-								// 		}}
-								// 	>
-								// 		{event.Type}
-								// 	</Text>
-								// 	<Text
-								// 		style={{
-								// 			color: is_dark
-								// 				? colors.darkSecondary
-								// 				: colors.lightSecondary,
-								// 			textAlign: 'center',
-								// 			textAlignVertical: 'center'
-								// 		}}
-								// 	>
-								// 		{displayDate}
-								// 	</Text>
-								// </View>
 							);
 
 							return (

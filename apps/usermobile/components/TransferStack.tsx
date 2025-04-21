@@ -10,8 +10,8 @@ function TransferStack() {
 	return (
 		<>
 			<client.reactNative.WebView />
-			<Stack.Navigator initialRouteName="Transfer">
-				<Stack.Screen name="Transfer" component={TransferScreen} />
+			<Stack.Navigator initialRouteName="Transfers">
+				<Stack.Screen name="Transfers" component={TransferScreen} />
 				<Stack.Screen name="QRCamera" component={QRCamera} />
 			</Stack.Navigator>
 		</>
