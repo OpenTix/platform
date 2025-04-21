@@ -1,6 +1,7 @@
 import { isEthereumWallet } from '@dynamic-labs/ethereum';
 import { getAuthToken, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { UserEventDetailsResponse } from '@platform/types';
+import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { Card, Flex, Heading, Inset, Text } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -48,6 +49,13 @@ const RightColumn = styled.div`
 		flex: 1 1 100%;
 		min-width: 0;
 		top: 0;
+	}
+`;
+
+const UnderlineFlex = styled(Flex)`
+	cursor: pointer;
+	&:hover {
+		text-decoration: underline;
 	}
 `;
 
@@ -184,9 +192,22 @@ export default function EventDetailsPage() {
 											}}
 										/>
 									</Inset>
-									<Heading size="4" mb="3">
-										{data.Venuename}
-									</Heading>
+									<UnderlineFlex
+										gap="2"
+										align="center"
+										mb="2"
+										onClick={() => {
+											window.open(
+												`https://www.google.com/maps/place/${data.StreetAddress},+${data.City},+${data.StateCode}+${data.Zip}`,
+												'_blank'
+											);
+										}}
+									>
+										<Heading size="4">
+											{data.Venuename}
+										</Heading>
+										<ExternalLinkIcon />
+									</UnderlineFlex>
 									<Text as="p" size="3">
 										{data.StreetAddress}
 									</Text>
