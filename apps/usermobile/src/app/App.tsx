@@ -14,20 +14,12 @@ export default function App() {
 	const client = useDynamic();
 	const [show, setShow] = useState(false);
 
-	client.auth.on('authFailed', () => {
-		console.log('User failed to login');
-		client.ui.auth.show();
-	});
-	client.auth.on('authSuccess', (user) => {
-		console.log('User logged in', user);
-		client.ui.auth.hide();
-	});
 	client.ui.on('authFlowCancelled', () => {
-		console.log('User cancelled the flow not cool');
-		client.ui.auth.show();
-	});
-	client.auth.on('loggedOut', () => {
-		client.ui.auth.show();
+		if (!client.auth.authenticatedUser) {
+			client.ui.auth.show();
+		} else {
+			client.ui.auth.hide();
+		}
 	});
 
 	useEffect(() => {
@@ -49,8 +41,6 @@ export default function App() {
 			initialRouteName: 'Home',
 			screens: {
 				Home: 'HomeScreen'
-				// Events: 'Event',
-				// EventDetails: 'EventDetails'
 			}
 		}
 	};

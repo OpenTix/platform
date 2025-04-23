@@ -52,7 +52,6 @@ export default function EventView({
 	const [ticketTransferable, setTicketTransferable] = useState(false);
 
 	const runner = async () => {
-		console.log('runner');
 		const name = await getEventNameFromId(BigInt(Event));
 		const split = name.split(' ');
 		const uuid = split[split.length - 1];
@@ -68,7 +67,7 @@ export default function EventView({
 
 	async function computeQRData(ticketid: string, ticketuuid: string) {
 		if (client.wallets.primary == null) {
-			console.warn('No primary wallet cannot compute qr code');
+			console.error('No primary wallet cannot compute qr code');
 			return '';
 		}
 
@@ -78,9 +77,6 @@ export default function EventView({
 
 		const message = ticketuuid;
 		const tmp = await walletClient.signMessage({ message });
-		console.log(
-			`${ticketid} ${tmp} ${client.auth.authenticatedUser?.verifiedCredentials[0].address}`
-		);
 		return `${ticketid} ${tmp} ${client.auth.authenticatedUser?.verifiedCredentials[0].address}`;
 	}
 
@@ -117,7 +113,7 @@ export default function EventView({
 
 			return data;
 		} else {
-			console.log(
+			console.error(
 				'Failed to create the public viem client when trying to get the event description.'
 			);
 			return '';
@@ -129,14 +125,10 @@ export default function EventView({
 		const name = await getEventNameFromId(BigInt(Event));
 		const split = name.split(' ');
 		const uuid = split[split.length - 1];
-		console.log(uuid);
 
 		setqrData(await computeQRData(`${Event}`, `${uuid}`));
-
 		setModalText('Show the vendor this QR code');
 		setModalVisible(true);
-
-		console.log(qrData);
 	}
 
 	const checkIfTransfersEnabled = async () => {
@@ -157,11 +149,9 @@ export default function EventView({
 					account: w.account
 				})) as boolean;
 
-				console.log(`data ${data}`);
-
 				return data;
 			} else {
-				console.log(
+				console.error(
 					'Failed to create the public viem client when trying to get the event description.'
 				);
 				return false;
@@ -191,7 +181,7 @@ export default function EventView({
 
 				return data;
 			} else {
-				console.log(
+				console.error(
 					'Failed to create the public viem client when trying to get the event description.'
 				);
 				return false;
@@ -219,7 +209,6 @@ export default function EventView({
 						args: []
 					});
 					const hash = await w.writeContract(request);
-					console.log(`enable ticket transfer hash ${hash}`);
 					setModalBlockInclusionVisible(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
@@ -259,7 +248,6 @@ export default function EventView({
 						args: [BigInt(Event)]
 					});
 					const hash = await w.writeContract(request);
-					console.log(`allow ticket to be transfered hash ${hash}`);
 					setModalBlockInclusionVisible(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
@@ -278,8 +266,27 @@ export default function EventView({
 		return false;
 	};
 
+	async function transfer_step3() {
+		setqrData(
+			`${JSON.stringify({ address: client.auth.authenticatedUser?.verifiedCredentials[0].address, id: Event, basecost: eventData?.Basecost })}`
+		);
+
+		setModalText('Show the ticket buyer this QR code');
+		setModalVisible(true);
+	}
+
+	async function transfer_step2() {
+		const ticket_transferable = await checkIfTicketIsTransferable();
+
+		if (!ticket_transferable) {
+			// get user confirmation they want to make the ticket transferable
+			setModalTicketTransferableVisible(true);
+		}
+
+		await transfer_step3();
+	}
+
 	async function transfer() {
-		console.log('transfer');
 		const transfers_enabled = await checkIfTransfersEnabled();
 
 		if (!transfers_enabled) {
@@ -287,23 +294,7 @@ export default function EventView({
 			setModalTransfersEnabledVisible(true);
 		}
 
-		console.log('transfers enabled');
-
-		const ticket_transferable = await checkIfTicketIsTransferable();
-
-		console.log(`transferable: ${ticket_transferable}`);
-
-		if (!ticket_transferable) {
-			// get user confirmation they want to make the ticket transferable
-			setModalTicketTransferableVisible(true);
-		}
-
-		setqrData(
-			`${JSON.stringify({ address: client.auth.authenticatedUser?.verifiedCredentials[0].address, id: Event, basecost: eventData?.Basecost })}`
-		);
-
-		setModalText('Show the ticket buyer this QR code');
-		setModalVisible(true);
+		await transfer_step2();
 	}
 
 	return (
@@ -318,7 +309,8 @@ export default function EventView({
 				<View style={styles.modalBackground}>
 					<View style={styles.modalView}>
 						<Text style={styles.modalText}>
-							Would you like to enable ticket transfers?
+							Would you like to enable ticket transfers for your
+							account?
 						</Text>
 						<View
 							style={{
@@ -368,11 +360,11 @@ export default function EventView({
 								onPress={async () => {
 									setModalTransfersEnabledVisible(false);
 									if (!(await enable_ticket_transfers())) {
-										console.warn(
-											'failed to enable transfer for the ticket'
+										console.error(
+											'failed to enable ticket transfers for the user account'
 										);
 									}
-									transfer();
+									transfer_step2();
 								}}
 								style={{
 									backgroundColor: is_dark
@@ -468,11 +460,11 @@ export default function EventView({
 								onPress={async () => {
 									setModalTicketTransferableVisible(false);
 									if (!(await makeTicketTransferable())) {
-										console.warn(
+										console.error(
 											'failed to enable transfer for the ticket'
 										);
 									}
-									transfer();
+									transfer_step3();
 								}}
 								style={{
 									backgroundColor: is_dark
@@ -520,7 +512,7 @@ export default function EventView({
 						<Text style={styles.modalText}>
 							Waiting for block inclusion...
 						</Text>
-						<ActivityIndicator size={'large'} color={'#0000ff'} />
+						<ActivityIndicator size={'large'} />
 					</View>
 				</View>
 			</Modal>

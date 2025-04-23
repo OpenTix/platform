@@ -14,6 +14,7 @@ export default function QRCamera({
 
 	const handleGoBack = () => {
 		// Pass data back to Event Deatails Screen using the onGoBack callback
+		// @ts-expect-error This is valid code, but typescript doesn't like it
 		route.params.onGoBack(qrDatainternal);
 		navigation.goBack();
 	};
@@ -44,7 +45,6 @@ export default function QRCamera({
 				}}
 				style={StyleSheet.absoluteFillObject}
 			/>
-			{/* <Button title="Go Back" onPress={handleGoBack} /> */}
 		</View>
 	);
 }

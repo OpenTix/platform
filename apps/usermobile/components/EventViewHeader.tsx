@@ -28,8 +28,6 @@ export default function EventViewHeader({
 
 	const URI = data.Eventphoto ? data.Eventphoto : fallbackURL;
 
-	// console.log(`url(${data.Eventphoto || fallbackURL}), url(${fallbackURL})`);
-
 	return (
 		<View
 			style={{
@@ -91,7 +89,7 @@ export default function EventViewHeader({
 					<Text
 						style={{
 							color: '#fff',
-							fontSize: '10',
+							fontSize: 10,
 							fontWeight: 'bold'
 						}}
 					>
@@ -108,48 +106,8 @@ export default function EventViewHeader({
 						gap: 5,
 						alignItems: 'center'
 					}}
-				>
-					{/* <Image
-						src={URI}
-						alt="Event"
-						style={{
-							width: '10%',
-							height: '10%',
-							objectFit: 'contain',
-							// display: 'block'
-                            borderRadius: '10px'
-						}}
-					></Image> */}
-				</View>
+				></View>
 			</View>
-			{/* <Box position="relative" m="8" maxWidth={'35em'}>
-				<Flex direction="row" gap="5" align={'center'}>
-					<img
-						src={data.Eventphoto || fallbackURL}
-						alt="Event"
-						style={{
-							width: '10em',
-							height: '10em',
-							objectFit: 'contain',
-							display: 'block',
-							borderRadius: '10px'
-						}}
-					/>
-					<Box>
-						<Heading size="3" mb="3" style={{ color: '#fff' }}>
-							{data.Type}
-						</Heading>
-						<Heading size="8" style={{ color: '#fff' }}>
-							{data.Eventname}
-						</Heading>
-						<br />
-						<Heading size="2" mt="3" style={{ color: '#fff' }}>
-							{dayOfWeek}, {month} {day},{' '}
-							{eventDate.getFullYear()} • {time}
-						</Heading>
-					</Box>
-				</Flex>
-			</Box> */}
 		</View>
 	);
 }

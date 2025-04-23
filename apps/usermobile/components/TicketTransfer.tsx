@@ -17,10 +17,10 @@ const TransferScreen = () => {
 	const [playAnimation, setPlayAnimation] = useState(false);
 
 	const navigateToQRCamera = () => {
+		// @ts-expect-error This is valid code, but typescript doesn't like it
 		navigation.navigate('QRCamera', {
 			onGoBack: (data: string) => {
 				setIntermediate(data);
-				console.log(`QR DATA ${data}`);
 			}
 		});
 	};
@@ -61,7 +61,6 @@ const TransferScreen = () => {
 					});
 
 					const hash = await w.writeContract(request);
-					console.log(hash);
 
 					setResult('Loading...');
 					setModalVisible(true);

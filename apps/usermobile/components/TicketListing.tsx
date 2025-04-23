@@ -10,7 +10,8 @@ import {
 	ScrollView,
 	Image,
 	useColorScheme,
-	LayoutChangeEvent
+	LayoutChangeEvent,
+	ActivityIndicator
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { polygonAmoy } from 'viem/chains';
@@ -34,7 +35,6 @@ const HomeScreen = () => {
 
 	const handleLayout = (index: number, layoutEvent: LayoutChangeEvent) => {
 		const { height } = layoutEvent.nativeEvent.layout;
-		console.log(`height=${height}`);
 		setCardHeights((prev) => ({ ...prev, [index]: height + 1 }));
 	};
 
@@ -50,7 +50,6 @@ const HomeScreen = () => {
 	const updateData = async () => {
 		const tmp = await getAllOwnedEvents();
 		const empty = tmp['event_data'].length == 0;
-		console.log('tmp=', tmp);
 
 		if (!empty) {
 			setGData(tmp);
@@ -61,9 +60,7 @@ const HomeScreen = () => {
 	};
 
 	useEffect(() => {
-		// console.log('called pending=', isPending);
 		if (isPending && client.auth.authenticatedUser && !running) {
-			console.log('running!');
 			setRunning(true);
 			updateData();
 		}
@@ -137,7 +134,7 @@ const HomeScreen = () => {
 
 			return data;
 		} else {
-			console.log(
+			console.error(
 				'Failed to create the public viem client when trying to get the event description.'
 			);
 			return '';
@@ -207,8 +204,10 @@ const HomeScreen = () => {
 					rowGap: 10
 				}}
 			>
+				{!gdata && <ActivityIndicator size={'large'} />}
 				{client.auth.authenticatedUser != null &&
 					gdata &&
+					!refreshing &&
 					(gdata['event_data']?.map(
 						(data: UserEventDetailsResponse, idx: number) => {
 							// this should never happen but keeps the app from blowing up if it does
@@ -309,7 +308,6 @@ const HomeScreen = () => {
 									}}
 									key={idx}
 									onPress={() => {
-										console.log('hi');
 										// @ts-expect-error This is valid code, but typescript doesn't like it
 										navigation.navigate('Event', {
 											Event: ticketid
