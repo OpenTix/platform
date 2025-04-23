@@ -24,12 +24,12 @@ export default function App() {
 
 	useEffect(() => {
 		if (!show) return;
-		if (client.auth.token !== null) {
+		if (client.auth.authenticatedUser) {
 			client.ui.auth.hide();
 		} else {
 			client.ui.auth.show();
 		}
-	}, [show]);
+	}, [show, client.auth.authenticatedUser]);
 
 	useEffect(() => {
 		setTimeout(() => setShow(true), 1500);
