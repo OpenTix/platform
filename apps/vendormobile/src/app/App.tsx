@@ -7,7 +7,8 @@ import {
 	SafeAreaView,
 	View,
 	useColorScheme,
-	Button
+	Button,
+	Platform
 } from 'react-native';
 import * as colors from '../constants/colors';
 import { useDynamic } from '../hooks/DynamicSetup';
@@ -22,6 +23,10 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
 	const is_dark = useColorScheme() === 'dark';
+	const isIos = Platform.select({
+		ios: true,
+		android: false
+	});
 	const DarkTheme = {
 		colors: {
 			background: colors.darkBackground,
@@ -92,6 +97,20 @@ export default function App() {
 					name="Home"
 					component={Home}
 					options={{
+						headerLeft: () => (
+							<SafeAreaView>
+								{isIos && (
+									<Button
+										title="Profile"
+										onPress={() => {
+											if (client?.auth?.token !== null) {
+												client.ui.userProfile.show();
+											}
+										}}
+									/>
+								)}
+							</SafeAreaView>
+						),
 						headerRight: () => (
 							<SafeAreaView>
 								<View
@@ -101,92 +120,97 @@ export default function App() {
 										columnGap: 5
 									}}
 								>
-									{/* <Button
-										title="Profile"
-										onPress={() => {
-											if (client?.auth?.token !== null) {
-												client.ui.userProfile.show();
-											}
-										}}
-									/>
-									<Button
-										title="Logout"
-										onPress={() => {
-											if (client?.auth?.token !== null) {
-												client.auth.logout();
-											}
-										}}
-									/> */}
-									<Pressable
-										style={{
-											backgroundColor: is_dark
-												? colors.darkPrimary
-												: colors.lightPrimary,
-											borderRadius: 20, // Make it round
-											padding: 7,
-											elevation: 5, // Shadow for Android
-											shadowColor: '#000', // Shadow for iOS
-											shadowOffset: {
-												width: 0,
-												height: 2
-											},
-											shadowOpacity: 0.3,
-											shadowRadius: 3,
-											alignItems: 'center',
-											justifyContent: 'center'
-										}}
-										onPressOut={() => {
-											if (client?.auth?.token !== null) {
-												client.ui.userProfile.show();
-											}
-										}}
-									>
-										<Text
-											style={{
-												color: is_dark
-													? colors.darkSecondary
-													: colors.lightSecondary,
-												textAlign: 'center'
+									{isIos ? (
+										<Button
+											title="Logout"
+											onPress={() => {
+												if (
+													client?.auth?.token !== null
+												) {
+													client.auth.logout();
+												}
 											}}
-										>
-											Profile
-										</Text>
-									</Pressable>
-									<Pressable
-										style={{
-											backgroundColor: is_dark
-												? colors.darkPrimary
-												: colors.lightPrimary,
-											borderRadius: 20, // Make it round
-											padding: 7,
-											elevation: 5, // Shadow for Android
-											shadowColor: '#000', // Shadow for iOS
-											shadowOffset: {
-												width: 0,
-												height: 2
-											},
-											shadowOpacity: 0.3,
-											shadowRadius: 3,
-											alignItems: 'center',
-											justifyContent: 'center'
-										}}
-										onPressOut={() => {
-											if (client?.auth?.token !== null) {
-												client.auth.logout();
-											}
-										}}
-									>
-										<Text
-											style={{
-												color: is_dark
-													? colors.darkSecondary
-													: colors.lightSecondary,
-												textAlign: 'center'
-											}}
-										>
-											Logout
-										</Text>
-									</Pressable>
+										/>
+									) : (
+										<>
+											<Pressable
+												style={{
+													backgroundColor: is_dark
+														? colors.darkPrimary
+														: colors.lightPrimary,
+													borderRadius: 20, // Make it round
+													padding: 7,
+													elevation: 5, // Shadow for Android
+													shadowColor: '#000', // Shadow for iOS
+													shadowOffset: {
+														width: 0,
+														height: 2
+													},
+													shadowOpacity: 0.3,
+													shadowRadius: 3,
+													alignItems: 'center',
+													justifyContent: 'center'
+												}}
+												onPressOut={() => {
+													if (
+														client?.auth?.token !==
+														null
+													) {
+														client.ui.userProfile.show();
+													}
+												}}
+											>
+												<Text
+													style={{
+														color: is_dark
+															? colors.darkSecondary
+															: colors.lightSecondary,
+														textAlign: 'center'
+													}}
+												>
+													Profile
+												</Text>
+											</Pressable>
+											<Pressable
+												style={{
+													backgroundColor: is_dark
+														? colors.darkPrimary
+														: colors.lightPrimary,
+													borderRadius: 20, // Make it round
+													padding: 7,
+													elevation: 5, // Shadow for Android
+													shadowColor: '#000', // Shadow for iOS
+													shadowOffset: {
+														width: 0,
+														height: 2
+													},
+													shadowOpacity: 0.3,
+													shadowRadius: 3,
+													alignItems: 'center',
+													justifyContent: 'center'
+												}}
+												onPressOut={() => {
+													if (
+														client?.auth?.token !==
+														null
+													) {
+														client.auth.logout();
+													}
+												}}
+											>
+												<Text
+													style={{
+														color: is_dark
+															? colors.darkSecondary
+															: colors.lightSecondary,
+														textAlign: 'center'
+													}}
+												>
+													Logout
+												</Text>
+											</Pressable>
+										</>
+									)}
 								</View>
 							</SafeAreaView>
 						)

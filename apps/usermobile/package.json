@@ -7,7 +7,7 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios --device Chris2",
 		"ios-sim": "expo run:ios",
-		"prebuild": "expo prebuild && sh -c 'cp -r saves/res android/app/src/main; cp saves/AndroidManifest.xml android/app/src/main; cp saves/gradle.properties android/'"
+		"prebuild": "expo prebuild"
 	},
 	"dependencies": {
 		"@dynamic-labs/client": "^4.8.4",

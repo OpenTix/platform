@@ -327,9 +327,9 @@ export default function EventView({
 									setModalTransfersEnabledVisible(false)
 								}
 								style={{
-									backgroundColor: is_dark
-										? colors.darkPrimary
-										: colors.lightPrimary,
+									// backgroundColor: is_dark
+									// 	? colors.darkPrimary
+									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -347,9 +347,9 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										color: is_dark
-											? colors.darkText
-											: colors.lightText,
+										// color: is_dark
+										// 	? colors.darkText
+										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -367,9 +367,9 @@ export default function EventView({
 									transfer_step2();
 								}}
 								style={{
-									backgroundColor: is_dark
-										? colors.darkPrimary
-										: colors.lightPrimary,
+									// backgroundColor: is_dark
+									// 	? colors.darkPrimary
+									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -387,9 +387,9 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										color: is_dark
-											? colors.darkText
-											: colors.lightText,
+										// color: is_dark
+										// 	? colors.darkText
+										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -427,9 +427,9 @@ export default function EventView({
 									setModalTicketTransferableVisible(false)
 								}
 								style={{
-									backgroundColor: is_dark
-										? colors.darkPrimary
-										: colors.lightPrimary,
+									// backgroundColor: is_dark
+									// 	? colors.darkPrimary
+									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -447,9 +447,9 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										color: is_dark
-											? colors.darkText
-											: colors.lightText,
+										// color: is_dark
+										// 	? colors.darkText
+										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -467,9 +467,9 @@ export default function EventView({
 									transfer_step3();
 								}}
 								style={{
-									backgroundColor: is_dark
-										? colors.darkPrimary
-										: colors.lightPrimary,
+									// backgroundColor: is_dark
+									// 	? colors.darkPrimary
+									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -487,9 +487,9 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										color: is_dark
-											? colors.darkText
-											: colors.lightText,
+										// color: is_dark
+										// 	? colors.darkText
+										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -572,12 +572,22 @@ export default function EventView({
 							alignSelf: 'center'
 						}}
 					>
-						<Card.Title title={'Description'} />
+						<Card.Title
+							title={'Description'}
+							titleStyle={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText
+							}}
+						/>
 						<Text
 							style={{
 								textAlign: 'left',
 								marginLeft: 20,
-								marginRight: 20
+								marginRight: 20,
+								color: is_dark
+									? colors.darkSecondary
+									: colors.lightSecondary
 							}}
 						>
 							{'          '}
@@ -603,12 +613,22 @@ export default function EventView({
 							alignSelf: 'center'
 						}}
 					>
-						<Card.Title title={'Disclaimer'} />
+						<Card.Title
+							title={'Disclaimer'}
+							titleStyle={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText
+							}}
+						/>
 						<Text
 							style={{
 								textAlign: 'left',
 								marginLeft: 20,
-								marginRight: 20
+								marginRight: 20,
+								color: is_dark
+									? colors.darkSecondary
+									: colors.lightSecondary
 							}}
 						>
 							{'          '}
@@ -635,7 +655,14 @@ export default function EventView({
 							alignSelf: 'center'
 						}}
 					>
-						<Card.Title title={'Address'} />
+						<Card.Title
+							title={'Address'}
+							titleStyle={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText
+							}}
+						/>
 						<Button
 							onPress={() => {
 								if (!eventData) return;

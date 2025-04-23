@@ -5,6 +5,7 @@
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
 		"splash": {
 			"image": "./assets/splash.png",
 			"resizeMode": "contain",
@@ -17,6 +18,7 @@
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.opentix.vendor",
+			"userInterfaceStyle": "automatic",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false,
 				"NFCReaderUsageDescription": "We need to use NFC to check in tickets.",
@@ -25,7 +27,8 @@
 			"appleTeamId": "S726Z4H4Q3"
 		},
 		"android": {
-			"package": "com.opentix.vendor"
+			"package": "com.opentix.vendor",
+			"userInterfaceStyle": "automatic"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png",

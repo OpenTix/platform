@@ -5,6 +5,7 @@
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
 		"splash": {
 			"image": "./assets/splash.png",
 			"resizeMode": "contain",
@@ -17,6 +18,7 @@
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.opentix.user",
+			"userInterfaceStyle": "automatic",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false,
 				"NSCameraUsageDescription": "Used to scan user ticket QR codes."
@@ -26,7 +28,8 @@
 		},
 		"android": {
 			"package": "com.opentix.usermobile",
-			"permissions": ["android.permission.NFC"]
+			"permissions": ["android.permission.NFC"],
+			"userInterfaceStyle": "automatic"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png",
