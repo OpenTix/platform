@@ -1,7 +1,7 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
 	View,
 	Text,
@@ -10,12 +10,19 @@ import {
 	Pressable,
 	StyleSheet,
 	TouchableOpacity,
-	useColorScheme
+	useColorScheme,
+	Platform,
+	Linking,
+	Modal,
+	TouchableWithoutFeedback,
+	ActivityIndicator
 } from 'react-native';
+import { Card, Button } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { polygonAmoy } from 'viem/chains';
 import * as colors from '../constants/colors';
 import { useDynamic } from './DynamicSetup';
+import EventViewHeader from './EventViewHeader';
 
 type Params = {
 	Event: {
@@ -27,70 +34,34 @@ export default function EventView({
 	route
 }: NativeStackScreenProps<Params, 'Event'>) {
 	const is_dark = useColorScheme() === 'dark';
+	const fallbackURL =
+		'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg';
 	const client = useDynamic();
 	const { Event } = route.params; // this is the event id
 	const [qrData, setqrData] = useState('');
 	const [displayData, setdisplayData] = useState(<Text>Loading...</Text>);
-	const [ticketAvailableForSale, setTicketAvailableForSale] = useState(false);
 	const [eventData, setEventData] = useState<UserEventDetailsResponse>();
+	const [modalVisible, setModalVisible] = useState(false);
+	const [modalText, setModalText] = useState('');
+	const [modalBlockInclusionVisible, setModalBlockInclusionVisible] =
+		useState(false);
+	const [modalTicketTransferableVisible, setModalTicketTransferableVisible] =
+		useState(false);
+	const [modalTransfersEnabledVisible, setModalTransfersEnabledVisible] =
+		useState(false);
+	const [ticketTransferable, setTicketTransferable] = useState(false);
 
 	const runner = async () => {
+		console.log('runner');
 		const name = await getEventNameFromId(BigInt(Event));
 		const split = name.split(' ');
 		const uuid = split[split.length - 1];
 		const data = await getEventByUUID(uuid);
-
-		const data2 = data as UserEventDetailsResponse;
-		setEventData(data2);
-
-		const keys = Object.keys(data as UserEventDetailsResponse);
-		const values = Object.values(data as UserEventDetailsResponse);
-
-		let photo_uri = '';
-
-		setdisplayData(
-			<>
-				{values?.map((value: string | number, idx2: number) => {
-					if (keys[idx2] === 'Eventphoto') {
-						photo_uri = value as string;
-						return null;
-					} else if (keys[idx2] === 'ID') {
-						return null;
-					} else if (keys[idx2] === 'Venuephoto') {
-						return null;
-					}
-					return (
-						<Text key={idx2} style={{ textAlign: 'center' }}>
-							{keys[idx2]}:{' '}
-							{keys[idx2] === 'EventDatetime'
-								? new Date(value).toLocaleString()
-								: keys[idx2] === 'Basecost'
-									? `$${value}`
-									: value}
-						</Text>
-					);
-				})}
-				<Image
-					key={100}
-					style={{
-						alignSelf: 'center',
-						backgroundColor: 'white'
-					}}
-					source={{ uri: photo_uri }}
-				/>
-				<Text key={1000} style={{ textAlign: 'center' }}>
-					Ticket id = {Event}
-				</Text>
-			</>
-		);
-	};
-
-	const setTransferButton = async () => {
-		setTicketAvailableForSale(await checkIfTicketIsTransferable());
+		setEventData(data as UserEventDetailsResponse);
+		setTicketTransferable(await checkIfTicketIsTransferable());
 	};
 
 	useEffect(() => {
-		setTransferButton();
 		setqrData('');
 		runner();
 	}, []);
@@ -161,6 +132,9 @@ export default function EventView({
 		console.log(uuid);
 
 		setqrData(await computeQRData(`${Event}`, `${uuid}`));
+
+		setModalText('Show the vendor this QR code');
+		setModalVisible(true);
 
 		console.log(qrData);
 	}
@@ -246,9 +220,13 @@ export default function EventView({
 					});
 					const hash = await w.writeContract(request);
 					console.log(`enable ticket transfer hash ${hash}`);
+					setModalBlockInclusionVisible(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
 					});
+
+					setModalBlockInclusionVisible(false);
+					return true;
 				} else {
 					console.error('Wallet client or public client not set up');
 				}
@@ -256,11 +234,15 @@ export default function EventView({
 				console.error('Error setting up wallet client', error);
 			}
 		}
+
+		setModalBlockInclusionVisible(false);
+		return false;
 	};
 
 	const makeTicketTransferable = async () => {
 		if (client.wallets.primary) {
 			try {
+				// setModalBlockInclusionVisible(true);
 				const p = await client.viem.createPublicClient({
 					chain: polygonAmoy
 				});
@@ -278,9 +260,13 @@ export default function EventView({
 					});
 					const hash = await w.writeContract(request);
 					console.log(`allow ticket to be transfered hash ${hash}`);
+					setModalBlockInclusionVisible(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
 					});
+
+					setModalBlockInclusionVisible(false);
+					return true;
 				} else {
 					console.error('Wallet client or public client not set up');
 				}
@@ -288,6 +274,8 @@ export default function EventView({
 				console.error('Error setting up wallet client', error);
 			}
 		}
+		setModalBlockInclusionVisible(false);
+		return false;
 	};
 
 	async function transfer() {
@@ -295,9 +283,8 @@ export default function EventView({
 		const transfers_enabled = await checkIfTransfersEnabled();
 
 		if (!transfers_enabled) {
-			// do a modal here
-			// but for now we are just gonna do it
-			await enable_ticket_transfers();
+			// get user confirmation they want to enable ticket transfers
+			setModalTransfersEnabledVisible(true);
 		}
 
 		console.log('transfers enabled');
@@ -307,121 +294,475 @@ export default function EventView({
 		console.log(`transferable: ${ticket_transferable}`);
 
 		if (!ticket_transferable) {
-			await makeTicketTransferable();
+			// get user confirmation they want to make the ticket transferable
+			setModalTicketTransferableVisible(true);
 		}
 
 		setqrData(
 			`${JSON.stringify({ address: client.auth.authenticatedUser?.verifiedCredentials[0].address, id: Event, basecost: eventData?.Basecost })}`
 		);
+
+		setModalText('Show the ticket buyer this QR code');
+		setModalVisible(true);
 	}
 
 	return (
-		<View
-			style={{
-				flex: 1,
-				justifyContent: 'center',
-				backgroundColor: is_dark
-					? colors.darkBackground
-					: colors.lightBackground,
-				height: '100%'
-			}}
-		>
+		<>
+			{/* Modal for enabling ticket transfers */}
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalTransfersEnabledVisible}
+				onRequestClose={() => setModalTransfersEnabledVisible(false)} // For Android back button
+			>
+				<View style={styles.modalBackground}>
+					<View style={styles.modalView}>
+						<Text style={styles.modalText}>
+							Would you like to enable ticket transfers?
+						</Text>
+						<View
+							style={{
+								marginBottom: 10,
+								marginTop: 10,
+								alignItems: 'center',
+								flexDirection: 'row',
+								justifyContent: 'center',
+								backgroundColor: 'transparent'
+							}}
+						>
+							<TouchableOpacity
+								onPress={() =>
+									setModalTransfersEnabledVisible(false)
+								}
+								style={{
+									backgroundColor: is_dark
+										? colors.darkPrimary
+										: colors.lightPrimary,
+									borderRadius: 15,
+									paddingTop: 5,
+									paddingBottom: 5,
+									width: '35%',
+									elevation: 5,
+									shadowColor: '#000', // Shadow for iOS
+									shadowOffset: {
+										width: 0,
+										height: 2
+									},
+									shadowOpacity: 0.4,
+									shadowRadius: 6,
+									marginHorizontal: 10
+								}}
+							>
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkText
+											: colors.lightText,
+										textAlign: 'center'
+									}}
+								>
+									No
+								</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								onPress={async () => {
+									setModalTransfersEnabledVisible(false);
+									if (!(await enable_ticket_transfers())) {
+										console.warn(
+											'failed to enable transfer for the ticket'
+										);
+									}
+									transfer();
+								}}
+								style={{
+									backgroundColor: is_dark
+										? colors.darkPrimary
+										: colors.lightPrimary,
+									borderRadius: 15,
+									paddingTop: 5,
+									paddingBottom: 5,
+									width: '35%',
+									elevation: 5,
+									shadowColor: '#000', // Shadow for iOS
+									shadowOffset: {
+										width: 0,
+										height: 2
+									},
+									shadowOpacity: 0.4,
+									shadowRadius: 6,
+									marginHorizontal: 10
+								}}
+							>
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkText
+											: colors.lightText,
+										textAlign: 'center'
+									}}
+								>
+									Yes
+								</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
+			{/* Modal for making ticket transferable */}
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalTicketTransferableVisible}
+				onRequestClose={() => setModalTicketTransferableVisible(false)} // For Android back button
+			>
+				<View style={styles.modalBackground}>
+					<View style={styles.modalView}>
+						<Text style={styles.modalText}>
+							Would you like to make this ticket transferable?
+						</Text>
+						<View
+							style={{
+								marginBottom: 10,
+								marginTop: 10,
+								alignItems: 'center',
+								flexDirection: 'row',
+								justifyContent: 'center',
+								backgroundColor: 'transparent'
+							}}
+						>
+							<TouchableOpacity
+								onPress={() =>
+									setModalTicketTransferableVisible(false)
+								}
+								style={{
+									backgroundColor: is_dark
+										? colors.darkPrimary
+										: colors.lightPrimary,
+									borderRadius: 15,
+									paddingTop: 5,
+									paddingBottom: 5,
+									width: '35%',
+									elevation: 5,
+									shadowColor: '#000', // Shadow for iOS
+									shadowOffset: {
+										width: 0,
+										height: 2
+									},
+									shadowOpacity: 0.4,
+									shadowRadius: 6,
+									marginHorizontal: 10
+								}}
+							>
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkText
+											: colors.lightText,
+										textAlign: 'center'
+									}}
+								>
+									No
+								</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								onPress={async () => {
+									setModalTicketTransferableVisible(false);
+									if (!(await makeTicketTransferable())) {
+										console.warn(
+											'failed to enable transfer for the ticket'
+										);
+									}
+									transfer();
+								}}
+								style={{
+									backgroundColor: is_dark
+										? colors.darkPrimary
+										: colors.lightPrimary,
+									borderRadius: 15,
+									paddingTop: 5,
+									paddingBottom: 5,
+									width: '35%',
+									elevation: 5,
+									shadowColor: '#000', // Shadow for iOS
+									shadowOffset: {
+										width: 0,
+										height: 2
+									},
+									shadowOpacity: 0.4,
+									shadowRadius: 6,
+									marginHorizontal: 10
+								}}
+							>
+								<Text
+									style={{
+										color: is_dark
+											? colors.darkText
+											: colors.lightText,
+										textAlign: 'center'
+									}}
+								>
+									Yes
+								</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
+			{/* Modal for block inclusion */}
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalBlockInclusionVisible}
+				onRequestClose={() => setModalBlockInclusionVisible(false)} // For Android back button
+			>
+				<View style={styles.modalBackground}>
+					<View style={styles.modalView}>
+						<Text style={styles.modalText}>
+							Waiting for block inclusion...
+						</Text>
+						<ActivityIndicator size={'large'} color={'#0000ff'} />
+					</View>
+				</View>
+			</Modal>
+			{/* Modal for QRCode */}
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalVisible}
+				onRequestClose={() => setModalVisible(false)} // For Android back button
+			>
+				<TouchableWithoutFeedback
+					onPress={() => setModalVisible(false)}
+				>
+					<View style={styles.modalBackground}>
+						<View style={styles.modalView}>
+							<Text style={styles.modalText}>{modalText}</Text>
+							{
+								// this is written this way because QRCode will crash the app if qrData is weird (should never happen as is mitigated elsewhere, but going to leave it just in case)
+								qrData == '' ? (
+									<Text></Text>
+								) : (
+									<QRCode size={200} value={qrData} />
+								)
+							}
+						</View>
+					</View>
+				</TouchableWithoutFeedback>
+			</Modal>
+			{eventData && <EventViewHeader data={eventData} ticketid={Event} />}
 			<View
 				style={{
 					flex: 1,
-					rowGap: 10,
-					alignItems: 'center',
-					justifyContent: 'center'
+					justifyContent: 'center',
+					backgroundColor: is_dark
+						? colors.darkBackground
+						: colors.lightBackground,
+					height: '100%'
 				}}
 			>
-				<ScrollView>
-					{displayData}
-					<View
+				<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+					<Card
 						style={{
-							flex: 1,
-							marginTop: 10,
-							// rowGap: 10,
-							alignItems: 'center',
-							justifyContent: 'center'
+							minWidth: '98%',
+							maxWidth: '98%',
+							justifyContent: 'center',
+							backgroundColor: is_dark
+								? colors.darkPrimary
+								: colors.lightPrimary,
+							marginRight: 5,
+							marginVertical: 5,
+							paddingVertical: 10,
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: { width: 0, height: 2 },
+							shadowOpacity: 0.4,
+							shadowRadius: 6,
+							alignSelf: 'center'
 						}}
 					>
-						{qrData == '' ? (
-							<Text></Text>
-						) : (
-							<QRCode size={200} value={qrData} />
-						)}
-					</View>
+						<Card.Title title={'Description'} />
+						<Text
+							style={{
+								textAlign: 'left',
+								marginLeft: 20,
+								marginRight: 20
+							}}
+						>
+							{'          '}
+							{eventData?.Description}
+						</Text>
+					</Card>
+					<Card
+						style={{
+							minWidth: '98%',
+							maxWidth: '98%',
+							justifyContent: 'center',
+							backgroundColor: is_dark
+								? colors.darkPrimary
+								: colors.lightPrimary,
+							marginRight: 5,
+							marginVertical: 5,
+							paddingVertical: 10,
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: { width: 0, height: 2 },
+							shadowOpacity: 0.4,
+							shadowRadius: 6,
+							alignSelf: 'center'
+						}}
+					>
+						<Card.Title title={'Disclaimer'} />
+						<Text
+							style={{
+								textAlign: 'left',
+								marginLeft: 20,
+								marginRight: 20
+							}}
+						>
+							{'          '}
+							{eventData?.Disclaimer}
+						</Text>
+					</Card>
+
+					<Card
+						style={{
+							minWidth: '98%',
+							maxWidth: '98%',
+							justifyContent: 'center',
+							backgroundColor: is_dark
+								? colors.darkPrimary
+								: colors.lightPrimary,
+							marginRight: 5,
+							marginVertical: 5,
+							paddingVertical: 10,
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: { width: 0, height: 2 },
+							shadowOpacity: 0.4,
+							shadowRadius: 6,
+							alignSelf: 'center'
+						}}
+					>
+						<Card.Title title={'Address'} />
+						<Button
+							onPress={() => {
+								if (!eventData) return;
+
+								const scheme = Platform.select({
+									ios: 'maps:0,0?q=',
+									android: 'geo:0,0?q='
+								});
+								const url2 = `${scheme}${eventData.StreetAddress}, ${eventData.City}, ${eventData.StateCode}`;
+
+								Linking.openURL(url2).catch((err) =>
+									console.error('An error occurred', err)
+								);
+							}}
+						>{`${eventData?.StreetAddress} ${eventData?.City} ${eventData?.StateCode} ${eventData?.Zip}`}</Button>
+					</Card>
 				</ScrollView>
-			</View>
-			<View
-				style={{
-					marginBottom: 30,
-					alignItems: 'center',
-					flexDirection: 'row',
-					justifyContent: 'center'
-				}}
-			>
-				<TouchableOpacity
-					onPress={transfer}
+				<View
 					style={{
-						backgroundColor: is_dark
-							? colors.darkPrimary
-							: colors.lightPrimary,
-						borderRadius: 15,
-						paddingTop: 5,
-						paddingBottom: 5,
-						width: '35%',
-						elevation: 5,
-						shadowColor: '#000', // Shadow for iOS
-						shadowOffset: {
-							width: 0,
-							height: 2
-						},
-						shadowOpacity: 0.4,
-						shadowRadius: 6,
-						marginHorizontal: 10
+						marginBottom: 10,
+						marginTop: 10,
+						alignItems: 'center',
+						flexDirection: 'row',
+						justifyContent: 'center',
+						backgroundColor: 'transparent'
 					}}
 				>
-					<Text
+					<TouchableOpacity
+						onPress={transfer}
 						style={{
-							color: is_dark ? colors.darkText : colors.lightText,
-							textAlign: 'center'
+							borderRadius: 15,
+							paddingTop: 5,
+							paddingBottom: 5,
+							width: '35%',
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: {
+								width: 0,
+								height: 2
+							},
+							shadowOpacity: 0.4,
+							shadowRadius: 6,
+							marginHorizontal: 10,
+							backgroundColor: ticketTransferable
+								? colors.green
+								: is_dark
+									? colors.darkPrimary
+									: colors.lightPrimary
 						}}
 					>
-						Transfer
-					</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={checkin}
-					style={{
-						backgroundColor: is_dark
-							? colors.darkPrimary
-							: colors.lightPrimary,
-						borderRadius: 15,
-						paddingTop: 5,
-						paddingBottom: 5,
-						width: '35%',
-						elevation: 5,
-						shadowColor: '#000', // Shadow for iOS
-						shadowOffset: {
-							width: 0,
-							height: 2
-						},
-						shadowOpacity: 0.4,
-						shadowRadius: 6,
-						marginHorizontal: 10
-					}}
-				>
-					<Text
+						<Text
+							style={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText,
+								textAlign: 'center'
+							}}
+						>
+							Transfer
+						</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={checkin}
 						style={{
-							color: is_dark ? colors.darkText : colors.lightText,
-							textAlign: 'center'
+							backgroundColor: is_dark
+								? colors.darkPrimary
+								: colors.lightPrimary,
+							borderRadius: 15,
+							paddingTop: 5,
+							paddingBottom: 5,
+							width: '35%',
+							elevation: 5,
+							shadowColor: '#000', // Shadow for iOS
+							shadowOffset: {
+								width: 0,
+								height: 2
+							},
+							shadowOpacity: 0.4,
+							shadowRadius: 6,
+							marginHorizontal: 10
 						}}
 					>
-						Check in
-					</Text>
-				</TouchableOpacity>
+						<Text
+							style={{
+								color: is_dark
+									? colors.darkText
+									: colors.lightText,
+								textAlign: 'center'
+							}}
+						>
+							Check in
+						</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
-		</View>
+		</>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	modalBackground: {
+		flex: 1,
+		justifyContent: 'center',
+		backgroundColor: 'rgba(0,0,0,0.5)'
+	},
+	modalView: {
+		margin: 20,
+		padding: 35,
+		backgroundColor: 'white',
+		borderRadius: 10,
+		alignItems: 'center'
+	},
+	modalText: {
+		marginBottom: 15,
+		fontSize: 18
+	}
+});

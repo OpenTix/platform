@@ -1,7 +1,8 @@
 import { ContractABI, ContractAddress } from '@platform/blockchain';
 import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Modal, StyleSheet, Text } from 'react-native';
 import { Button } from 'react-native-paper';
 import { isAddress } from 'viem';
 import { polygonAmoy } from 'viem/chains';
@@ -12,6 +13,8 @@ const TransferScreen = () => {
 	const client = useDynamic();
 	const [intermediate, setIntermediate] = useState('');
 	const [result, setResult] = useState<string>('');
+	const [modalVisible, setModalVisible] = useState(false);
+	const [playAnimation, setPlayAnimation] = useState(false);
 
 	const navigateToQRCamera = () => {
 		navigation.navigate('QRCamera', {
@@ -27,8 +30,6 @@ const TransferScreen = () => {
 		const address = vals['address'];
 		const ticket = vals['id'];
 		const basecost = vals['basecost'];
-
-		setResult('Loading...');
 
 		if (ticket === '' || address === '' || basecost === '') {
 			setResult('Invalid parameters');
@@ -62,6 +63,10 @@ const TransferScreen = () => {
 					const hash = await w.writeContract(request);
 					console.log(hash);
 
+					setResult('Loading...');
+					setModalVisible(true);
+					setPlayAnimation(true);
+
 					// wait for the call to be included in a block
 					await p.waitForTransactionReceipt({
 						hash: hash
@@ -85,21 +90,83 @@ const TransferScreen = () => {
 		}
 	}, [intermediate]);
 
+	const handleAnimationFinish = () => {
+		setTimeout(() => {
+			setPlayAnimation(false);
+			setModalVisible(false);
+		}, 2000);
+	};
+
 	return (
-		<View
-			style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-		>
-			<Text>Here is where you buy a ticket from another user.</Text>
-
-			<Text>{intermediate}</Text>
-
-			<Text>Result: {result}</Text>
-
-			<Button onPress={navigateToQRCamera}>
-				Click to buy ticket from user QR code
-			</Button>
-		</View>
+		<>
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalVisible}
+				onRequestClose={() => setModalVisible(false)} // For Android back button
+			>
+				<View style={styles.modalBackground}>
+					{result === 'Loading...' && playAnimation && (
+						<LottieView
+							source={require('../assets/AnimationLoading.lottie')}
+							style={{ width: '100%', height: '100%' }}
+							autoPlay
+							loop
+						/>
+					)}
+					{(result === 'Success' || result === 'Failed') &&
+						playAnimation && (
+							<LottieView
+								source={
+									result === 'Success'
+										? require('../assets/AnimationSuccess.lottie')
+										: require('../assets/AnimationFail.lottie')
+								}
+								style={{ width: '100%', height: '100%' }}
+								loop={false}
+								autoPlay
+								onAnimationFinish={handleAnimationFinish}
+							/>
+						)}
+				</View>
+			</Modal>
+			<View
+				style={{
+					flex: 1,
+					justifyContent: 'center',
+					alignItems: 'center'
+				}}
+			>
+				<Button onPress={navigateToQRCamera}>
+					Click to buy ticket from user QR code
+				</Button>
+			</View>
+		</>
 	);
 };
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	modalBackground: {
+		flex: 1,
+		justifyContent: 'center',
+		backgroundColor: 'rgba(0,0,0,0.5)'
+	},
+	modalView: {
+		margin: 20,
+		padding: 35,
+		backgroundColor: 'white',
+		borderRadius: 10,
+		alignItems: 'center'
+	},
+	modalText: {
+		marginBottom: 15,
+		fontSize: 18
+	}
+});
 
 export default TransferScreen;

@@ -3,6 +3,7 @@ export const lightBackground = '#ffffff';
 export const darkPrimary = '#121212';
 export const lightPrimary = '#ffffff';
 export const darkSecondary = '#b3b3b3';
+export const green = '#80ef80';
 export const lightSecondary = darkPrimary;
 export const darkText = lightBackground;
 export const lightText = darkBackground;

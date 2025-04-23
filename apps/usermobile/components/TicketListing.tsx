@@ -9,8 +9,6 @@ import {
 	RefreshControl,
 	ScrollView,
 	Image,
-	Pressable,
-	StyleSheet,
 	useColorScheme,
 	LayoutChangeEvent
 } from 'react-native';
@@ -50,20 +48,33 @@ const HomeScreen = () => {
 	}, []);
 
 	const updateData = async () => {
-		setGData(await getAllOwnedEvents());
+		const tmp = await getAllOwnedEvents();
+		const empty = tmp['event_data'].length == 0;
+		console.log('tmp=', tmp);
+
+		if (!empty) {
+			setGData(tmp);
+			setIsPending(false);
+		}
+
 		setRunning(false);
-		setIsPending(false);
 	};
 
 	useEffect(() => {
-		if (isPending) {
-			if (!running) {
-				console.log('running!');
-				setRunning(true);
-				updateData();
-			}
+		// console.log('called pending=', isPending);
+		if (isPending && client.auth.authenticatedUser && !running) {
+			console.log('running!');
+			setRunning(true);
+			updateData();
 		}
-	}, [isPending]);
+	}, [isPending, client.auth.authenticatedUser]);
+
+	// useEffect(() => {
+	// 	if (!running && client.auth.authenticatedUser) {
+	// 		setRunning(true);
+	// 		updateData();
+	// 	}
+	// }, []);
 
 	async function getNFTsInWallet() {
 		const url = `${process.env.EXPO_PUBLIC_API_BASEURL}/oklink?wallet=${client.auth.authenticatedUser?.verifiedCredentials[0].address}&tokenContractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
@@ -267,10 +278,13 @@ const HomeScreen = () => {
 										textAlignVertical: 'center'
 									}}
 								>
+									{'        '}
 									{data['Type']}
 									{'\n'}
+									{'        '}
 									{displayDate}
-									{'\n'}#{ticketid}
+									{'\n'}
+									{'        '}#{`${ticketid}`}
 								</Text>
 							);
 
@@ -307,14 +321,14 @@ const HomeScreen = () => {
 											paddingLeft: 0, // This removes internal padding in the Card.Title
 											marginLeft: 0 // This ensures the component aligns with the edge
 										}}
-										title={
+										title={`        ${
 											data['Eventname'].length > 25
 												? data['Eventname'].slice(
 														0,
 														22
 													) + '...'
 												: data['Eventname']
-										}
+										}`}
 										titleStyle={{
 											fontSize: 16,
 											textAlign: 'center',
