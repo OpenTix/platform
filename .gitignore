@@ -3,6 +3,12 @@
 .cdk.staging
 cdk.out
 
+# mobile output
+**/dist
+**/.expo
+**/ios
+**/android
+
 # compiled output
 dist
 tmp
@@ -112,3 +118,18 @@ yarn-error.log
 
 # testing
 /coverage
+
+# Expo
+node_modules/
+.expo/
+.yarn/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+cache/

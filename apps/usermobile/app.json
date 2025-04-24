@@ -1,0 +1,47 @@
+{
+	"expo": {
+		"name": "Usermobile",
+		"slug": "usermobile",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
+		"splash": {
+			"image": "./assets/splash.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#ffffff"
+		},
+		"updates": {
+			"fallbackToCacheTimeout": 0
+		},
+		"assetBundlePatterns": ["**/*"],
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.opentix.user",
+			"userInterfaceStyle": "automatic",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false,
+				"NSCameraUsageDescription": "Used to scan user ticket QR codes."
+			},
+			"associatedDomains": ["applinks:client.dev.opentix.co"],
+			"appleTeamId": "S726Z4H4Q3"
+		},
+		"android": {
+			"package": "com.opentix.usermobile",
+			"permissions": ["android.permission.NFC"],
+			"userInterfaceStyle": "automatic"
+		},
+		"web": {
+			"favicon": "./assets/favicon.png",
+			"bundler": "metro"
+		},
+		"plugins": ["react-native-nfc-manager"],
+		"extra": {
+			"eas": {
+				"projectId": "d55b9bab-7cae-4021-a54b-a35306ecd8d1"
+			}
+		},
+		"newArchEnabled": true,
+		"scheme": "opentixusermobile"
+	}
+}

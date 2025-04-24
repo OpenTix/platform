@@ -1,0 +1,9 @@
+{
+	"expo": {
+		"plugins": [
+			"expo-secure-store",
+			"expo-router",
+			"react-native-nfc-manager"
+		]
+	}
+}
