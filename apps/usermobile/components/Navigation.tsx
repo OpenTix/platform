@@ -155,7 +155,6 @@ function HomeStack() {
 				<Stack.Screen
 					name="Event"
 					component={EventView}
-					// initialParams={{ Event: undefined }}
 					// @ts-expect-error This is valid code, but typescript doesn't like it
 					options={({ route }) => ({ title: route?.params?.Name })}
 				/>

@@ -2,8 +2,6 @@ import { UserEventDetailsResponse } from '@platform/types';
 import React from 'react';
 import { ImageBackground, View, Text, SafeAreaView, Image } from 'react-native';
 
-// import { Heading } from "@radix-ui/themes";
-
 export interface EventViewHeaderProps {
 	data: UserEventDetailsResponse;
 	ticketid: string;
@@ -62,7 +60,8 @@ export default function EventViewHeader({
 							width: '100%',
 							fontSize: 40,
 							fontWeight: 'bold',
-							color: '#fff'
+							color: '#fff',
+							marginLeft: 10
 						}}
 					>
 						{data.Eventname}
@@ -71,7 +70,8 @@ export default function EventViewHeader({
 						style={{
 							fontSize: 15,
 							fontWeight: 'bold',
-							color: '#fff'
+							color: '#fff',
+							marginLeft: 10
 						}}
 					>
 						{data.Type}
@@ -80,7 +80,8 @@ export default function EventViewHeader({
 						style={{
 							fontSize: 12,
 							fontWeight: 'bold',
-							color: '#fff'
+							color: '#fff',
+							marginLeft: 10
 						}}
 					>
 						{dayOfWeek}, {month} {day}, {eventDate.getFullYear()} •{' '}
@@ -90,24 +91,14 @@ export default function EventViewHeader({
 						style={{
 							color: '#fff',
 							fontSize: 10,
-							fontWeight: 'bold'
+							fontWeight: 'bold',
+							marginLeft: 10
 						}}
 					>
 						Ticket #{ticketid}
 					</Text>
 				</View>
 			</ImageBackground>
-
-			<View style={{ position: 'relative', margin: 8, maxWidth: '35%' }}>
-				<View
-					style={{
-						flex: 1,
-						flexDirection: 'row',
-						gap: 5,
-						alignItems: 'center'
-					}}
-				></View>
-			</View>
 		</View>
 	);
 }

@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, LightTheme } from '@react-navigation/native';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
 import { useDynamic } from '../../components/DynamicSetup';
 import HomeStack from '../../components/Navigation';
 import TransferStack from '../../components/TransferStack';
@@ -68,42 +68,56 @@ export default function App() {
 	};
 
 	return (
-		<NavigationContainer
-			linking={deepLinking}
-			theme={is_dark ? DarkTheme : LightTheme}
-		>
-			<Tab.Navigator screenOptions={{ headerShown: false }}>
-				<Tab.Screen
-					name="Tickets"
-					component={HomeStack}
-					options={{
-						tabBarIcon: () => (
-							<FontAwesome
-								name="home"
-								size={18}
-								color={
-									is_dark ? colors.darkText : colors.lightText
-								}
-							/>
-						)
-					}}
-				/>
-				<Tab.Screen
-					name="Transfer"
-					component={TransferStack}
-					options={{
-						tabBarIcon: () => (
-							<Octicons
-								name="arrow-switch"
-								size={18}
-								color={
-									is_dark ? colors.darkText : colors.lightText
-								}
-							/>
-						)
-					}}
-				/>
-			</Tab.Navigator>
-		</NavigationContainer>
+		<>
+			<StatusBar
+				backgroundColor={
+					is_dark ? colors.darkBackground : colors.lightBackground
+				}
+				barStyle={is_dark ? 'light-content' : 'dark-content'}
+				translucent={false}
+				hidden={false}
+			/>
+			<NavigationContainer
+				linking={deepLinking}
+				theme={is_dark ? DarkTheme : LightTheme}
+			>
+				<Tab.Navigator screenOptions={{ headerShown: false }}>
+					<Tab.Screen
+						name="Tickets"
+						component={HomeStack}
+						options={{
+							tabBarIcon: () => (
+								<FontAwesome
+									name="home"
+									size={18}
+									color={
+										is_dark
+											? colors.darkText
+											: colors.lightText
+									}
+								/>
+							)
+						}}
+					/>
+					<Tab.Screen
+						name="Transfer"
+						component={TransferStack}
+						options={{
+							tabBarIcon: () => (
+								<Octicons
+									name="arrow-switch"
+									size={18}
+									color={
+										is_dark
+											? colors.darkText
+											: colors.lightText
+									}
+								/>
+							)
+						}}
+					/>
+				</Tab.Navigator>
+			</NavigationContainer>
+		</>
 	);
 }

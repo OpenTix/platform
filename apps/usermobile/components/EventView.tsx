@@ -6,8 +6,6 @@ import {
 	View,
 	Text,
 	ScrollView,
-	Image,
-	Pressable,
 	StyleSheet,
 	TouchableOpacity,
 	useColorScheme,
@@ -34,12 +32,9 @@ export default function EventView({
 	route
 }: NativeStackScreenProps<Params, 'Event'>) {
 	const is_dark = useColorScheme() === 'dark';
-	const fallbackURL =
-		'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?cs=srgb&dl=pexels-vishnurnair-1105666.jpg&fm=jpg';
 	const client = useDynamic();
 	const { Event } = route.params; // this is the event id
 	const [qrData, setqrData] = useState('');
-	const [displayData, setdisplayData] = useState(<Text>Loading...</Text>);
 	const [eventData, setEventData] = useState<UserEventDetailsResponse>();
 	const [modalVisible, setModalVisible] = useState(false);
 	const [modalText, setModalText] = useState('');
@@ -327,9 +322,6 @@ export default function EventView({
 									setModalTransfersEnabledVisible(false)
 								}
 								style={{
-									// backgroundColor: is_dark
-									// 	? colors.darkPrimary
-									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -342,14 +334,12 @@ export default function EventView({
 									},
 									shadowOpacity: 0.4,
 									shadowRadius: 6,
-									marginHorizontal: 10
+									marginHorizontal: 10,
+									backgroundColor: colors.lightPrimary
 								}}
 							>
 								<Text
 									style={{
-										// color: is_dark
-										// 	? colors.darkText
-										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -367,9 +357,6 @@ export default function EventView({
 									transfer_step2();
 								}}
 								style={{
-									// backgroundColor: is_dark
-									// 	? colors.darkPrimary
-									// 	: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -382,14 +369,12 @@ export default function EventView({
 									},
 									shadowOpacity: 0.4,
 									shadowRadius: 6,
-									marginHorizontal: 10
+									marginHorizontal: 10,
+									backgroundColor: colors.lightPrimary
 								}}
 							>
 								<Text
 									style={{
-										// color: is_dark
-										// 	? colors.darkText
-										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -427,9 +412,7 @@ export default function EventView({
 									setModalTicketTransferableVisible(false)
 								}
 								style={{
-									// backgroundColor: is_dark
-									// 	? colors.darkPrimary
-									// 	: colors.lightPrimary,
+									backgroundColor: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -447,9 +430,6 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										// color: is_dark
-										// 	? colors.darkText
-										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
@@ -467,9 +447,7 @@ export default function EventView({
 									transfer_step3();
 								}}
 								style={{
-									// backgroundColor: is_dark
-									// 	? colors.darkPrimary
-									// 	: colors.lightPrimary,
+									backgroundColor: colors.lightPrimary,
 									borderRadius: 15,
 									paddingTop: 5,
 									paddingBottom: 5,
@@ -487,9 +465,6 @@ export default function EventView({
 							>
 								<Text
 									style={{
-										// color: is_dark
-										// 	? colors.darkText
-										// 	: colors.lightText,
 										textAlign: 'center'
 									}}
 								>
