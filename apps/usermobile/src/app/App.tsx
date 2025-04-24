@@ -86,15 +86,11 @@ export default function App() {
 						name="Tickets"
 						component={HomeStack}
 						options={{
-							tabBarIcon: () => (
+							tabBarIcon: ({ size, color }) => (
 								<FontAwesome
 									name="home"
-									size={18}
-									color={
-										is_dark
-											? colors.darkText
-											: colors.lightText
-									}
+									size={size}
+									color={color}
 								/>
 							)
 						}}
@@ -103,15 +99,11 @@ export default function App() {
 						name="Transfer"
 						component={TransferStack}
 						options={{
-							tabBarIcon: () => (
+							tabBarIcon: ({ size, color }) => (
 								<Octicons
 									name="arrow-switch"
-									size={18}
-									color={
-										is_dark
-											? colors.darkText
-											: colors.lightText
-									}
+									size={size}
+									color={color}
 								/>
 							)
 						}}
