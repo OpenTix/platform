@@ -1,7 +1,7 @@
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { UserEventDetailsResponse } from '@platform/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	View,
 	Text,
@@ -59,6 +59,14 @@ export default function EventView({
 		setqrData('');
 		runner();
 	}, []);
+
+	const updateticketbuttoncolor = async () => {
+		setTicketTransferable(await checkIfTicketIsTransferable());
+	};
+
+	useEffect(() => {
+		updateticketbuttoncolor();
+	}, [modalBlockInclusionVisible]);
 
 	async function computeQRData(ticketid: string, ticketuuid: string) {
 		if (client.wallets.primary == null) {
@@ -265,7 +273,6 @@ export default function EventView({
 		setqrData(
 			`${JSON.stringify({ address: client.auth.authenticatedUser?.verifiedCredentials[0].address, id: Event, basecost: eventData?.Basecost })}`
 		);
-
 		setModalText('Show the ticket buyer this QR code');
 		setModalVisible(true);
 	}
@@ -276,6 +283,7 @@ export default function EventView({
 		if (!ticket_transferable) {
 			// get user confirmation they want to make the ticket transferable
 			setModalTicketTransferableVisible(true);
+			return;
 		}
 
 		await transfer_step3();
@@ -287,6 +295,7 @@ export default function EventView({
 		if (!transfers_enabled) {
 			// get user confirmation they want to enable ticket transfers
 			setModalTransfersEnabledVisible(true);
+			return;
 		}
 
 		await transfer_step2();
@@ -354,7 +363,7 @@ export default function EventView({
 											'failed to enable ticket transfers for the user account'
 										);
 									}
-									transfer_step2();
+									await transfer_step2();
 								}}
 								style={{
 									borderRadius: 15,
@@ -444,7 +453,7 @@ export default function EventView({
 											'failed to enable transfer for the ticket'
 										);
 									}
-									transfer_step3();
+									await transfer_step3();
 								}}
 								style={{
 									backgroundColor: colors.lightPrimary,
