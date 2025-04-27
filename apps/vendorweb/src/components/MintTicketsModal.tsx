@@ -81,7 +81,7 @@ export default function MintTicketsModal({
 							`https://opentix.co/event/${ID}`,
 							NumUnique,
 							NumGa,
-							Basecost
+							Array(NumGa + NumUnique).fill(Basecost)
 						]
 					});
 
