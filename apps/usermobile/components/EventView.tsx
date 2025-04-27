@@ -48,8 +48,6 @@ export default function EventView({
 
 	const runner = async () => {
 		const name = await getEventNameFromId(BigInt(Event));
-		// const split = name.split(' ');
-		// const uuid = split[split.length - 1];
 		const data = await getEventByUUID(name);
 		setEventData(data as UserEventDetailsResponse);
 		setTicketTransferable(await checkIfTicketIsTransferable());
