@@ -48,9 +48,9 @@ export default function EventView({
 
 	const runner = async () => {
 		const name = await getEventNameFromId(BigInt(Event));
-		const split = name.split(' ');
-		const uuid = split[split.length - 1];
-		const data = await getEventByUUID(uuid);
+		// const split = name.split(' ');
+		// const uuid = split[split.length - 1];
+		const data = await getEventByUUID(name);
 		setEventData(data as UserEventDetailsResponse);
 		setTicketTransferable(await checkIfTicketIsTransferable());
 	};
@@ -126,10 +126,8 @@ export default function EventView({
 	// check the user in with the vendor
 	async function checkin() {
 		const name = await getEventNameFromId(BigInt(Event));
-		const split = name.split(' ');
-		const uuid = split[split.length - 1];
 
-		setqrData(await computeQRData(`${Event}`, `${uuid}`));
+		setqrData(await computeQRData(`${Event}`, `${name}`));
 		setModalText('Show the vendor this QR code');
 		setModalVisible(true);
 	}

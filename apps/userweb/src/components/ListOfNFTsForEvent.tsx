@@ -25,7 +25,7 @@ export default function ListOfNFTsForEvent({
 	setTicketId,
 	setShouldShowBuyModal
 }: ListOfNFTsForEventProps) {
-	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
+	const NFTMintingDescription = `${ID}`;
 	const { primaryWallet } = useDynamicContext();
 	const [NFTs, setNFTs] = useState<bigint[]>([]);
 	const [metadata, setMetadata] = useState<ReturnedMetadata>();

@@ -180,9 +180,7 @@ const HomeScreen = () => {
 			}
 
 			// grab the event data
-			const split = event_names[i].split(' ');
-			const uuid = split[split.length - 1];
-			event_data[i] = await getEventByUUID(uuid);
+			event_data[i] = await getEventByUUID(event_names[i]);
 		}
 
 		return { ids, event_data };

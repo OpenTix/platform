@@ -4,7 +4,6 @@ import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Dialog, Flex, Text } from '@radix-ui/themes';
 import { useState } from 'react';
-import { formatGwei } from 'viem';
 
 export interface MintTicketsModalProps {
 	onClose: () => void;
@@ -34,7 +33,7 @@ export default function MintTicketsModal({
 
 	const { primaryWallet } = useDynamicContext();
 
-	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
+	const NFTMintingDescription = `${ID}`;
 
 	const Disclaimer = `You are about to mint ${NumGa} General Admission tickets and ${NumUnique} Unique tickets for ${NFTMintingDescription}.`;
 
@@ -72,27 +71,6 @@ export default function MintTicketsModal({
 				const p = await primaryWallet.getPublicClient();
 
 				if (w && p) {
-					console.log('TEST');
-					// const gas = await p.estimateContractGas({
-					// 	address: ContractAddress,
-					// 	abi: ContractABI,
-					// 	functionName: 'create_new_event',
-					// 	args: [
-					// 		NFTMintingDescription,
-					// 		`https://opentix.co/event/${ID}`,
-					// 		NumUnique,
-					// 		NumGa,
-					// 		Basecost
-					// 	]
-					// });
-					console.log('TEST2');
-
-					// const gasPrice = await p.getGasPrice()
-
-					// console.log(`GAS USED ${gas}`)
-					// console.log(`GAS PRICE (wei) ${gasPrice}`)
-					// console.log(`MULT (total wei) ${gas*gasPrice}`)
-					// console.log(`POL ${formatGwei(gas*gasPrice)}`)
 					const { request } = await p.simulateContract({
 						abi: ContractABI,
 						address: ContractAddress,
@@ -105,15 +83,7 @@ export default function MintTicketsModal({
 							NumGa,
 							Basecost
 						]
-						// gas: gas
 					});
-
-					console.log('TEST3');
-
-					// const gasPrice = await p.getGasPrice();
-					// p.estimateGas()
-
-					// console.log(`GAS PRICE (WEI) ${gasPrice}`);
 
 					const hash = await w.writeContract(request);
 					passTransactionHash(hash);
