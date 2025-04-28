@@ -1,6 +1,6 @@
 import { polygonAmoy } from 'viem/chains';
 
-export const ContractAddress = '0x4B10Ca604B40b782eF00b497357b3dc9478457DF';
+export const ContractAddress = '0x8BE301eD017D23977F98b48CD9D18EaB91C0ae26';
 
 export type ContractGetEventIdsReturnedMetadata = {
 	min: bigint;
@@ -341,7 +341,7 @@ export const ContractABI = [
 				type: 'uint256'
 			},
 			{ internalType: 'uint256', name: 'unique_seats', type: 'uint256' },
-			{ internalType: 'uint256', name: 'cost', type: 'uint256' }
+			{ internalType: 'uint256[]', name: 'costs', type: 'uint256[]' }
 		],
 		name: 'create_new_event',
 		outputs: [],
