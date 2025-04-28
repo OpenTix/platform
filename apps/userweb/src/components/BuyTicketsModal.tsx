@@ -37,7 +37,7 @@ export default function BuyTicketsModal({
 
 	const { primaryWallet } = useDynamicContext();
 
-	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
+	const NFTMintingDescription = `${ID}`;
 
 	const Disclaimer = `You are about to buy a ticket for ${NFTMintingDescription}.`;
 

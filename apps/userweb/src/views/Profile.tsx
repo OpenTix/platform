@@ -240,10 +240,8 @@ export default function Profile() {
 		const ticket_data = [] as TicketInfo[];
 		for (let i = 0; i < event_names.length; i++) {
 			// grab the event data
-			const split = event_names[i].split(' ');
-			const uuid = split[split.length - 1];
 			const event = (await getEventByUUID(
-				uuid
+				event_names[i]
 			)) as UserEventDetailsResponse;
 			const event_date = new Date(event.EventDatetime);
 

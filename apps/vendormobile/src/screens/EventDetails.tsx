@@ -105,8 +105,6 @@ export default function EventDetails({
 		const senderaddress = fields[2];
 
 		const event_name = await getEventNameFromId(BigInt(id));
-		const split = event_name.split(' ');
-		const uuid = split[split.length - 1];
 
 		const tmp = await getNFTsInWallet(senderaddress);
 		// parse into an array
@@ -140,7 +138,7 @@ export default function EventDetails({
 
 		const valid = await publicViemClient.verifyMessage({
 			address: senderaddress as Address,
-			message: uuid,
+			message: event_name,
 			signature: signedmessage as Address
 		});
 
@@ -149,7 +147,7 @@ export default function EventDetails({
 		}
 
 		// do the api call
-		const resp = await checkin(uuid, parseInt(id));
+		const resp = await checkin(event_name, parseInt(id));
 
 		if (!resp) {
 			return 'Ticket already checked in';

@@ -1,6 +1,6 @@
 import { polygonAmoy } from 'viem/chains';
 
-export const ContractAddress = '0x41c3462A19a267D8F5690D5b411c4e46aCf0bbcB';
+export const ContractAddress = '0x8BE301eD017D23977F98b48CD9D18EaB91C0ae26';
 
 export type ContractGetEventIdsReturnedMetadata = {
 	min: bigint;

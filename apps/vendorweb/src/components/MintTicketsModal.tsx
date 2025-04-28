@@ -33,7 +33,7 @@ export default function MintTicketsModal({
 
 	const { primaryWallet } = useDynamicContext();
 
-	const NFTMintingDescription = `${Title} at ${EventDatetime} - ${ID}`;
+	const NFTMintingDescription = `${ID}`;
 
 	const Disclaimer = `You are about to mint ${NumGa} General Admission tickets and ${NumUnique} Unique tickets for ${NFTMintingDescription}.`;
 
@@ -84,6 +84,7 @@ export default function MintTicketsModal({
 							Array(NumGa + NumUnique).fill(Basecost)
 						]
 					});
+
 					const hash = await w.writeContract(request);
 					passTransactionHash(hash);
 					await updateEventWithTransactionHash(hash);

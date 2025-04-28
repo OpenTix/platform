@@ -244,7 +244,7 @@ export default function Details({ typestring }: DetailsProps) {
 	const updateTransactionHash = async (hash: string) => {
 		setLatestTransactionHash(hash);
 		setShouldGrayOutPage(true);
-		const NFTMintingDescription = `${(data as Event)?.Name} at ${(data as Event)?.EventDatetime} - ${(data as Event)?.ID}`;
+		const NFTMintingDescription = `${(data as Event)?.ID}`;
 		try {
 			if (primaryWallet && isEthereumWallet(primaryWallet)) {
 				const p = await primaryWallet.getPublicClient();
