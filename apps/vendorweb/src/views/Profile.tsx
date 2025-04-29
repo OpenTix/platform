@@ -25,6 +25,7 @@ import {
 import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { FullscreenLoadingMessage } from '@platform/ui';
 
 //70/30 left right column split
 const LeftColumn = styled.div`
