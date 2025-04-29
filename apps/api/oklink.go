@@ -18,7 +18,7 @@ import (
 )
 
 type OKLinkSecretsManagerResponse struct {
-	API_KEY string `json:"API_KEY"`;
+	API_KEY string `json:"API_KEY"`
 }
 
 var OKLINK_API_KEY string
@@ -65,7 +65,7 @@ func init() {
 }
 
 func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	
+
 	wallet, ok := request.QueryStringParameters["wallet"]
 	if !ok {
 		return shared.CreateErrorResponse(400, "Missing wallet parameter", request.Headers)
@@ -79,7 +79,7 @@ func handleGet(ctx context.Context, request events.APIGatewayProxyRequest) (even
 		return shared.CreateErrorResponse(400, "Missing contractAddress parameter", request.Headers)
 	}
 
-	var requestURL = fmt.Sprintf("https://www.oklink.com/api/v5/explorer/nft/address-balance-fills?chainShortName=%v&address=%v&tokenContractAddress=%v&limit=100&protocolType=token_1155", chainShortName, wallet, contractAddress)
+	var requestURL = fmt.Sprintf("https://www.oklink.com/api/v5/explorer/address/address-balance-fills?chainShortName=%v&address=%v&tokenContractAddress=%v&limit=100&protocolType=token_1155", chainShortName, wallet, contractAddress)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
