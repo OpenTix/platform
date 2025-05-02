@@ -30,6 +30,7 @@ import {
 import { useTheme } from 'next-themes';
 import React, { ReactElement, useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { FullscreenLoadingMessage } from '@platform/ui';
 import { TicketCard } from '../components/TicketCard';
 
 //70/30 left right column split
@@ -106,6 +107,8 @@ export default function Profile() {
 		setTicketTransferStateChangeRequested
 	] = useState<boolean>(false);
 	const { theme, setTheme } = useTheme();
+	const [showBlockInclusionModal, setShowBlockInclusionModal] =
+		useState(false);
 
 	const getUserBalance = async () => {
 		const bal = await primaryWallet?.getBalance();
@@ -140,6 +143,7 @@ export default function Profile() {
 	async function getNFTsInWallet() {
 		const token = getAuthToken();
 		const url = `${process.env.NX_PUBLIC_API_BASEURL}/oklink?wallet=${primaryWallet?.address}&tokenContractAddress=${ContractAddress}&chainShortName=amoy_testnet`;
+		console.log(url);
 		const resp = await fetch(url, {
 			method: 'GET',
 			headers: { Authorization: `Bearer ${token}` }
@@ -148,8 +152,16 @@ export default function Profile() {
 		if (!resp.ok)
 			return Error('There was an error fetching data from oklink.');
 
+		const tmp = (await resp.json())['data'];
+		console.log(tmp);
+
+		// stop app from blowing up if the user owns no tickets
+		if (tmp.length === 0) {
+			return 0;
+		}
+
 		// this is nasty but it gives us what we want
-		return (await resp.json())['data'][0]['tokenList'];
+		return tmp[0]['tokenList'];
 	}
 
 	// Return an array of owned ticket ids
@@ -322,9 +334,11 @@ export default function Profile() {
 					});
 					const hash = await w.writeContract(request);
 					console.log(`enable ticket transfer hash ${hash}`);
+					setShowBlockInclusionModal(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
 					});
+					setShowBlockInclusionModal(false);
 					setTicketTransferStateChangeRequested(true);
 				} else {
 					console.error('Wallet client or public client not set up');
@@ -351,9 +365,11 @@ export default function Profile() {
 					});
 					const hash = await w.writeContract(request);
 					console.log(`disable ticket transfer hash ${hash}`);
+					setShowBlockInclusionModal(true);
 					await p.waitForTransactionReceipt({
 						hash: hash
 					});
+					setShowBlockInclusionModal(false);
 					setTicketTransferStateChangeRequested(true);
 				} else {
 					console.error('Wallet client or public client not set up');
@@ -380,6 +396,9 @@ export default function Profile() {
 	return (
 		<Container size="4">
 			<>
+				{showBlockInclusionModal && (
+					<FullscreenLoadingMessage message="Waiting for block inclusion. Please don't navigate away or refresh the page..." />
+				)}
 				<Box py={'5'}>
 					<Heading>Profile</Heading>
 				</Box>
@@ -911,6 +930,13 @@ export default function Profile() {
 
 												return (
 													<TicketCard
+														onWaiting={async (
+															showBlockInclusion: boolean
+														) => {
+															setShowBlockInclusionModal(
+																showBlockInclusion
+															);
+														}}
 														key={`${idx}`}
 														event={data.data}
 														ticket={

@@ -11,12 +11,14 @@ export interface TicketCardProps {
 	event: UserEventDetailsResponse;
 	ticket: string;
 	transferEnabled: boolean;
+	onWaiting: (showBlockInclusion: boolean) => void;
 }
 
 export function TicketCard({
 	event,
 	ticket,
-	transferEnabled
+	transferEnabled,
+	onWaiting
 }: TicketCardProps) {
 	const { primaryWallet } = useDynamicContext();
 	const titleRef = useRef<HTMLElement>(null);
@@ -66,6 +68,10 @@ export function TicketCard({
 					onClose={async (showLoading: boolean) => {
 						setShouldShowTransferModal(false);
 						setShouldShowLoadingModal(showLoading);
+						onWaiting(false);
+					}}
+					onWaiting={async () => {
+						onWaiting(true);
 					}}
 					TicketID={BigInt(ticket)}
 				/>

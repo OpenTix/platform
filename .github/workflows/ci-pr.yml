@@ -62,7 +62,7 @@ jobs:
 
             - run: npx prettier --check .
               env:
-                NODE_OPTIONS: "--max_old_space_size=4096"
+                NODE_OPTIONS: "--max_old_space_size=8192"
 
     lint:
         runs-on: self-hosted
@@ -89,7 +89,7 @@ jobs:
 
             - run: npx nx run ${{ matrix.tasks }}:lint
               env:
-                NODE_OPTIONS: "--max_old_space_size=4096"
+                NODE_OPTIONS: "--max_old_space_size=8192"
 
 
     test:
@@ -117,7 +117,7 @@ jobs:
 
             - run: npx nx run ${{ matrix.tasks }}:test
               env:
-                NODE_OPTIONS: "--max_old_space_size=4096"
+                NODE_OPTIONS: "--max_old_space_size=8192"
 
     build:
         runs-on: self-hosted
@@ -144,4 +144,4 @@ jobs:
 
             - run: npx nx run ${{ matrix.tasks }}:build
               env:
-                NODE_OPTIONS: "--max_old_space_size=4096"
+                NODE_OPTIONS: "--max_old_space_size=8192"
