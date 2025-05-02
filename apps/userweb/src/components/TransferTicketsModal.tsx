@@ -3,31 +3,58 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ContractAddress, ContractABI } from '@platform/blockchain';
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { Button, Callout, Dialog, Flex, Text } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-type ReturnedMetadata = {
-	min: bigint;
-	max: bigint;
-	exists: boolean;
-};
 
 export interface TransferTicketsModalProps {
 	onClose: (showLoading: boolean) => void;
+	onWaiting: () => void;
 	TicketID: bigint;
 }
 export default function TransferTicketsModal({
 	onClose,
+	onWaiting,
 	TicketID
 }: TransferTicketsModalProps) {
-	const navigate = useNavigate();
 	const [showError, setShowError] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+	const [ticketTransferable, setTicketTransferable] =
+		useState<boolean>(false);
 
 	const { primaryWallet } = useDynamicContext();
 
-	const onSubmit = async () => {
+	// query the contract (not on network) for the event name for an id
+	async function checkIfTicketIsTransferable(id: bigint) {
+		// get the events description from the id
+		if (primaryWallet && isEthereumWallet(primaryWallet)) {
+			const p = await primaryWallet.getPublicClient();
+			if (p) {
+				const data = (await p.readContract({
+					abi: ContractABI,
+					address: ContractAddress,
+					functionName: 'check_ticket_transferable',
+					args: [id]
+				})) as boolean;
+
+				return data;
+			} else {
+				throw new Error('Failed to create public client.');
+			}
+		} else {
+			throw new Error('Failed to confirm ethereum wallet.');
+		}
+	}
+
+	async function start() {
+		setTicketTransferable(await checkIfTicketIsTransferable(TicketID));
+	}
+
+	useEffect(() => {
+		start();
+	});
+
+	const onSubmit = async (allow: boolean) => {
 		setIsSubmitting(true);
 
 		if (primaryWallet && isEthereumWallet(primaryWallet)) {
@@ -39,7 +66,9 @@ export default function TransferTicketsModal({
 					const { request } = await p.simulateContract({
 						abi: ContractABI,
 						address: ContractAddress,
-						functionName: 'allow_ticket_to_be_transfered',
+						functionName: allow
+							? 'allow_ticket_to_be_transfered'
+							: 'disallow_ticket_to_be_transfered',
 						account: w.account,
 						args: [TicketID]
 					});
@@ -47,13 +76,17 @@ export default function TransferTicketsModal({
 					console.log(hash);
 
 					// wait for the call to be included in a block
+					onWaiting();
 					await p.waitForTransactionReceipt({
 						hash: hash
 					});
 
 					setIsSubmitting(false);
-					onClose(true);
-					// navigate(0);
+					if (allow) {
+						onClose(true);
+					} else {
+						onClose(false);
+					}
 				} else {
 					console.error('Wallet client or public client not set up');
 					setErrorMessage(
@@ -103,9 +136,21 @@ export default function TransferTicketsModal({
 						<Button onClick={() => onClose(true)} variant="soft">
 							Show QR
 						</Button>
-						<Button onClick={onSubmit} loading={isSubmitting}>
-							Allow Transfer
-						</Button>
+						{ticketTransferable ? (
+							<Button
+								onClick={() => onSubmit(false)}
+								loading={isSubmitting}
+							>
+								Disallow Transfer
+							</Button>
+						) : (
+							<Button
+								onClick={() => onSubmit(true)}
+								loading={isSubmitting}
+							>
+								Allow Transfer
+							</Button>
+						)}
 					</Flex>
 				</Flex>
 			</Dialog.Content>

@@ -930,6 +930,13 @@ export default function Profile() {
 
 												return (
 													<TicketCard
+														onWaiting={async (
+															showBlockInclusion: boolean
+														) => {
+															setShowBlockInclusionModal(
+																showBlockInclusion
+															);
+														}}
 														key={`${idx}`}
 														event={data.data}
 														ticket={
